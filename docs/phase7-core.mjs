@@ -29,7 +29,7 @@ export function offerVerification(offer, now = Date.now()) {
     return {status:'expired',label:'Abgelaufen',problems:['Die bekannte Teilnahmefrist ist vorbei']};
   if(offer.sourceType !== 'curated') {
     problems.push('Regeln, Gewinn und Veranstalter noch nicht unabhängig geprüft');
-    if (!offer.deadline) problems.push('Teilnahmefrist fehlt');
+    if (!offer.deadline) problems.push('Frist unbekannt – beim Veranstalter prüfen');
     return {status:'unverified',label:'Fundhinweis · ungeprüft',problems};
   }
   const shipping=String(offer.shippingStatus || '');
