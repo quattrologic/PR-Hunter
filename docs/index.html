@@ -3,81 +3,127 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0a1020">
+  <meta name="theme-color" content="#f7f7f9">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="PR-Hunter">
-  <meta name="description" content="Entdecke öffentliche PR-Angebote und verwalte deine Anfragen.">
+  <meta name="description" content="Dein Streetwear-Radar für echte öffentliche Gewinnspiele und Produkttest-Aktionen.">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./app.css">
-  <title>PR-Hunter — Discovery Dashboard</title>
+  <link rel="stylesheet" href="./ultimate.css">
+  <title>PR-Hunter Ultimate · Streetwear Radar</title>
   <script type="module" src="./app.js"></script>
 </head>
 <body>
-  <div class="glow glow-a" aria-hidden="true"></div>
-  <div class="glow glow-b" aria-hidden="true"></div>
-  <div class="shell">
-    <aside class="sidebar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><span>PR<span class="brand-accent">Hunter</span><small>DISCOVERY STUDIO</small></span></div>
-      <div class="nav-heading">WORKSPACE</div>
-      <nav class="nav" aria-label="Hauptnavigation">
-        <button class="nav-btn active" data-tab="discover" aria-current="page"><span aria-hidden="true">◈</span> Entdecken</button>
-        <button class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
-        <button class="nav-btn" data-tab="tracked"><span aria-hidden="true">◎</span> Meine Anfragen</button>
-        <button class="nav-btn" data-tab="info"><span aria-hidden="true">ⓘ</span> So funktioniert’s</button>
-      </nav>
-      <div class="sidebar-bottom"><div class="pulse-dot"></div><div><strong>Local-first</strong><small>Deine Daten bleiben auf dem Gerät</small></div></div>
-    </aside>
-    <main class="main">
-      <header class="topbar"><span class="eyebrow">DEIN GIFT & PR SCOUT</span><span class="secure">◉ PRIVATER TRACKER</span></header>
-      <section class="hero">
-        <div class="hero-copy"><div class="pill"><span class="pulse-dot"></span> DEIN DISCOVERY HUB</div>
-          <h1>Finde dein nächstes <em>PR-Paket.</em></h1>
-          <p>Vor allem Streetwear, Sneaker, Hoodies, Smartphones, Kopfhörer und Gaming-Zubehör. Entdecke PR-Aktionen und behalte deine Bewerbungen im Blick.</p>
-          <button class="primary-btn" id="addButton">＋ Angebot hinzufügen</button>
+<div class="ambient ambient-one" aria-hidden="true"></div><div class="ambient ambient-two" aria-hidden="true"></div>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo" aria-label="PR-Hunter"><span class="logo-sign">✳</span><span>PR<span class="logo-light">HUNTER</span><small>ULTIMATE EDITION</small></span></div>
+    <div class="nav-section">WORKSPACE</div>
+    <nav class="nav" aria-label="Hauptnavigation">
+      <button type="button" class="nav-btn active" data-tab="discover" aria-current="page"><span aria-hidden="true">◈</span> Entdecken</button>
+      <button type="button" class="nav-btn" data-tab="brands"><span aria-hidden="true">◎</span> Brand Radar</button>
+      <button type="button" class="nav-btn" data-tab="activity"><span aria-hidden="true">▤</span> Aktivitäten</button>
+      <button type="button" class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
+      <button type="button" class="nav-btn" data-tab="info"><span aria-hidden="true">ⓘ</span> Über die App</button>
+    </nav>
+    <div class="sidebar-bottom"><span class="sidebar-status">●</span><div><strong>Private Workspace</strong><small>Verlauf nur auf diesem Gerät</small></div></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div><span class="tiny-overline">PR-HUNTER / </span><span id="topTitle">DISCOVER</span></div>
+      <div class="top-actions"><span class="live"><span class="live-dot"></span> PUBLIC FEED SCOUT</span><span class="header-avatar" aria-hidden="true">✦</span></div>
+    </header>
+    <section class="view" id="discoverPanel" data-panel="discover">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="eyebrow-badge"><span class="live-dot"></span> DEIN STREETWEAR RADAR</div>
+          <h1>Good style.<span>Better luck.</span></h1>
+          <p>Entdecke kostenlose Streetwear, PR-Aktionen und Giveaways. Von kleinen Labels bis zu großen Brands – alles an einem Ort.</p>
+          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button></div>
+          <div class="hero-trust">90 % FASHION <span>·</span> 10 % TECH <span>·</span> WELTWEIT</div>
         </div>
-        <div class="hero-art" aria-hidden="true"><div class="orbit orbit-1"></div><div class="orbit orbit-2"></div><span class="gift">🎁</span><span class="spark spark-1">✦</span><span class="spark spark-2">✧</span></div>
+        <div class="hero-poster" aria-hidden="true"><div class="poster-label">THE HUNT<br>IS ON.</div><div class="poster-object">✳</div><div class="poster-footer">NO FAKE DROPS. JUST POSSIBILITIES. / 001</div></div>
+      </div>
+      <div class="stats" aria-label="Dein Überblick">
+        <div class="stat"><span>Gefundene Hinweise</span><strong id="totalCount">–</strong><small>Keine bestätigten Gratisprodukte</small></div>
+        <div class="stat"><span>Gemerkte Aktionen</span><strong id="savedCount">–</strong><small>Für später gespeichert</small></div>
+        <div class="stat"><span>Teilnahmen</span><strong id="appliedCount">–</strong><small>Von dir eingetragen</small></div>
+        <div class="stat"><span>Gewinne</span><strong id="acceptedCount">–</strong><small>Von dir eingetragen</small></div>
+      </div>
+      <section class="watchlist-preview" aria-labelledby="watchlistTitle">
+        <div class="section-header"><div><span class="mini-label">DEINE REFERENZEN</span><h2 id="watchlistTitle">Brand watchlist <span class="soft-accent">✳</span></h2></div><button type="button" class="text-btn" data-tab="brands">Alle Brands ansehen ↗</button></div>
+        <p class="helper">Gespeicherte Referenzprofile – keine bestätigten aktiven Gewinnspiele. Instagram-Posts werden derzeit nicht automatisch ausgelesen.</p>
+        <div class="brand-strip" id="brandStrip"></div>
       </section>
-      <section class="stats" aria-label="Deine Statistik">
-        <div class="stat"><span>Gefundene Hinweise</span><strong id="totalCount">0</strong><small>Quellen + eigene, nicht geprüft</small></div>
-        <div class="stat"><span>Auf Merkliste</span><strong id="savedCount">0</strong><small>Für später gespeichert</small></div>
-        <div class="stat"><span>Anfragen</span><strong id="appliedCount">0</strong><small>Als kontaktiert markiert</small></div>
-        <div class="stat"><span>Zusagen</span><strong id="acceptedCount">0</strong><small>Selbst eingetragen</small></div>
-      </section>
-      <section class="finder">
-        <div class="section-head"><div><span class="eyebrow">DEIN ÜBERBLICK</span><h2 id="sectionTitle">Opportunities</h2></div><span class="sync" id="syncLabel">Noch kein Scan</span></div>
-        <div id="infoPanel" hidden class="info-panel">
-          <h3>So funktioniert PR-Hunter</h3>
-          <p>Der automatische Scout liest ausschließlich von dir konfigurierte, öffentlich zugängliche und zur automatischen Nutzung freigegebene RSS/Atom-Feeds. Ohne Quellen ist die Liste anfangs leer.</p>
-          <p>Hier kannst du Angebote sammeln und deinen eigenen Fortschritt verfolgen. <strong>Es werden keine Instagram-DMs, Bewerbungen oder Kontaktanfragen automatisch versendet.</strong> Der Button „Text kopieren“ erstellt nur einen persönlichen Entwurf.</p>
-          <p>Die Standardansicht zeigt nur Mode und Technik. Mit „Alle Kategorien“ kannst du weitere Angebote einblenden. Jeder Treffer ist ein Hinweis, keine bestätigte Gratis-Lieferung; prüfe Kosten, Mindestalter und Fristen bei der Quelle.</p>
-          <p>Deine Merkliste und dein Status bleiben lokal in Safari. Im öffentlichen Repository dürfen keine privaten Daten gespeichert werden.</p>
-          <p><a href="https://github.com/quattrologic/PR-Hunter#enable-automated-discovery" target="_blank" rel="noopener noreferrer">Feeds einrichten auf GitHub ↗</a></p>
+      <section class="feed" aria-labelledby="feedTitle">
+        <div class="section-header"><div><span class="mini-label">DEINE ENTDECKUNGEN</span><h2 id="feedTitle">The discovery feed<span class="soft-accent">.</span></h2></div><span class="sync" id="syncLabel">Lade öffentliche Feeds …</span></div>
+        <p id="sourceHealth" class="helper" aria-live="polite">Quellen werden geprüft …</p>
+        <div class="toolbar">
+          <div class="filters" id="filters" aria-label="Angebote filtern">
+            <button class="filter-chip active" type="button" data-category="focus" aria-pressed="true">Für dich · 90/10</button>
+            <button class="filter-chip" type="button" data-category="Mode" aria-pressed="false">Streetwear</button>
+            <button class="filter-chip" type="button" data-category="Technik" aria-pressed="false">Technik</button>
+            <button class="filter-chip" type="button" data-category="all" aria-pressed="false">Alles</button>
+          </div>
+          <div class="search-group"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Brands, Hoodies, Sneaker …" aria-label="Angebote suchen"></label><button type="button" id="refreshButton" class="refresh" aria-label="Katalog aktualisieren" title="Katalog aktualisieren">↻</button></div>
         </div>
-        <div id="listArea">
-          <div class="focus-note"><span aria-hidden="true">✦</span> DEIN FOKUS: <strong>STREETWEAR · SNEAKER · TECHNIK · GAMING</strong></div>
-          <p id="sourceHealth" class="source-health" role="status" aria-live="polite">Automatische Quellen werden vorbereitet …</p>
-          <div class="portal-links" aria-label="Offizielle Testprogramme"><span>TECHNIK TESTEN:</span><a href="https://www.mediamarkt.de/de/campaign/testpiloten" target="_blank" rel="noopener noreferrer">MediaMarkt Testpiloten ↗</a><a href="https://www.saturn.de/de/campaign/testpiloten" target="_blank" rel="noopener noreferrer">Saturn Testpiloten ↗</a><a href="https://www.alternate.de/lotteryOverview" target="_blank" rel="noopener noreferrer">ALTERNATE Testaktionen ↗</a></div>
-          <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Marke, Aktion oder Produkt suchen…" aria-label="Angebote durchsuchen"></label>
-            <select id="category" aria-label="Kategorie"><option value="focus" selected>Mode &amp; Technik zuerst</option><option value="all">Alle Kategorien</option><option>Mode</option><option>Technik</option><option>Beauty</option><option>Lifestyle</option><option>Sonstiges</option></select>
-            <button class="ghost-btn" id="refreshButton" title="Angebote aktualisieren" aria-label="Angebote aktualisieren">↻</button></div>
-          <div id="cards" class="cards" aria-live="polite"></div>
-        </div>
+        <div class="cards" id="discoverCards" aria-live="polite"></div>
       </section>
-      <footer>PR-HUNTER BETA · Keine garantierten Gratisprodukte · Keine automatischen Massen-Nachrichten</footer>
-    </main>
-  </div>
-  <dialog id="addDialog">
-    <form id="addForm" class="dialog-inner">
-      <div class="dialog-top"><h2>Neues Angebot</h2><button class="close-btn" id="closeDialog" type="button" aria-label="Schließen">×</button></div>
-      <p>Trage eine Aktion ein, die du gefunden hast. Sie wird nur auf diesem Gerät gespeichert.</p>
-      <label>Marke / Quelle<input name="brand" required maxlength="80" placeholder="z. B. Streetwear-Label"></label>
-      <label>Titel<input name="title" required maxlength="130" placeholder="z. B. Produkttester gesucht"></label>
-      <label>Link zur Aktion<input name="url" type="url" required placeholder="https://…"></label>
-      <label>Kategorie<select name="category"><option>Mode</option><option>Technik</option><option>Beauty</option><option>Lifestyle</option><option>Sonstiges</option></select></label>
-      <button type="submit" class="primary-btn">Angebot speichern</button>
-    </form>
-  </dialog>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </section>
+    <section class="view" id="brandsPanel" data-panel="brands" hidden>
+      <div class="section-banner brands-banner"><span class="mini-label">DEIN STREETWEAR UNIVERSUM</span><h1>Brand radar<span class="soft-accent">.</span></h1><p>Deine Lieblingslabels und neue Referenzen. Wir zeigen Profile – aktive Verlosungen erst, wenn eine passende Quelle sie bestätigt.</p><button id="addBrandButton" class="primary-btn" type="button">＋ Marke hinzufügen</button></div>
+      <div class="section-header section-pad"><div><span class="mini-label">REFERENZEN</span><h2>Deine Watchlist</h2></div><span id="brandCount" class="counter-label">0 Marken</span></div>
+      <div id="brandCards" class="brand-cards"></div>
+    </section>
+    <section class="view" id="activityPanel" data-panel="activity" hidden>
+      <div class="section-banner activity-banner"><span class="mini-label">PERSONAL LOGBOOK</span><h1>Deine Aktivitäten<span class="soft-accent">.</span></h1><p>Behalte den Überblick über Kommentare, Teilnahmen und Gewinne. Nur Aktionen, die du selbst dokumentierst, werden als erledigt angezeigt.</p><button id="logActivityButton" class="primary-btn" type="button">＋ Aktivität eintragen</button></div>
+      <div class="activity-stats"><div><span>Teilnahmen</span><strong id="activityEntered">0</strong></div><div><span>Gewinne</span><strong id="activityWon">0</strong></div><div><span>Erhalten</span><strong id="activityReceived">0</strong></div></div>
+      <div class="section-header section-pad"><div><span class="mini-label">DEIN VERLAUF</span><h2>Activity timeline</h2></div><span class="counter-label">Lokal auf diesem Gerät</span></div>
+      <div id="activityList" class="timeline"></div>
+    </section>
+    <section class="view" id="savedPanel" data-panel="saved" hidden>
+      <div class="section-banner saved-banner"><span class="mini-label">FÜR SPÄTER</span><h1>Deine Merkliste<span class="soft-accent">.</span></h1><p>Alle Aktionen, die du mit ♡ gespeichert hast, an einem Ort.</p></div>
+      <div class="cards saved-cards" id="savedCards"></div>
+    </section>
+    <section class="view" id="infoPanel" data-panel="info" hidden>
+      <div class="section-banner info-banner"><span class="mini-label">TRANSPARENT & SICHER</span><h1>Über PR-Hunter<span class="soft-accent">.</span></h1><p>Eine unabhängige iPad-Web-App für öffentliche Aktionen – keine Instagram-Automatisierung im Hintergrund.</p></div>
+      <div class="info-grid">
+        <article><h3>Wie werden Aktionen gefunden?</h3><p>Der Scout liest öffentlich bereitgestellte RSS/Atom-Feeds ungefähr alle sechs Stunden. Die fünf Instagram-Brands sind Referenzen und werden noch nicht automatisch überwacht.</p></article>
+        <article><h3>Wird automatisch kommentiert?</h3><p>Nein. Kommentarvorschläge werden nur kopiert. Öffne Instagram oder die Originalseite selbst, prüfe die Regeln und bestätige deine Teilnahme.</p></article>
+        <article><h3>Was wird gespeichert?</h3><p>Merkliste, manuelle Angebote, Marken und Aktivitäten ausschließlich lokal im Browser. Keine Instagram-Passwörter, API-Tokens oder persönlichen Informationen im öffentlichen Repository.</p></article>
+        <article><h3>Welche Angebote sind gültig?</h3><p>Jeder Treffer ist zunächst ungeprüft. Kontrolliere Mindestalter, Frist, Versand nach Deutschland, mögliche Kosten (deine Grenze: 5 €) und Rückgabepflichten.</p></article>
+      </div>
+      <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
+    </section>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 1 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+  </main>
+</div>
+<dialog id="addDialog"><form id="addForm" class="dialog-inner">
+  <div class="dialog-top"><div><span class="mini-label">EIGENER FUND</span><h2>Aktion speichern</h2></div><button type="button" class="close-btn" data-close="addDialog" aria-label="Schließen">×</button></div>
+  <p>Füge einen Originalbeitrag oder einen direkten Link zur Aktion hinzu. Keine Teilnahme wird automatisch ausgeführt.</p>
+  <label>Brand / Quelle<input name="brand" required maxlength="80" placeholder="z. B. Streetwear Label"></label>
+  <label>Aktionstitel<input name="title" required maxlength="130" placeholder="z. B. Hoodie Giveaway"></label>
+  <label>Link zur Aktion<input name="url" type="url" required placeholder="https://www.instagram.com/p/…"></label>
+  <label>Kategorie<select name="category"><option>Mode</option><option>Technik</option><option>Beauty</option><option>Lifestyle</option><option>Sonstiges</option></select></label>
+  <button type="submit" class="primary-btn">Aktion speichern</button>
+</form></dialog>
+<dialog id="brandDialog"><form id="brandForm" class="dialog-inner">
+  <div class="dialog-top"><div><span class="mini-label">BRAND RADAR</span><h2>Marke hinzufügen</h2></div><button type="button" class="close-btn" data-close="brandDialog" aria-label="Schließen">×</button></div>
+  <p>Speichert das Instagram-Profil als persönliche Referenz. Es wird kein automatisches Instagram-Monitoring aktiviert.</p>
+  <label>Markenname<input name="name" maxlength="80" required placeholder="z. B. New Streetwear"></label>
+  <label>Instagram-Profil-URL<input name="url" type="url" required placeholder="https://www.instagram.com/marke/"></label>
+  <button type="submit" class="primary-btn">Zur Watchlist hinzufügen</button>
+</form></dialog>
+<dialog id="activityDialog"><form id="activityForm" class="dialog-inner">
+  <div class="dialog-top"><div><span class="mini-label">PRIVATE TIMELINE</span><h2>Aktivität eintragen</h2></div><button type="button" class="close-btn" data-close="activityDialog" aria-label="Schließen">×</button></div>
+  <p>Nur wirklich erledigte Aktionen bestätigen. Hier wird nichts automatisch in Instagram veröffentlicht.</p>
+  <label>Aktion<select name="offerId" id="activityOffer" required></select></label>
+  <label>Status<select name="type"><option value="prepared">Kommentar vorbereitet</option><option value="entered">Teilnahme selbst bestätigt</option><option value="won">Gewinn / Zusage selbst eingetragen</option><option value="received">Produkt erhalten</option></select></label>
+  <label>Instagram-Account (optional)<input name="account" maxlength="31" placeholder="@deinaccount" autocomplete="off"></label>
+  <label>Kommentar- oder Nachweislink (optional)<input name="evidenceUrl" type="url" placeholder="https://…"></label>
+  <label>Notiz (optional)<textarea name="note" maxlength="500" rows="3" placeholder="z. B. Teilnahmebedingungen erfüllt"></textarea></label>
+  <button type="submit" class="primary-btn">Im Verlauf speichern</button>
+</form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

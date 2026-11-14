@@ -1,150 +1,333 @@
-const KEY = 'pr-hunter-state-v1';
+import {
+  SEED_BRANDS, ACTIVITY_TYPES, safeExternalUrl, normalizeBrand,
+  makeActivity, rankFeed, activitySummary
+} from './ultimate-core.mjs';
+
+const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
-const ui = { tab: 'discover', query: '', category: 'focus', catalog: [] };
-const blank = { saved: [], tracked: {}, manual: [] };
+const ui = { tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{} };
 let state;
-try { state = Object.assign({}, blank, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { state = { ...blank }; }
+try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
+catch { state = { ...empty }; }
 if (!Array.isArray(state.saved)) state.saved = [];
 if (!Array.isArray(state.manual)) state.manual = [];
+if (!Array.isArray(state.brands)) state.brands = [];
+if (!Array.isArray(state.activity)) state.activity = [];
 if (!state.tracked || typeof state.tracked !== 'object') state.tracked = {};
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { toast('Speicher konnte nicht aktualisiert werden.'); } };
-const escapeText = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-const safeUrl = value => { try { const u = new URL(value); return u.protocol === 'https:' ? u.href : null; } catch { return null; } };
-const all = () => [...state.manual, ...ui.catalog];
-const status = id => state.tracked[id] || 'new';
-let toastTimer;
+if (!state.savedDetails || typeof state.savedDetails !== 'object') state.savedDetails = {};
+const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const clean = value => String(value ?? '').trim();
+const asDate = value => {
+  const date = value ? new Date(value) : null;
+  return date && Number.isFinite(date.valueOf()) ? date.toLocaleDateString('de-DE') : '';
+};
+const iconText = category => category === 'Mode' ? 'STREETWEAR' : category === 'Technik' ? 'TECH DROP' : 'DISCOVERY';
+const save = () => {
+  try { localStorage.setItem(STORE, JSON.stringify(state)); }
+  catch { toast('Speichern nicht möglich. Bitte Safari-Speicher prüfen.'); }
+};
+let toastHandle;
 function toast(message) {
   const el = $('#toast');
   el.textContent = message;
   el.classList.add('visible');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('visible'), 2600);
+  clearTimeout(toastHandle);
+  toastHandle = setTimeout(() => el.classList.remove('visible'), 3000);
+}
+function all() {
+  const map = new Map();
+  [...state.manual, ...ui.catalog].forEach(item => {
+    if (item && item.id && safeExternalUrl(item.url)) map.set(item.id, item);
+  });
+  return [...map.values()];
+}
+const byId = id => all().find(item => item.id === id) || state.savedDetails[id];
+function watchedBrands() {
+  const map = new Map(SEED_BRANDS.map(brand => [brand.handle.toLowerCase(), brand]));
+  state.brands.forEach(raw => {
+    const brand = normalizeBrand(raw.name, raw.url);
+    if (brand && !map.has(brand.handle.toLowerCase())) map.set(brand.handle.toLowerCase(), brand);
+  });
+  return [...map.values()];
+}
+function getSaved() {
+  return state.saved.map(id => byId(id)).filter(item => item && safeExternalUrl(item.url));
+}
+function getStatusCounts() {
+  const entered = new Set();
+  const wins = new Set();
+  Object.entries(state.tracked).forEach(([id, status]) => {
+    if (['applied','accepted','received'].includes(status)) entered.add(id);
+    if (['accepted','received'].includes(status)) wins.add(id);
+  });
+  state.activity.forEach(x => {
+    if (['entered','won','received'].includes(x.type)) entered.add(x.offerId);
+    if (['won','received'].includes(x.type)) wins.add(x.offerId);
+  });
+  return { entered:entered.size, wins:wins.size };
+}
+function updateStats() {
+  const count = getStatusCounts();
+  const stats = {
+    totalCount: all().length,
+    savedCount: getSaved().length,
+    appliedCount: count.entered,
+    acceptedCount: count.wins
+  };
+  Object.entries(stats).forEach(([id,value]) => { const el = $('#' + id); if (el) el.textContent = String(value); });
+}
+function brandAvatar(brand) {
+  const initials = brand.name.split(/\s+/).slice(0,2).map(x => x.slice(0,1)).join('').toUpperCase();
+  return '<span class="brand-avatar" aria-hidden="true">' + esc(initials) + '</span>';
+}
+function renderBrands() {
+  const brands = watchedBrands();
+  $('#brandCount').textContent = brands.length + ' Marken';
+  $('#brandStrip').innerHTML = brands.map(brand =>
+    '<a class="brand-pill" href="' + esc(brand.url) + '" target="_blank" rel="noopener noreferrer" title="Instagram-Profil öffnen">' +
+    brandAvatar(brand) + '<span><strong>' + esc(brand.name) + '</strong><small>@' + esc(brand.handle) + '</small></span></a>'
+  ).join('');
+  $('#brandCards').innerHTML = brands.map(brand => {
+    const custom = brand.id.startsWith('custom-');
+    return '<article class="brand-card"><div class="brand-card-top">' + brandAvatar(brand) +
+      '<div><strong>' + esc(brand.name) + '</strong><br><small>@' + esc(brand.handle) + '</small></div></div>' +
+      '<p>Gespeichertes Referenzprofil · keine aktuell bestätigte Verlosung. Prüfe neue Posts direkt auf Instagram.</p>' +
+      '<div class="brand-card-actions"><a href="' + esc(brand.url) + '" target="_blank" rel="noopener noreferrer">Profil ansehen ↗</a>' +
+      (custom ? '<button type="button" data-action="remove-brand" data-handle="' + esc(brand.handle) + '" aria-label="Marke entfernen">Entfernen</button>' : '') + '</div></article>';
+  }).join('');
+}
+function renderOffer(item) {
+  const url = safeExternalUrl(item.url);
+  if (!url) return '';
+  const saved = state.saved.includes(item.id);
+  const category = ['Mode','Technik'].includes(item.category) ? item.category : 'Sonstiges';
+  const visualClass = category === 'Mode' ? '' : category === 'Technik' ? ' tech' : ' other';
+  const offerName = clean(item.title).slice(0, 130);
+  const titlePreview = offerName.length > 53 ? offerName.slice(0, 50) + '…' : offerName;
+  const type = clean(item.offerType || 'Öffentliche Aktion');
+  const brand = clean(item.brand || item.source || 'Originalquelle');
+  const desc = clean(item.description || 'Bedingungen vor der Teilnahme beim Veranstalter prüfen.').slice(0, 200);
+  const fromSource = item.manual ? 'Selbst gespeichert' : 'Öffentlicher Feed';
+  const id = esc(item.id);
+  return '<article class="opportunity"><div class="card-visual' + visualClass + '">' +
+    '<div class="card-topline"><span class="visual-badge">' + esc(iconText(category)) + '</span><span class="visual-type">✧ ' + esc(type) + '</span></div>' +
+    '<div class="visual-title">' + esc(titlePreview) + '</div></div>' +
+    '<div class="card-content"><div class="card-meta"><span>' + esc(brand) + '</span><span>·</span><span>' + esc(fromSource) + '</span>' +
+    (item.published ? '<span>· ' + esc(asDate(item.published)) + '</span>' : '') + '</div>' +
+    '<h3>' + esc(offerName) + '</h3><p class="description">' + esc(desc) + '</p>' +
+    '<div class="card-actions"><a class="open-offer" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Original öffnen ↗</a>' +
+    '<button class="icon-btn' + (saved ? ' selected' : '') + '" type="button" data-action="bookmark" data-id="' + id +
+    '" aria-label="' + (saved ? 'Aus Merkliste entfernen' : 'Zur Merkliste hinzufügen') + '" title="Merken">' + (saved ? '♥' : '♡') + '</button>' +
+    '<button class="icon-btn" type="button" data-action="copy" data-id="' + id + '" title="Kommentar oder Anfrage kopieren">✎</button>' +
+    '<button class="icon-btn" type="button" data-action="log" data-id="' + id + '" title="Aktivität dokumentieren">＋</button></div>' +
+    '<div class="card-safety">Hinweis · Frist, Kosten und Teilnahme prüfen</div></div></article>';
+}
+function emptyMessage(kind) {
+  const isFeed = kind === 'feed';
+  return '<div class="empty"><div class="symbol">✳</div><strong>' +
+    (isFeed ? 'Noch keine passenden Streetwear-Funde.' : 'Hier ist noch nichts gespeichert.') +
+    '</strong><p>' + (isFeed
+      ? 'Deine fünf Marken sind als Watchlist angelegt. Instagram-Posts werden noch nicht automatisch ausgelesen. Der öffentliche Feed zeigt nur tatsächlich gefundene Hinweise.'
+      : 'Du kannst interessante Aktionen mit ♡ merken oder eine Aktion selbst hinzufügen.') +
+    '</p><button class="primary-btn" type="button" data-action="add">＋ Aktion hinzufügen</button></div>';
+}
+function renderFeed() {
+  const feed = rankFeed(all(), ui.category, ui.query);
+  $('#discoverCards').innerHTML = feed.length ? feed.map(renderOffer).join('') : emptyMessage('feed');
+  const saved = getSaved();
+  $('#savedCards').innerHTML = saved.length ? saved.map(renderOffer).join('') : emptyMessage('saved');
+  document.querySelectorAll('[data-category]').forEach(button => {
+    const active = button.dataset.category === ui.category;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+}
+function renderActivity() {
+  const summary = activitySummary(state.activity);
+  $('#activityEntered').textContent = String(getStatusCounts().entered);
+  $('#activityWon').textContent = String(getStatusCounts().wins);
+  $('#activityReceived').textContent = String(summary.received);
+  const list = [...state.activity].filter(x => x && ACTIVITY_TYPES[x.type]).sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  $('#activityList').innerHTML = list.length ? list.map(entry => {
+    const item = byId(entry.offerId);
+    const title = entry.offerTitle || item?.title || 'Frühere Aktion';
+    const original = safeExternalUrl(entry.offerUrl || item?.url || '');
+    const evidence = safeExternalUrl(entry.evidenceUrl);
+    const icon = {prepared:'✎',entered:'✓',won:'★',received:'✳'}[entry.type] || '·';
+    return '<article class="timeline-item"><span class="timeline-icon" aria-hidden="true">' + icon + '</span><div class="timeline-main">' +
+      '<div class="timeline-top"><strong>' + esc(ACTIVITY_TYPES[entry.type]) + '</strong><span>' + esc(asDate(entry.createdAt)) +
+      (entry.account ? ' · @' + esc(entry.account) : '') + '</span></div>' +
+      '<div class="timeline-offer">' + esc(title) + '</div>' +
+      (entry.note ? '<p>' + esc(entry.note) + '</p>' : '') +
+      (evidence ? '<a href="' + esc(evidence) + '" target="_blank" rel="noopener noreferrer">Nachweis öffnen ↗</a>' : '') +
+      (original ? '<a href="' + esc(original) + '" target="_blank" rel="noopener noreferrer">Originalaktion öffnen ↗</a>' : '') +
+      '</div></article>';
+  }).join('') : '<div class="empty"><div class="symbol">▤</div><strong>Dein Logbook ist noch leer.</strong><p>Halte hier fest, wenn du wirklich kommentiert, teilgenommen oder gewonnen hast. Wir senden nichts automatisch.</p><button class="primary-btn" type="button" data-action="add-activity">＋ Erste Aktivität eintragen</button></div>';
+}
+function render() {
+  updateStats();
+  renderBrands();
+  renderFeed();
+  renderActivity();
+}
+const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', activity:'ACTIVITY LOG', saved:'SAVED', info:'ABOUT' };
+function setTab(tab) {
+  if (!topTitles[tab]) return;
+  ui.tab = tab;
+  document.querySelectorAll('[data-panel]').forEach(panel => { panel.hidden = panel.dataset.panel !== tab; });
+  document.querySelectorAll('.nav-btn').forEach(button => {
+    const active = button.dataset.tab === tab;
+    button.classList.toggle('active', active);
+    if (active) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  $('#topTitle').textContent = topTitles[tab];
+  render();
+  window.scrollTo({ top:0, behavior:'instant' });
 }
 async function refresh() {
-  $('#syncLabel').textContent = 'Katalog wird geprüft…';
+  $('#syncLabel').textContent = 'Katalog wird geladen …';
   try {
-    const res = await fetch('./opportunities.json', { cache: 'no-store' });
-    if (!res.ok) throw Error('Fehler beim Laden');
-    const data = await res.json();
-    ui.catalog = Array.isArray(data.opportunities) ? data.opportunities.filter(x => x && typeof x.id === 'string' && safeUrl(x.url)) : [];
-    $('#syncLabel').textContent = data.generatedAt
-      ? 'Scout: ' + new Date(data.generatedAt).toLocaleString('de-DE') + ' · ' + (data.sourcesSucceeded ?? '?') + '/' + (data.sourcesChecked ?? '?') + ' Quellen'
-      : 'Noch keine Feeds eingerichtet';
-    const health = $('#sourceHealth');
-    if (health) {
-      const succeeded = Number(data.sourcesSucceeded || 0);
-      const checked = Number(data.sourcesChecked || 0);
-      health.textContent = data.generatedAt
-        ? 'Automatische Feeds: ' + succeeded + ' von ' + checked + ' erreichbar · ' + ui.catalog.length + ' passende Einträge im Katalog. Aktionen immer beim Veranstalter prüfen.'
-        : 'Der erste automatische Scan ist noch nicht abgeschlossen.';
-    }
+    const response = await fetch('./opportunities.json', {cache:'no-store'});
+    if (!response.ok) throw Error('HTTP ' + response.status);
+    const payload = await response.json();
+    ui.catalog = Array.isArray(payload.opportunities) ? payload.opportunities.filter(item =>
+      item && typeof item.id === 'string' && safeExternalUrl(item.url)
+    ) : [];
+    ui.generatedAt = payload.generatedAt || null;
+    $('#syncLabel').textContent = ui.generatedAt ? 'Scout: ' + new Date(ui.generatedAt).toLocaleString('de-DE') : 'Noch kein Scan';
+    $('#sourceHealth').textContent = 'Öffentliche Feeds: ' + (payload.sourcesSucceeded ?? '?') + '/' + (payload.sourcesChecked ?? '?') +
+      ' erreichbar · ' + ui.catalog.length + ' Hinweise · Instagram nicht automatisch verbunden';
   } catch {
-    $('#syncLabel').textContent = 'Offline – Katalog nicht erreichbar';
-    ui.catalog = [];
+    $('#syncLabel').textContent = 'Katalog offline';
+    $('#sourceHealth').textContent = 'Zurzeit keine Verbindung zu den öffentlichen Feeds. Gespeicherte Aktionen bleiben lokal erhalten.';
   }
   render();
 }
-function stat(id, number) { $(id).textContent = String(number); }
-function render() {
+function openDialog(id) {
+  const dialog = $('#' + id);
+  if (dialog && !dialog.open) dialog.showModal();
+}
+function openActivityDialog(id) {
+  const select = $('#activityOffer');
   const items = all();
-  stat('#totalCount', items.length);
-  stat('#savedCount', items.filter(x => state.saved.includes(x.id)).length);
-  stat('#appliedCount', items.filter(x => ['applied','accepted','received'].includes(status(x.id))).length);
-  stat('#acceptedCount', items.filter(x => ['accepted','received'].includes(status(x.id))).length);
-  const titles = { discover: 'Opportunities', saved: 'Deine Merkliste', tracked: 'Meine Anfragen', info: 'Über PR-Hunter' };
-  $('#sectionTitle').textContent = titles[ui.tab];
-  $('#infoPanel').hidden = ui.tab !== 'info';
-  $('#listArea').hidden = ui.tab === 'info';
-  document.querySelectorAll('[data-tab]').forEach(button => {
-    const active = button.dataset.tab === ui.tab;
-    button.classList.toggle('active', active);
-    if (active) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
-  });
-  if (ui.tab === 'info') return;
-  const q = ui.query.toLocaleLowerCase('de-DE');
-  const filtered = items.filter(item => {
-    if (ui.tab === 'saved' && !state.saved.includes(item.id)) return false;
-    if (ui.tab === 'tracked' && status(item.id) === 'new') return false;
-    if (ui.category === 'focus' && !['Mode', 'Technik'].includes(item.category)) return false;
-    if (!['all', 'focus'].includes(ui.category) && item.category !== ui.category) return false;
-    return [item.title,item.brand,item.description,item.source].join(' ').toLocaleLowerCase('de-DE').includes(q);
-  });
-  // With "Mode & Technik zuerst" selected, both categories appear before other matches.
-  // All other categories remain accessible and no actual offers are fabricated.
-  if (ui.category === 'focus') filtered.sort((a, b) => {
-    const rank = item => ['Mode', 'Technik'].includes(item.category) ? 2 : 0;
-    return rank(b) - rank(a) || (b.published || '').localeCompare(a.published || '');
-  });
-  $('#cards').innerHTML = filtered.length ? filtered.map(card).join('') : '<div class="empty"><span class="symbol">✧</span><strong>' + (ui.category === 'focus' ? 'Noch keine neuen Mode- oder Technikaktionen.' : 'Noch keine passenden Aktionen gefunden.') + '</strong><p>' + (ui.category === 'focus' ? 'Der Scout sucht regelmäßig nach neuen Angeboten. Für andere Gratis-Aktionen kannst du „Alle Kategorien“ wählen.' : 'Du kannst eine Aktion selbst hinzufügen. Es werden keine erfundenen Live-Angebote angezeigt.') + '</p><button class="primary-btn" data-action="add">＋ Angebot hinzufügen</button></div>';
-}
-function card(item) {
-  const id = escapeText(item.id);
-  const bookmarked = state.saved.includes(item.id);
-  const source = escapeText(item.brand || item.source || 'Quelle');
-  const label = escapeText(item.source || (item.manual ? 'Selbst gespeichert' : 'Öffentlicher Feed'));
-  const description = escapeText((item.description || 'Öffne die Aktion und prüfe die Teilnahmebedingungen.').slice(0, 260));
-  const link = safeUrl(item.url);
-  const selected = status(item.id);
-  const options = [['new','Noch nicht beworben'],['applied','Kontaktiert'],['accepted','Zusage erhalten'],['received','Produkt erhalten']].map(pair => '<option value="' + pair[0] + '"' + (selected === pair[0] ? ' selected' : '') + '>' + pair[1] + '</option>').join('');
-  const offerType = escapeText(item.offerType || 'Aktion prüfen');
-  const date = item.published ? new Date(item.published) : null;
-  const publishedLabel = date && Number.isFinite(date.valueOf())
-    ? ' · ' + escapeText(date.toLocaleDateString('de-DE')) : '';
-  return '<article class="opportunity"><div class="card-top"><div class="card-top" style="justify-content:flex-start"><span class="source-icon" aria-hidden="true">✦</span><div><div class="brand-name">' + source + '</div><div class="source-name">' + label + publishedLabel + '</div></div></div><span class="kind">' + escapeText(item.category || 'Sonstiges') + '</span></div><div class="offer-type">✧ ' + offerType + ' · Teilnahme prüfen</div><h3>' + escapeText(item.title) + '</h3><p class="description">' + description + '</p><div class="card-bottom"><a href="' + escapeText(link) + '" target="_blank" rel="noopener noreferrer">Aktion ansehen ↗</a><div class="card-actions"><button class="icon-btn' + (bookmarked ? ' selected' : '') + '" data-action="bookmark" data-id="' + id + '" aria-label="' + (bookmarked ? 'Aus Merkliste entfernen' : 'Auf Merkliste setzen') + '" title="Merkliste">' + (bookmarked ? '♥' : '♡') + '</button><button class="icon-btn" data-action="draft" data-id="' + id + '" title="Persönliche Anfrage kopieren">Text kopieren</button></div></div><label class="source-name">Dein Status<select class="status-select" data-status="' + id + '">' + options + '</select></label></article>';
-}
-function setTab(tab) { ui.tab = tab; render(); }
-function openDialog() { $('#addDialog').showModal(); }
-$('#addButton').addEventListener('click', openDialog);
-$('#closeDialog').addEventListener('click', () => $('#addDialog').close());
-$('#refreshButton').addEventListener('click', refresh);
-$('#search').addEventListener('input', event => { ui.query = event.target.value.trim(); render(); });
-$('#category').addEventListener('change', event => { ui.category = event.target.value; render(); });
-document.addEventListener('click', async event => {
-  const nav = event.target.closest('[data-tab]');
-  if (nav) return setTab(nav.dataset.tab);
-  const action = event.target.closest('[data-action]');
-  if (!action) return;
-  if (action.dataset.action === 'add') return openDialog();
-  const item = all().find(x => x.id === action.dataset.id);
-  if (!item) return;
-  if (action.dataset.action === 'bookmark') {
-    state.saved = state.saved.includes(item.id) ? state.saved.filter(id => id !== item.id) : [...state.saved, item.id];
-    save(); render();
-  } else if (action.dataset.action === 'draft') {
-    const message = 'Hallo ' + (item.brand || 'Team') + ', ich habe eure Aktion "' + item.title + '" entdeckt und würde gerne mehr über die Teilnahmebedingungen erfahren. Gibt es aktuell die Möglichkeit, sich dafür zu bewerben? Viele Grüße';
-    try { await navigator.clipboard.writeText(message); toast('Persönlicher Text kopiert – wird nicht versendet.'); }
-    catch { toast('Kopieren nicht möglich – Safari benötigt eine sichere Verbindung.'); }
+  if (!items.length) {
+    toast('Speichere zuerst eine Aktion oder öffne einen gefundenen Beitrag.');
+    return;
   }
+  select.innerHTML = items.map(item => '<option value="' + esc(item.id) + '">' + esc(clean(item.title).slice(0, 95)) + '</option>').join('');
+  if (id && items.some(item => item.id === id)) select.value = id;
+  openDialog('activityDialog');
+}
+function toggleSaved(item) {
+  if (state.saved.includes(item.id)) {
+    state.saved = state.saved.filter(id => id !== item.id);
+    delete state.savedDetails[item.id];
+    toast('Aus der Merkliste entfernt.');
+  } else {
+    state.saved.unshift(item.id);
+    // Snapshot a real offer so a future feed refresh does not erase bookmarks.
+    state.savedDetails[item.id] = {
+      id:item.id, title:item.title, brand:item.brand, source:item.source,
+      url:item.url, description:item.description, category:item.category,
+      published:item.published, offerType:item.offerType, manual:!!item.manual
+    };
+    toast('In deiner Merkliste gespeichert.');
+  }
+  save();render();
+}
+async function copyText(item) {
+  const instagram = /^https:\/\/(?:www\.)?instagram\.com\//i.test(item.url);
+  const message = instagram
+    ? 'Richtig starkes Piece! Würde mich mega freuen 🔥'
+    : 'Hallo ' + clean(item.brand || 'Team') + ', ich habe die Aktion "' + clean(item.title) +
+      '" entdeckt und möchte gerne teilnehmen. Wo finde ich die vollständigen Teilnahmebedingungen? Viele Grüße';
+  try {
+    await navigator.clipboard.writeText(message);
+    toast('Text kopiert. Bitte Teilnahmebedingungen prüfen und selbst veröffentlichen.');
+  } catch { toast('Kopieren nicht möglich. Prüfe die Safari-Berechtigung.'); }
+}
+document.addEventListener('click', event => {
+  const nav = event.target.closest('[data-tab]');
+  if (nav) { setTab(nav.dataset.tab); return; }
+  const filter = event.target.closest('[data-category]');
+  if (filter) { ui.category = filter.dataset.category; renderFeed(); return; }
+  const close = event.target.closest('[data-close]');
+  if (close) { $('#' + close.dataset.close)?.close(); return; }
+  const button = event.target.closest('[data-action]');
+  if (!button) return;
+  const action = button.dataset.action;
+  if (action === 'add') return openDialog('addDialog');
+  if (action === 'add-activity') return openActivityDialog();
+  if (action === 'remove-brand') {
+    const handle = button.dataset.handle;
+    state.brands = state.brands.filter(b => b.handle?.toLowerCase() !== handle.toLowerCase());
+    save();render();toast('Marke aus deiner Watchlist entfernt.');
+    return;
+  }
+  const item = byId(button.dataset.id);
+  if (!item) return;
+  if (action === 'bookmark') return toggleSaved(item);
+  if (action === 'copy') return copyText(item);
+  if (action === 'log') return openActivityDialog(item.id);
 });
-document.addEventListener('change', event => {
-  const select = event.target.closest('[data-status]');
-  if (!select) return;
-  if (select.value === 'new') delete state.tracked[select.dataset.status]; else state.tracked[select.dataset.status] = select.value;
-  save(); render();
-});
+$('#addButton').addEventListener('click', () => openDialog('addDialog'));
+$('#addBrandButton').addEventListener('click', () => openDialog('brandDialog'));
+$('#logActivityButton').addEventListener('click', () => openActivityDialog());
+$('#refreshButton').addEventListener('click', refresh);
+$('#search').addEventListener('input', event => { ui.query = event.target.value.trim(); renderFeed(); });
 $('#addForm').addEventListener('submit', event => {
   event.preventDefault();
   const form = new FormData(event.currentTarget);
-  const url = safeUrl(String(form.get('url') || '').trim());
-  if (!url) return toast('Bitte einen gültigen HTTPS-Link angeben.');
-  const item = {
-    id: 'manual-' + (globalThis.crypto?.randomUUID?.() || Date.now()),
-    title: String(form.get('title') || '').trim().slice(0, 130),
-    brand: String(form.get('brand') || '').trim().slice(0, 80),
-    url,
-    category: String(form.get('category') || 'Sonstiges'),
-    description: 'Von dir gespeichertes Angebot. Teilnahmebedingungen selbst prüfen.',
-    source: 'Manuell hinzugefügt',
-    manual: true
-  };
-  if (!item.title || !item.brand) return;
-  state.manual.unshift(item);
-  save();
-  $('#addDialog').close();
-  $('#addForm').reset();
-  ui.tab = 'discover';
-  render();
-  toast('Angebot auf diesem Gerät gespeichert.');
+  const url = safeExternalUrl(clean(form.get('url')));
+  const brand = clean(form.get('brand')).slice(0,80);
+  const title = clean(form.get('title')).slice(0,130);
+  if (!url || !brand || !title) return toast('Bitte gültige Angaben und eine HTTPS-Adresse verwenden.');
+  if (all().some(item => item.url === url)) return toast('Diese Aktion ist schon gespeichert.');
+  state.manual.unshift({
+    id:'manual-' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36)),
+    title, brand, url,
+    category: clean(form.get('category')) || 'Mode',
+    description:'Von dir eingefügte Aktion. Regeln, Frist und Versand prüfen.',
+    source:'Manuell hinzugefügt',
+    offerType:'Manueller Fund',
+    manual:true,
+    published:new Date().toISOString()
+  });
+  state.manual = state.manual.slice(0,500);
+  save();$('#addDialog').close();event.currentTarget.reset();setTab('discover');toast('Aktion lokal gespeichert.');
 });
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+$('#brandForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const brand = normalizeBrand(form.get('name'), form.get('url'));
+  if (!brand) return toast('Bitte eine direkte HTTPS-Instagram-Profiladresse eingeben.');
+  if (watchedBrands().some(b => b.handle.toLowerCase() === brand.handle.toLowerCase()))
+    return toast('Diese Marke ist bereits in der Watchlist.');
+  state.brands.unshift(brand);
+  state.brands = state.brands.slice(0,100);
+  save();$('#brandDialog').close();event.currentTarget.reset();setTab('brands');toast('Marke als Referenz gespeichert – noch kein Auto-Monitoring.');
+});
+$('#activityForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const input = Object.fromEntries(form.entries());
+  const log = makeActivity(input);
+  if (!log) return toast('Bitte Status, Account-Label und Nachweislink prüfen.');
+  const item = byId(log.offerId);
+  if (!item) return toast('Wähle eine vorhandene Aktion.');
+  log.offerTitle = clean(item.title).slice(0,130);
+  log.offerUrl = safeExternalUrl(item.url);
+  state.activity.unshift(log);
+  state.activity = state.activity.slice(0,1000);
+  if (log.type === 'entered') state.tracked[item.id] = 'applied';
+  if (log.type === 'won') state.tracked[item.id] = 'accepted';
+  if (log.type === 'received') state.tracked[item.id] = 'received';
+  save();$('#activityDialog').close();event.currentTarget.reset();setTab('activity');
+  toast('Aktivität auf diesem Gerät dokumentiert.');
+});
+if ('serviceWorker' in navigator)
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+render();
 refresh();
