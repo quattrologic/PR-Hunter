@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T17:18:52.775Z",
+  "generatedAt": "2026-11-14T20:36:04.007Z",
   "sourcesChecked": 4,
   "sourcesSucceeded": 4,
   "sources": [
@@ -46,6 +46,11 @@
       "offerType": "Kleidungs-Gewinnspiel",
       "sourceType": "curated",
       "checkedOn": "2026-11-14",
+      "noPurchase": true,
+      "keepPrize": true,
+      "shipsToGermany": true,
+      "shippingCostEUR": null,
+      "autoEntry": null,
       "shippingStatus": "Deutschland laut Bedingungen erlaubt",
       "costStatus": "Versandkosten für Gewinne nicht ausdrücklich bestätigt",
       "participation": "Newsletter + Double-Opt-in"
@@ -64,6 +69,11 @@
       "offerType": "Hoodie-Gewinnspiel",
       "sourceType": "curated",
       "checkedOn": "2026-11-14",
+      "noPurchase": true,
+      "keepPrize": true,
+      "shipsToGermany": null,
+      "shippingCostEUR": null,
+      "autoEntry": null,
       "shippingStatus": "Deutschlandversand unbestätigt",
       "costStatus": "Laut Veranstalter keine weiteren Gewinnkosten; Deutschlandversand unklar",
       "participation": "Gewinnspielformular"
@@ -82,6 +92,11 @@
       "offerType": "Streetwear-Guthaben",
       "sourceType": "curated",
       "checkedOn": "2026-11-14",
+      "noPurchase": true,
+      "keepPrize": true,
+      "shipsToGermany": true,
+      "shippingCostEUR": null,
+      "autoEntry": null,
       "shippingStatus": "Deutschland laut Bedingungen erlaubt",
       "costStatus": "Gewinnbedingte Folgekosten können beim Gewinner liegen",
       "participation": "Newsletter + WhatsApp-Kanal"
