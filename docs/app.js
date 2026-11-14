@@ -7,11 +7,15 @@ import {
   checklistProgress, offerWarnings, isConfirmedParticipation,
   canConfirmEntry, timeUntilDeadline, urgentOffers, suggestedComments, safeTaskSelection
 } from './participation.mjs';
+import {
+  extractOpportunityLinks, makeImportedOffers, accountLabels, addAccountLabel,
+  backupDocument, parseBackup
+} from './phase4-core.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
 const ui = { tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null, assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'' };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[] };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -22,6 +26,7 @@ if (!Array.isArray(state.activity)) state.activity = [];
 if (!state.tracked || typeof state.tracked !== 'object') state.tracked = {};
 if (!state.savedDetails || typeof state.savedDetails !== 'object') state.savedDetails = {};
 if (!state.checklists || typeof state.checklists !== 'object' || Array.isArray(state.checklists)) state.checklists = {};
+state.accounts = accountLabels(state.accounts);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -101,6 +106,19 @@ function updateStats() {
 function brandAvatar(brand) {
   const initials = brand.name.split(/\s+/).slice(0,2).map(x => x.slice(0,1)).join('').toUpperCase();
   return '<span class="brand-avatar" aria-hidden="true">' + esc(initials) + '</span>';
+}
+function renderAccounts() {
+  const container = $('#accountLabels');
+  const suggestions = $('#accountLabelSuggestions');
+  if (suggestions) suggestions.innerHTML = state.accounts.map(account => '<option value="' + esc(account) + '"></option>').join('');
+  if (!container) return;
+  container.innerHTML = state.accounts.length ? state.accounts.map(account =>
+    '<span class="account-tag">@' + esc(account) +
+    ' <button type="button" data-action="remove-account" data-account="' + esc(account) +
+    '" aria-label="Account-Label entfernen: ' + esc(account) + '">×</button></span>'
+  ).join('') : '<p class="helper">Noch keine Account-Labels gespeichert.</p>';
+  const count = $('#accountLabelCount');
+  if (count) count.textContent = state.accounts.length + '/20';
 }
 function renderBrands() {
   const brands = watchedBrands();
@@ -252,8 +270,9 @@ function render() {
   renderFeed();
   renderAssistantQueue();
   renderActivity();
+  renderAccounts();
 }
-const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', saved:'SAVED', info:'ABOUT' };
+const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', info:'ABOUT' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -402,6 +421,12 @@ document.addEventListener('click', event => {
     ).catch(() => toast('Bitte Clipboard-Zugriff in Safari erlauben.'));
     return;
   }
+  if (action === 'remove-account') {
+    const account = String(button.dataset.account || '').toLowerCase();
+    state.accounts = state.accounts.filter(x => x !== account);
+    save();renderAccounts();toast('Account-Label entfernt – vorhandene Teilnahmen bleiben erhalten.');
+    return;
+  }
   if (action === 'remove-brand') {
     const handle = button.dataset.handle;
     state.brands = state.brands.filter(b => b.handle?.toLowerCase() !== handle.toLowerCase());
@@ -433,6 +458,70 @@ $('#pasteLinkButton').addEventListener('click', async () => {
   }
 });
 $('#addBrandButton').addEventListener('click', () => openDialog('brandDialog'));
+$('#batchImportText').addEventListener('input', e => {
+  const links = extractOpportunityLinks(e.target.value || '');
+  $('#batchImportPreview').textContent = links.length
+    ? links.length + ' unterschiedliche gültige HTTPS-Beiträge gefunden (maximal 40 pro Import).'
+    : 'Noch keine passenden HTTPS-Links erkannt.';
+});
+$('#batchImportForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const form = new FormData(e.currentTarget);
+  const links = extractOpportunityLinks(String(form.get('links') || ''));
+  if (!links.length) return toast('Keine gültigen Instagram-Beiträge oder HTTPS-Links erkannt.');
+  const imported = makeImportedOffers(links, [...all(), ...getSaved()], String(form.get('brand') || ''));
+  if (!imported.length) return toast('Alle Links sind bereits vorhanden.');
+  const remaining = Math.max(0,500 - state.manual.length);
+  const accepted = imported.slice(0,remaining);
+  if (!accepted.length) return toast('Maximal 500 manuelle Aktionen. Bitte erst alte Einträge sichern.');
+  state.manual = [...accepted, ...state.manual];
+  save(); e.currentTarget.reset();
+  $('#batchImportPreview').textContent = accepted.length + ' Links gespeichert – nicht als echte Gewinnspiele bestätigt.';
+  render();
+  toast(accepted.length + ' Link(s) lokal hinzugefügt. Originale zuerst prüfen.');
+});
+$('#accountLabelForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const candidate = String(new FormData(e.currentTarget).get('account') || '');
+  const result = addAccountLabel(state.accounts,candidate);
+  if (!result.added) return toast(result.reason);
+  state.accounts = result.accounts;
+  save();e.currentTarget.reset();renderAccounts();
+  toast('Account-Label hinzugefügt (kein Instagram-Login).');
+});
+$('#downloadBackup').addEventListener('click', () => {
+  try {
+    const contents = backupDocument(state);
+    const file = new Blob([contents],{type:'application/json'});
+    const url = URL.createObjectURL(file);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'pr-hunter-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url),5000);
+    $('#backupStatus').textContent = 'Sicherung erstellt. Bewahre die Datei privat auf.';
+  } catch {
+    toast('Sicherung nicht möglich. Bitte Safari-Dateizugriff prüfen.');
+  }
+});
+$('#restoreBackup').addEventListener('change', async e => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file) return;
+  if (file.size > 2_000_000) return toast('Sicherung zu groß (max. 2 MB).');
+  try {
+    const parsed = parseBackup(await file.text());
+    if (!window.confirm('Bestehende lokale Daten durch die Sicherung ersetzen? Dein aktueller Stand wird überschrieben.')) return;
+    state = parsed;
+    save();render();setTab('inbox');
+    $('#backupStatus').textContent = 'Sicherung geladen. Bitte Einträge kontrollieren.';
+    toast('Lokale Sicherung erfolgreich wiederhergestellt.');
+  } catch (error) {
+    toast('Import abgebrochen: ' + String(error?.message || 'Ungültige Datei').slice(0,90));
+  }
+});
 $('#verifiedOnlyButton').addEventListener('click', () => { ui.verifiedOnly = !ui.verifiedOnly; renderFeed(); });
 $('#endingSoonButton').addEventListener('click', () => { ui.endingSoonOnly = !ui.endingSoonOnly; renderFeed(); });
 $('#activityAccountFilter').addEventListener('input', e => {
