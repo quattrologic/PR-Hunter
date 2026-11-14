@@ -32,7 +32,7 @@ self.addEventListener('fetch', event => {
     }));
     return;
   }
-  if (/(?:opportunities|auto-hunter|free-products-report)\.json$/.test(url.pathname)) {
+  if (['opportunities.json','auto-hunter.json','free-products-report.json'].some(file => url.pathname.endsWith('/'+file))) {
     event.respondWith(caches.open(CACHE).then(async cache => {
       try {
         const response = await fetch(req);
