@@ -29,14 +29,29 @@ npm run dev
 
 Open http://localhost:4173 on your computer. Run `npm test` for scanner tests.
 
+## Live discovery sources
+
+The default `config/sources.json` now includes four publisher-provided public RSS feeds:
+
+- **freitest.de** – product-testing listings
+- **Testpiloten.de** – product-testing news
+- **Pfennigfuchs** – product-testing and technology
+- **Gewinnspielefinder** – giveaway/product-testing listings
+
+These sites publish RSS/Atom endpoints for subscription. PR-Hunter reads them **at most every six hours**, uses short excerpts and links back to the publisher. Availability, participation conditions, deadlines and whether a product can be kept **must be verified at the actual action**. No offer is claimed to be guaranteed. Some feeds may occasionally fail, block automated requests or contain no matching entries; the dashboard shows scan health and will never invent offers.
+
+The workflow runs on changes to source configuration or scanner code, as well as a six-hour schedule, and writes the resulting public catalog into `docs/opportunities.json`. GitHub Pages then serves the updated catalog. The first automated run can take a little while.
+
+**Important:** The official MediaMarkt Testpiloten page is linked inside the app for manual checking, not secretly scraped or automatically enrolled. Some programs require an account, reviews, or returning the product.
+
 ## Enable automated discovery
 
-1. Edit `config/sources.json` and add publicly accessible **HTTPS RSS or Atom feeds** that explicitly permit automated access, e.g. `{"name":"My allowed feed","url":"https://example.org/feed.xml"}`.
+1. Four sources are already configured. Optionally edit `config/sources.json` to add publicly accessible **HTTPS RSS or Atom feeds** intended for automated subscriptions, e.g. `{"name":"My allowed feed","url":"https://example.org/feed.xml"}`. Follow each publisher's reuse conditions.
 2. Commit that configuration to your branch. **Do not put authentication tokens or private feed URLs in this public repository.**
 3. GitHub Actions → **PR-Hunter public feed scan** → **Run workflow**. It also runs every six hours. The workflow requires Actions **read/write** repository contents permission to commit updated `docs/opportunities.json`.
 4. The collector filters for relevant giveaway, product-testing and collaboration terms. Its matches are suggestions, not verified free-product entitlements. Always read each source's terms.
 
-With no configured feeds, the dashboard begins empty; use **Angebot hinzufügen** to track a public offer manually. Its data stays on that device. The automated scanner is working but cannot discover offers until you configure legitimate sources.
+If all configured feeds are temporarily unavailable, the current public catalog is preserved. If no qualifying entries have been found yet, use **Angebot hinzufügen** to track a public offer manually. Its data stays on your device.
 
 ## Put it on iPad
 

@@ -27,7 +27,17 @@ async function refresh() {
     if (!res.ok) throw Error('Fehler beim Laden');
     const data = await res.json();
     ui.catalog = Array.isArray(data.opportunities) ? data.opportunities.filter(x => x && typeof x.id === 'string' && safeUrl(x.url)) : [];
-    $('#syncLabel').textContent = data.generatedAt ? 'Letzter Scout-Lauf: ' + new Date(data.generatedAt).toLocaleString('de-DE') : 'Noch keine Feeds eingerichtet';
+    $('#syncLabel').textContent = data.generatedAt
+      ? 'Scout: ' + new Date(data.generatedAt).toLocaleString('de-DE') + ' · ' + (data.sourcesSucceeded ?? '?') + '/' + (data.sourcesChecked ?? '?') + ' Quellen'
+      : 'Noch keine Feeds eingerichtet';
+    const health = $('#sourceHealth');
+    if (health) {
+      const succeeded = Number(data.sourcesSucceeded || 0);
+      const checked = Number(data.sourcesChecked || 0);
+      health.textContent = data.generatedAt
+        ? 'Automatische Feeds: ' + succeeded + ' von ' + checked + ' erreichbar · ' + ui.catalog.length + ' passende Einträge im Katalog. Aktionen immer beim Veranstalter prüfen.'
+        : 'Der erste automatische Scan ist noch nicht abgeschlossen.';
+    }
   } catch {
     $('#syncLabel').textContent = 'Offline – Katalog nicht erreichbar';
     ui.catalog = [];
@@ -75,7 +85,11 @@ function card(item) {
   const link = safeUrl(item.url);
   const selected = status(item.id);
   const options = [['new','Noch nicht beworben'],['applied','Kontaktiert'],['accepted','Zusage erhalten'],['received','Produkt erhalten']].map(pair => '<option value="' + pair[0] + '"' + (selected === pair[0] ? ' selected' : '') + '>' + pair[1] + '</option>').join('');
-  return '<article class="opportunity"><div class="card-top"><div class="card-top" style="justify-content:flex-start"><span class="source-icon" aria-hidden="true">✦</span><div><div class="brand-name">' + source + '</div><div class="source-name">' + label + '</div></div></div><span class="kind">' + escapeText(item.category || 'Sonstiges') + '</span></div><h3>' + escapeText(item.title) + '</h3><p class="description">' + description + '</p><div class="card-bottom"><a href="' + escapeText(link) + '" target="_blank" rel="noopener noreferrer">Aktion ansehen ↗</a><div class="card-actions"><button class="icon-btn' + (bookmarked ? ' selected' : '') + '" data-action="bookmark" data-id="' + id + '" aria-label="' + (bookmarked ? 'Aus Merkliste entfernen' : 'Auf Merkliste setzen') + '" title="Merkliste">' + (bookmarked ? '♥' : '♡') + '</button><button class="icon-btn" data-action="draft" data-id="' + id + '" title="Persönliche Anfrage kopieren">Text kopieren</button></div></div><label class="source-name">Dein Status<select class="status-select" data-status="' + id + '">' + options + '</select></label></article>';
+  const offerType = escapeText(item.offerType || 'Aktion prüfen');
+  const date = item.published ? new Date(item.published) : null;
+  const publishedLabel = date && Number.isFinite(date.valueOf())
+    ? ' · ' + escapeText(date.toLocaleDateString('de-DE')) : '';
+  return '<article class="opportunity"><div class="card-top"><div class="card-top" style="justify-content:flex-start"><span class="source-icon" aria-hidden="true">✦</span><div><div class="brand-name">' + source + '</div><div class="source-name">' + label + publishedLabel + '</div></div></div><span class="kind">' + escapeText(item.category || 'Sonstiges') + '</span></div><div class="offer-type">✧ ' + offerType + ' · Teilnahme prüfen</div><h3>' + escapeText(item.title) + '</h3><p class="description">' + description + '</p><div class="card-bottom"><a href="' + escapeText(link) + '" target="_blank" rel="noopener noreferrer">Aktion ansehen ↗</a><div class="card-actions"><button class="icon-btn' + (bookmarked ? ' selected' : '') + '" data-action="bookmark" data-id="' + id + '" aria-label="' + (bookmarked ? 'Aus Merkliste entfernen' : 'Auf Merkliste setzen') + '" title="Merkliste">' + (bookmarked ? '♥' : '♡') + '</button><button class="icon-btn" data-action="draft" data-id="' + id + '" title="Persönliche Anfrage kopieren">Text kopieren</button></div></div><label class="source-name">Dein Status<select class="status-select" data-status="' + id + '">' + options + '</select></label></article>';
 }
 function setTab(tab) { ui.tab = tab; render(); }
 function openDialog() { $('#addDialog').showModal(); }
