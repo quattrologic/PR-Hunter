@@ -116,7 +116,7 @@ test('iPad UI has copy/open/share/confirmation but no automated Meta DM request'
     assert.ok(html.includes('id="'+id+'"'),id);
   assert.ok(html.includes('data-dm-preset="lucidclub"'));
   assert.ok(html.includes('data-dm-preset="brkdwn.studios"'));
-  assert.ok(html.includes('Video öffnen'));
+  assert.ok(app.includes('Video öffnen')); // dynamically rendered DM card button
   assert.ok(app.includes("navigator.clipboard.writeText(message)"));
   assert.ok(app.includes("window.confirm('Hast du das Originalvideo"));
   assert.ok(app.includes('updateDmStatus'));
