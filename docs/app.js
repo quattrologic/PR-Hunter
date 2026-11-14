@@ -23,6 +23,11 @@ import {
   FEED_PAGE_SIZE, normalizeDisplayPrefs, getVisibleSlice, offerVerification
 } from './phase7-core.mjs';
 import { autoHunterReport, normalizeAutoPrefs } from './auto-hunter-core.mjs';
+import {
+  OFFICIAL_PROGRAMS, PROGRAM_STATES, PROGRAM_STATE_LABELS,
+  normalizeFreeProductPrefs, normalizeProgramProgress, programWarnings,
+  rankPrograms, classifyPublicLeads, programMessage, programStats
+} from './free-products.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -31,7 +36,7 @@ const ui = {
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
   brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -47,6 +52,8 @@ state.integration = normalizeIntegrationSetup(state.integration);
 state.alerts = normalizeAlertsState(state.alerts);
 state.display = normalizeDisplayPrefs(state.display);
 state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
+state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
+state.programProgress = normalizeProgramProgress(state.programProgress);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -393,6 +400,68 @@ function renderDisplay() {
     input.checked = input.value === state.display.motion;
   });
 }
+
+function renderFreeProducts() {
+  const prefs=normalizeFreeProductPrefs(state.freePrefs);
+  const progress=normalizeProgramProgress(state.programProgress);
+  const stats=programStats(progress);
+  $('#freeProgramCount').textContent=String(stats.programs);
+  $('#freeAppliedCount').textContent=String(stats.applied);
+  $('#freeAcceptedCount').textContent=String(stats.accepted);
+  $('#freeReceivedCount').textContent=String(stats.received);
+  $('#freeHideFollower').checked=!prefs.showFollowerRestricted;
+  $('#freeProductsSourceUpdated').textContent=ui.generatedAt
+    ? 'Öffentlicher Scanner: '+asDate(ui.generatedAt)
+    : 'Noch kein Scanner-Katalog geladen';
+  document.querySelectorAll('[data-free-filter]').forEach(button=>{
+    const active=button.dataset.freeFilter===prefs.view;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  const programs=rankPrograms(OFFICIAL_PROGRAMS,prefs);
+  $('#freeProgramSummary').textContent=prefs.view==='giveaway'
+    ? 'Gewinnspiele stehen unten im automatischen Fundbereich. Die offiziellen Programme bleiben davon getrennt.'
+    : programs.length+' geprüfte offizielle Programmseite(n) · überprüfte Quellenstand-Daten, keine Zusage oder automatische Bewerbung.';
+  $('#freeProgramCards').innerHTML=programs.map(program=>{
+    const warnings=programWarnings(program);
+    const url=safeExternalUrl(program.url);
+    const terms=program.termsUrl ? safeExternalUrl(program.termsUrl) : null;
+    const status=progress[program.id]?.status || 'interested';
+    const badge=program.type==='creator' ? 'PR & Creator' : 'Produkttest';
+    const freeClaim=program.freeProducts==='after_selection'
+      ? 'Gratisprodukte nach Auswahl möglich'
+      : program.freeProducts==='possible' ? 'Gratisprodukte möglich, nicht garantiert' :
+      'Angebotsbedingungen prüfen';
+    return '<article class="free-program-card">'+
+      '<div class="free-program-head"><span class="free-kind">'+esc(badge)+'</span><span class="free-reviewed">Quelle geprüft: '+esc(program.checkedOn)+'</span></div>'+
+      '<h3>'+esc(program.name)+'</h3>'+
+      '<p class="free-program-focus">'+esc(program.focus)+' · '+esc(program.audience)+'</p>'+
+      '<p>'+esc(program.overview)+'</p>'+
+      '<div class="free-benefit">'+esc(freeClaim)+'</div>'+
+      '<p class="free-requirements">'+esc(program.requirements)+'</p>'+
+      '<div class="free-warnings">'+warnings.slice(0,4).map(w=>'<span>⚠ '+esc(w)+'</span>').join('')+'</div>'+
+      '<div class="free-card-actions">'+
+        (url?'<a class="free-external" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Originalprogramm öffnen ↗</a>':'')+
+        (terms?'<a class="free-terms" href="'+esc(terms)+'" target="_blank" rel="noopener noreferrer">Bedingungen ↗</a>':'')+
+        (program.type==='creator'?'<button type="button" class="free-draft" data-action="copy-free-draft" data-program-id="'+esc(program.id)+'">Anfrage kopieren</button>':'')+
+      '</div>'+
+      '<label class="free-progress-label">Mein Status (manuell bestätigt)'+
+      '<select data-program-select="'+esc(program.id)+'">'+PROGRAM_STATES.map(value=>
+        '<option value="'+esc(value)+'"'+(status===value?' selected':'')+'>'+esc(PROGRAM_STATE_LABELS[value])+'</option>'
+      ).join('')+'</select></label></article>';
+  }).join('') || '<div class="empty"><strong>In dieser Kategorie keine Programme.</strong><p>Nutze die übrigen Tabs, um weitere offizielle Möglichkeiten zu sehen.</p></div>';
+  const leads=classifyPublicLeads(ui.catalog,prefs);
+  $('#freeLiveLeads').innerHTML=leads.length?leads.slice(0,24).map(lead=>{
+    const kind=lead.leadKind==='product_test'?'Produkttest' :lead.leadKind==='creator'?'PR-Programm':'Gewinnspiel';
+    const url=safeExternalUrl(lead.url);
+    return '<article class="free-live-card"><div><span class="free-kind">'+esc(kind)+' · '+esc(lead.category)+'</span>'+
+      '<strong>'+esc(lead.title)+'</strong><p>Öffentlicher Fundhinweis – Kosten, Teilnahmebedingungen und Bewerbungsfrist am Original prüfen.</p></div>'+
+      (url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Original prüfen ↗</a>':'')+
+      '</article>';
+  }).join(''):'<div class="empty"><strong>Keine aktuellen Fundhinweise dieser Art.</strong>'+
+    '<p>PR-Hunter erfindet keine Aktionen. Der öffentliche Scanner prüft weitere Quellen im bestehenden Sechs-Stunden-Rhythmus.</p></div>';
+}
+
 function renderAutoHunter() {
   const settings=normalizeAutoPrefs(state.autoPrefs);
   const report=autoHunterReport(ui.catalog,settings);
@@ -436,8 +505,9 @@ function render() {
   renderIntegrations();
   renderAlerts();
   renderAutoHunter();
+  renderFreeProducts();
 }
-const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
+const topTitles = { discover:'DISCOVER', products:'FREE PRODUCTS', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -576,6 +646,11 @@ document.addEventListener('click', event => {
   if (nav) { setTab(nav.dataset.tab); return; }
   const filter = event.target.closest('[data-category]');
   if (filter) { ui.category = filter.dataset.category; ui.visibleFeed=FEED_PAGE_SIZE; renderFeed(); return; }
+  const freeFilter=event.target.closest('[data-free-filter]');
+  if (freeFilter) {
+    state.freePrefs=normalizeFreeProductPrefs({...state.freePrefs,view:freeFilter.dataset.freeFilter});
+    save();renderFreeProducts();return;
+  }
   const close = event.target.closest('[data-close]');
   if (close) { $('#' + close.dataset.close)?.close(); return; }
   const button = event.target.closest('[data-action]');
@@ -583,6 +658,15 @@ document.addEventListener('click', event => {
   const action = button.dataset.action;
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
+  if (action === 'copy-free-draft') {
+    const program=OFFICIAL_PROGRAMS.find(x=>x.id===button.dataset.programId);
+    const draft=programMessage(program);
+    if (!draft)return;
+    navigator.clipboard.writeText(draft)
+      .then(()=>toast('Anfrage kopiert – vor dem Senden persönlich anpassen.'))
+      .catch(()=>toast('Kopieren auf diesem Gerät nicht verfügbar.'));
+    return;
+  }
   if (action === 'auto-review') {
     const item=byId(button.dataset.id);
     if(item) showParticipationDialog(item);
@@ -810,6 +894,26 @@ $('#participationConfirm').addEventListener('click', () => {
 $('#logActivityButton').addEventListener('click', () => openActivityDialog());
 $('#refreshButton').addEventListener('click', refresh);
 $('#autoRefreshButton').addEventListener('click', refresh);
+$('#freeProductsRefresh').addEventListener('click',refresh);
+$('#freeHideFollower').addEventListener('change',event=>{
+  state.freePrefs=normalizeFreeProductPrefs({...state.freePrefs,showFollowerRestricted:!event.target.checked});
+  save();renderFreeProducts();
+});
+$('#freeProgramCards').addEventListener('change',event=>{
+  const element=event.target.closest('[data-program-select]');
+  if(!element)return;
+  const id=element.dataset.programSelect, status=element.value;
+  if (!OFFICIAL_PROGRAMS.some(p=>p.id===id) || !PROGRAM_STATES.includes(status))return;
+  if(status==='received' && !window.confirm('Hast du das kostenlose Produkt wirklich erhalten? Der Status wird nur lokal gespeichert.')){
+    renderFreeProducts();return;
+  }
+  if(status==='applied' && !window.confirm('Hast du dich selbst beim Veranstalter beworben? PR-Hunter hat keine Bewerbung abgeschickt.')){
+    renderFreeProducts();return;
+  }
+  state.programProgress[id]={status,updatedAt:new Date().toISOString()};
+  save();renderFreeProducts();
+  toast('Dein persönlicher Status wurde gespeichert – keine Anbieterbestätigung durch die App.');
+});
 $('#autoHunterEnabled').addEventListener('change',event=>{
   state.autoPrefs=normalizeAutoPrefs({...state.autoPrefs,enabled:event.target.checked});
   save();renderAutoHunter();

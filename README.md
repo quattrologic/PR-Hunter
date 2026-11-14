@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 8 – Website Auto-Hunter (automatic scouting & compliance triage; official API submissions require separate provider authorization).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 9 – Free-Product-Hunter with product testing, creator collaborations and giveaways.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -218,3 +218,38 @@ This is a complete *local and publicly hosted iPad UX polish iteration*, **not**
 There are **zero approved live provider adapters** currently. The public GitHub Pages site cannot securely keep form credentials, run background browser automation on third-party websites or receive reliable API receipts. It is **not** a working auto-entry bot yet. We will need an expressly cooperating giveaway provider with a participant submission API, a private backend and user-authorized identity to make real unattended entries possible. This is particularly important because many German organizers expressly exclude contest bots and multi-account entries, including REWE Produkttests (https://produkttests.rewe.de/teilnahmebedingungen) and RTL (https://www.rtl.de/cms/service/gewinnspielbeschreibung-id30316485.html).
 
 Never put participant PII, session cookies, provider passwords or API tokens into GitHub source code, static Pages, public Actions logs or the generated public report. Do not bypass CAPTCHAs or automate entries where the organizer prohibits it.
+
+
+## Phase 9 – Free-Product-Hunter
+
+PR-Hunter now tracks **three independent routes** to products:
+
+1. **Website product-testing platforms:** trnd, Influenster and ForMe. These are *program portals*, not guaranteed product shipments. Application and eligibility are provider-specific. For trnd, the product may sometimes have to be returned; for ForMe the featured test-products may be kept subject to campaign rules.
+2. **Fashion / Streetwear Creator programs:** SEAME, HUMBLE ORIGINAL, YFM and HEY MARLY. Each has an official first-party application/program URL, an evidence review date, explicit social/age/follower requirements when stated, and a prominent warning that a collaboration is **not guaranteed**. For new creators, programs stating no minimum follower requirement are prioritized over programs requiring 1,000–2,000 followers.
+3. **Existing RSS / curated giveaway leads:** automatically classified from the public scanner's actual, time-filtered catalog. A product testing article is not conflated with a creator deal or a promised shipment.
+
+### What is automated
+
+- GitHub Actions continues to scan public RSS sources every 6 hours and now generates a dedicated public \`docs/free-products-report.json\` beside \`docs/auto-hunter.json\`. Directory records are reviewed **on their stated check dates**: regenerating the report **does not** claim a new live check of a brand's website.
+- The iPad **Free Products** screen prioritizes fashion and presents official program links, stated follower requirements, content obligations, keeping/return rules, and costs/shipping that require verification.
+- Dynamic offer classification distinguishes tests, creator programs and giveaways. It never converts a directory entry into a confirmed currently open campaign.
+- An optional manual outreach text can be copied and edited; it makes no fabricated promises about followers, views or creator experience and is **never sent automatically**.
+- Program progress is only user-reported: Interested / Applied / Accepted / Received / Rejected. The totals show these as **self-reported**, not as provider-verified events.
+- Program progress and category preferences are encrypted along with existing local data in the prior passphrase-protected backup workflow; \`pr-hunter-state-v1\` remains unchanged.
+
+### Limitations and compliance
+
+No automatic signing up to third-party portals, logging in, submitting personal surveys, mass messaging brands, Instagram/TikTok engagement automation, or claiming products. The user must complete provider onboarding and applications and satisfy eligibility, age, any content-labeling requirements, and campaign-specific return / shipping terms. For example, HEY MARLY states **18+**; YFM requires at least 2,000 followers, HUMBLE roughly 1,000 followers. No unverified shipping or ownership claim is silently treated as qualified.
+
+The official directory is an independently reviewed list, not a list of guaranteed offers. Providers may change terms or close applications; read the original before submitting. Only 7 programs were added initially; 90/10 fashion-vs-tech is a **ranking preference**, not an invented distribution of real active offers.
+
+Official sources: 
+- https://de.seame-brand.com/pages/ambassador
+- https://www.humbleoriginal.com/de/pages/brand-ambassador-werden
+- https://youngfashionmind.de/pages/brand-ambassador
+- https://www.heymarly.com/pages/anmeldung-ambassador-programm
+- https://www.trnd.com/de/ueber-trnd/faq
+- https://www.influenster.com/de
+- https://www.for-me-online.de/testen-und-gewinnen
+
+Physical iPad Safari behavior and sign-in workflows at each provider are not included in CI and require separate user acceptance; real automatic submission remains gated by documented provider permission, secure hosting and identity verification.
