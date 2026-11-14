@@ -5,6 +5,9 @@ const configPath = new URL('../config/sources.json', import.meta.url);
 const catalogPath = new URL('../docs/opportunities.json', import.meta.url);
 const TERMS = /\b(giveaways?|freebies?|pr[\s-]?packages?|brand[\s-]?ambassador|gifted[\s-]?collab|product[\s-]?tests?(?:ing|er)?|free[\s-]?products?|sampling|collaboration|gratis|gewinnspiele?|verlosung|verlosungen|verlosen|produkttests?(?:er)?|testprodukte?|geschenkaktion|kooperation|pr[\s-]?paket|pr[\s-]?sample|kostenlos\s+testen|tester\s+gesucht|testpersonen\s+gesucht)\b/i;
 const GIVEAWAY = /\b(gewinnspiele?|giveaways?|verlosung|verlosen|produkttests?(?:er)?|product\s*tests?(?:ing|er)?|tester\s+gesucht|testpersonen\s+gesucht|pr[\s-]?paket|pr[\s-]?sample|gratis\s+testen|kostenlos\s+testen)\b/i;
+const NON_PRODUCT = /\b(girokonto|kreditkarte|versicherung|cashback|newsletter|umfragegeld|umfragen?|geld\s+verdienen|telefonvertrag|stromvertrag|katalog|kalender|broschüre|ebooks?|gutschein|versandkosten|gratisartikel\s+beigaben?)\b/i;
+const GENERAL_ARTICLE = /\b(\d+\s+(?:besten|beste|tipps|programme)|ratgeber|übersicht|guide|vergleich|aktionen\s+im\s+überblick|wie\s+(?:wird|werde|kann)\s+(?:ich|man))\b/i;
+const EXPLICIT_OFFER = /\b(gewinnspiel|verlosung|verlosen|gewinnen|giveaway|freebie|pr[\s-]?paket|produkttest|produkttester|product\s*test(?:ing|er)?|tester\s+gesucht|testpersonen\s+gesucht|gratis|kostenlos\s+testen|gratisartikel|kostenlos\s+bestellen)\b/i;
 const PAID_PROMO = /\b(rabatt|deal|schnäppchen|coupon|preisfehler|spart?|nur\s+\d+[,.]?\d*\s*€|gratis\s+(?:versand|lieferung|zugabe)|kostenloser\s+versand)\b/i;
 export function decodeEntities(text = '') {
   return String(text).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
@@ -52,21 +55,25 @@ export function normalizeOpportunity(item) {
     if (url.protocol !== 'https:' || url.username || url.password) return null;
     url.hash = '';
   } catch { return null; }
-  // Only the title and opening summary are considered. Footer promos often say
-  // "giveaway" or "gratis" on ordinary paid product reviews.
-  const offerText = item.title + ' ' + String(item.description || '').slice(0, 340);
-  if (!isRelevant(offerText)) return null;
-  // A discount/free shipping is not a free physical product.
-  if (PAID_PROMO.test(item.title) && !GIVEAWAY.test(item.title)) return null;
-  if (/\b(?:gratis|kostenlos)\s+(?:versand|lieferung|zugabe)\b/i.test(item.title) && !GIVEAWAY.test(item.title)) return null;
+  // Only the headline counts as a concrete call for applications or giveaway.
+  // Page footers frequently mention unrelated promotions.
+  const headline = String(item.title).trim();
+  const synopsis = String(item.description || '').slice(0, 220);
+  if (!EXPLICIT_OFFER.test(headline)) return null;
+  if (GENERAL_ARTICLE.test(headline) || NON_PRODUCT.test(headline)) return null;
+  if (PAID_PROMO.test(headline) && !GIVEAWAY.test(headline)) return null;
+  if (/\b(?:gratis|kostenlos)\s+(?:versand|lieferung|zugabe)\b/i.test(headline)) return null;
+  if (/versandkosten\s+(?:kommen|fallen|betragen)|(?:zuzüglich|zzgl\.)\s+versandkosten/i.test(synopsis) && !GIVEAWAY.test(headline)) return null;
+  const offerText = headline + ' ' + synopsis;
   const rawDate = Date.parse(item.published);
   const published = Number.isFinite(rawDate) ? new Date(rawDate).toISOString() : null;
   if (published && rawDate < Date.now() - 90 * 24 * 60 * 60 * 1000) return null;
-  const text = offerText.toLowerCase();
-  const category = /\b(fashion|streetwear|clothing|kleidung|mode|sneakers?|shoes?|schuhe|hoodies?|sweatshirts?|shirts?|t-shirts?|tracksuits?|jogginganzug|jackets?|jacken?|caps?|mützen?|outfits?|pullover|jeans)\b/.test(text) ? 'Mode' :
-    /\b(tech|technik|technologie|elektronik|smartphones?|iphones?|ipads?|handys?|handys|tablets?|laptops?|notebooks?|computer|gaming|headsets?|kopfhörer|earbuds|airpods|hardware|smartwatches?|tastaturen?|maus|mäuse|gadget|gadgets|konsolen?|playstation|xbox|lautsprecher|speakers?)\b/.test(text) ? 'Technik' :
-    /\b(beauty|skincare|kosmetik|makeup|parfum)\b/.test(text) ? 'Beauty' :
-    /\b(lifestyle|food|essen|fitness|sport)\b/.test(text) ? 'Lifestyle' : 'Sonstiges';
+  // Classify from the actual headline, never unrelated sidebar suggestions.
+  const titleText = headline.toLowerCase();
+  const category = /\b(fashion|streetwear|clothing|kleidung|mode|sneakers?|shoes?|schuhe|hoodies?|sweatshirts?|shirts?|t-shirts?|tracksuits?|jogginganzug|jackets?|jacken?|caps?|mützen?|outfits?|pullover|jeans|klamotten)\b/.test(titleText) ? 'Mode' :
+    /\b(tech|technik|technologie|elektronik|smartphones?|iphones?|ipads?|handys?|tablets?|laptops?|notebooks?|computer|gaming|headsets?|earbuds|airpods|hardware|smartwatches?|tastaturen?|maus|mäuse|gadgets?|konsolen?|playstation|xbox|lautsprecher|speakers?|bluetooth|soundpeats|drucker|monitor|kameras?)\b|kopfhör/i.test(titleText) ? 'Technik' :
+    /\b(beauty|skincare|kosmetik|makeup|parfum|rasierer)\b/.test(titleText) ? 'Beauty' :
+    /\b(lifestyle|food|essen|fitness|sport|snacks?|torte)\b/.test(titleText) ? 'Lifestyle' : 'Sonstiges';
   const canonical = url.href;
   return {
     id: createHash('sha256').update(canonical).digest('hex').slice(0, 20),
@@ -110,10 +117,8 @@ async function scan() {
     }
   }
   if (!success) throw Error('All configured feeds failed; preserving existing catalog');
-  const existing = JSON.parse(await readFile(catalogPath, 'utf8'));
-  const previous = Array.isArray(existing.opportunities) ? existing.opportunities : [];
-  const combined = [...found, ...previous].filter(item => item?.id && item?.url && (!item.published || Date.parse(item.published) >= Date.now() - 90 * 86400000));
-  const deduped = [...new Map(combined.map(item => [item.url, item])).values()]
+  // Each successful scan replaces stale or previously misclassified entries.
+  const deduped = [...new Map(found.map(item => [item.url, item])).values()]
     .sort(compareOpportunities).slice(0, 200);
   await writeFile(catalogPath, JSON.stringify({
     version: 1, generatedAt: new Date().toISOString(),

@@ -65,6 +65,7 @@ function render() {
   const filtered = items.filter(item => {
     if (ui.tab === 'saved' && !state.saved.includes(item.id)) return false;
     if (ui.tab === 'tracked' && status(item.id) === 'new') return false;
+    if (ui.category === 'focus' && !['Mode', 'Technik'].includes(item.category)) return false;
     if (!['all', 'focus'].includes(ui.category) && item.category !== ui.category) return false;
     return [item.title,item.brand,item.description,item.source].join(' ').toLocaleLowerCase('de-DE').includes(q);
   });
@@ -74,7 +75,7 @@ function render() {
     const rank = item => ['Mode', 'Technik'].includes(item.category) ? 2 : 0;
     return rank(b) - rank(a) || (b.published || '').localeCompare(a.published || '');
   });
-  $('#cards').innerHTML = filtered.length ? filtered.map(card).join('') : '<div class="empty"><span class="symbol">✧</span><strong>Hier ist noch Platz für Entdeckungen.</strong><p>Der automatische Scout benötigt erlaubte öffentliche RSS-Feeds. Du kannst auch selbst ein Angebot hinzufügen. Es werden keine erfundenen Live-Angebote angezeigt.</p><button class="primary-btn" data-action="add">＋ Angebot hinzufügen</button></div>';
+  $('#cards').innerHTML = filtered.length ? filtered.map(card).join('') : '<div class="empty"><span class="symbol">✧</span><strong>' + (ui.category === 'focus' ? 'Noch keine neuen Mode- oder Technikaktionen.' : 'Noch keine passenden Aktionen gefunden.') + '</strong><p>' + (ui.category === 'focus' ? 'Der Scout sucht regelmäßig nach neuen Angeboten. Für andere Gratis-Aktionen kannst du „Alle Kategorien“ wählen.' : 'Du kannst eine Aktion selbst hinzufügen. Es werden keine erfundenen Live-Angebote angezeigt.') + '</p><button class="primary-btn" data-action="add">＋ Angebot hinzufügen</button></div>';
 }
 function card(item) {
   const id = escapeText(item.id);
