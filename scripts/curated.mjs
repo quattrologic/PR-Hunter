@@ -30,6 +30,18 @@ export function normalizeCurated(item, now = new Date()) {
     offerType: String(item.offerType || 'Gewinnspiel').slice(0,50),
     sourceType: 'curated',
     checkedOn: String(item.checkedOn).slice(0,10),
+    // Explicit eligibility fields remain in the machine-readable report.
+    // Missing/uncertain costs or permission are never converted into consent.
+    noPurchase:item.noPurchase === true,
+    keepPrize:item.keepPrize === true,
+    shipsToGermany:item.shipsToGermany === true ? true : null,
+    shippingCostEUR:typeof item.shippingCostEUR==='number' && Number.isFinite(item.shippingCostEUR)
+      ? item.shippingCostEUR : null,
+    autoEntry:item.autoEntry?.allowed === true && validUrl(item.autoEntry.rulesUrl) &&
+      item.autoEntry.adapterId && validDate(item.autoEntry.reviewedAt)
+      ? {allowed:true,rulesUrl:validUrl(item.autoEntry.rulesUrl),
+          reviewedAt:String(item.autoEntry.reviewedAt).slice(0,30),
+          adapterId:String(item.autoEntry.adapterId).slice(0,80)} : null,
     shippingStatus: item.shipsToGermany === true ? 'Deutschland laut Bedingungen erlaubt' : 'Deutschlandversand unbestätigt',
     costStatus: String(item.costStatus || 'Kosten prüfen').slice(0,150),
     participation: String(item.method || 'Regeln prüfen').slice(0,150)

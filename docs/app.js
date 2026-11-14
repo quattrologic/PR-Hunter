@@ -22,6 +22,7 @@ import {
 import {
   FEED_PAGE_SIZE, normalizeDisplayPrefs, getVisibleSlice, offerVerification
 } from './phase7-core.mjs';
+import { autoHunterReport, normalizeAutoPrefs } from './auto-hunter-core.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -30,7 +31,7 @@ const ui = {
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
   brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -45,6 +46,7 @@ state.accounts = accountLabels(state.accounts);
 state.integration = normalizeIntegrationSetup(state.integration);
 state.alerts = normalizeAlertsState(state.alerts);
 state.display = normalizeDisplayPrefs(state.display);
+state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -391,6 +393,38 @@ function renderDisplay() {
     input.checked = input.value === state.display.motion;
   });
 }
+function renderAutoHunter() {
+  const settings=normalizeAutoPrefs(state.autoPrefs);
+  const report=autoHunterReport(ui.catalog,settings);
+  $('#autoHunterEnabled').checked=settings.enabled;
+  $('#autoHunterTech').checked=settings.includeTech;
+  $('#autoScanned').textContent=String(report.counts.found);
+  $('#autoReview').textContent=String(report.counts.review);
+  $('#autoReadyManual').textContent=String(report.counts.eligibleManual);
+  $('#autoSubmitted').textContent='0';
+  $('#autoQueueTitle').textContent=report.items.length
+    ? 'Website-Kandidaten ('+report.items.length+')'
+    : 'Noch keine geeigneten Website-Kandidaten';
+  $('#autoSourceLabel').textContent=ui.generatedAt
+    ? 'Letzter öffentlicher Katalog: '+asDate(ui.generatedAt)+
+      ' · '+(ui.sourceStatus.filter(x=>x.status==='ok').length)+' von '+
+      ui.sourceStatus.length+' Quellen erreichbar'
+    : 'Noch kein erfolgreich geladener Katalog – keine automatische Einsendung';
+  $('#autoHunterList').innerHTML=!settings.enabled
+    ? '<div class="empty"><strong>Deine persönliche Vorsortierung ist aus.</strong><p>Der öffentliche Quellen-Scanner arbeitet unabhängig davon im Hintergrund auf GitHub.</p></div>'
+    : report.items.length
+      ? report.items.slice(0,60).map(entry=>{
+          const approved=entry.status==='verified-for-manual-entry';
+          const note=approved?'Eckdaten geprüft':'Noch ungeprüfte Bedingungen';
+          return '<article class="auto-entry"><div class="auto-entry-info">' +
+            '<span class="auto-kind">'+esc(entry.category)+' · '+esc(note)+'</span>' +
+            '<strong>'+esc(entry.title)+'</strong><p>'+esc(entry.reason)+'</p>' +
+            (entry.warnings.length ? '<small>⚠ '+esc(entry.warnings.slice(0,2).join(' · '))+'</small>' : '') +
+            '</div><button type="button" class="subtle-btn" data-action="auto-review" data-id="'+
+            esc(entry.id)+'">Regeln prüfen ↗</button></article>';
+        }).join('')
+      : '<div class="empty"><strong>Derzeit keine passenden Website-Aktionen.</strong><p>Es werden keine Gewinnspiele erfunden. Weitere öffentliche Quellen werden beim nächsten GitHub-Scan geprüft.</p></div>';
+}
 function render() {
   renderDisplay();
   updateStats();
@@ -401,8 +435,9 @@ function render() {
   renderAccounts();
   renderIntegrations();
   renderAlerts();
+  renderAutoHunter();
 }
-const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
+const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -548,6 +583,11 @@ document.addEventListener('click', event => {
   const action = button.dataset.action;
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
+  if (action === 'auto-review') {
+    const item=byId(button.dataset.id);
+    if(item) showParticipationDialog(item);
+    return;
+  }
   if (action === 'load-more') {
     if (button.dataset.target === 'feed') ui.visibleFeed = Math.min(1000,ui.visibleFeed+FEED_PAGE_SIZE);
     if (button.dataset.target === 'saved') ui.visibleSaved = Math.min(1000,ui.visibleSaved+FEED_PAGE_SIZE);
@@ -769,6 +809,15 @@ $('#participationConfirm').addEventListener('click', () => {
 });
 $('#logActivityButton').addEventListener('click', () => openActivityDialog());
 $('#refreshButton').addEventListener('click', refresh);
+$('#autoRefreshButton').addEventListener('click', refresh);
+$('#autoHunterEnabled').addEventListener('change',event=>{
+  state.autoPrefs=normalizeAutoPrefs({...state.autoPrefs,enabled:event.target.checked});
+  save();renderAutoHunter();
+});
+$('#autoHunterTech').addEventListener('change',event=>{
+  state.autoPrefs=normalizeAutoPrefs({...state.autoPrefs,includeTech:event.target.checked});
+  save();renderAutoHunter();
+});
 let searchTimer;
 $('#search').addEventListener('input', event => {
   const value = event.target.value.trim();

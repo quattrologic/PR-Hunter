@@ -22,6 +22,7 @@
     <div class="nav-section">WORKSPACE</div>
     <nav class="nav" aria-label="Hauptnavigation">
       <button type="button" class="nav-btn active" data-tab="discover" aria-current="page"><span aria-hidden="true">◈</span> Entdecken</button>
+      <button type="button" class="nav-btn" data-tab="auto"><span aria-hidden="true">⚡</span> Auto-Hunter</button>
       <button type="button" class="nav-btn" data-tab="brands"><span aria-hidden="true">◎</span> Brand Radar</button>
       <button type="button" class="nav-btn" data-tab="assistant"><span aria-hidden="true">✓</span> Teilnahme</button>
       <button type="button" class="nav-btn" data-tab="activity"><span aria-hidden="true">▤</span> Aktivitäten</button>
@@ -43,7 +44,7 @@
           <div class="eyebrow-badge"><span class="live-dot"></span> DEIN STREETWEAR RADAR</div>
           <h1>Good style.<span>Better luck.</span></h1>
           <p>Entdecke kostenlose Streetwear, PR-Aktionen und Giveaways. Von kleinen Labels bis zu großen Brands – alles an einem Ort.</p>
-          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="inbox">Mehrere Links sammeln ↗</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button><button type="button" class="subtle-btn" data-tab="assistant">Teilnahme-Assistent ✓</button></div>
+          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="inbox">Mehrere Links sammeln ↗</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button><button type="button" class="subtle-btn" data-tab="assistant">Teilnahme-Assistent ✓</button><button type="button" class="subtle-btn" data-tab="auto">⚡ Auto-Hunter öffnen</button></div>
           <div class="hero-trust">90 % FASHION <span>·</span> 10 % TECH <span>·</span> WELTWEIT</div>
         </div>
         <div class="hero-poster" aria-hidden="true"><div class="poster-label">THE HUNT<br>IS ON.</div><div class="poster-object">✳</div><div class="poster-footer">NO FAKE DROPS. JUST POSSIBILITIES. / 001</div></div>
@@ -78,6 +79,32 @@
         <div id="brandFilterMessage" class="brand-filter-message" hidden></div>
         <div class="cards" id="discoverCards" aria-live="polite"></div>
       </section>
+    </section>
+    <section class="view" id="autoPanel" data-panel="auto" hidden>
+      <div class="section-banner auto-banner"><span class="mini-label">PHASE 8 · WEBSITE AUTOPILOT</span>
+        <h1>Auto-Hunter<span class="soft-accent">.</span></h1>
+        <p>Findet und sortiert öffentliche Website-Gewinnspiele automatisch. Keine Instagram- oder TikTok-Teilnahmen. Eine echte automatische Einsendung erfolgt nur über ausdrücklich erlaubte offizielle Anbieter-Schnittstellen – derzeit ist noch keine verbunden.</p>
+        <button id="autoRefreshButton" type="button" class="primary-btn">↻ Neue Websites prüfen</button></div>
+      <div class="auto-status" role="status"><div class="auto-pulse" aria-hidden="true">⚡</div>
+        <div><strong>Automatische Website-Suche · GitHub Scanner alle 6 Stunden</strong>
+          <p id="autoSourceLabel">Katalog wird geprüft …</p>
+          <span>Automatische Einsendung: derzeit deaktiviert · 0 freigegebene Anbieter-Adapter</span></div></div>
+      <div class="auto-stat-grid">
+        <div><span>Websites im Katalog geprüft</span><strong id="autoScanned">0</strong></div>
+        <div><span>Treffer mit offenen Fragen</span><strong id="autoReview">0</strong></div>
+        <div><span>Mit vollständigen Eckdaten</span><strong id="autoReadyManual">0</strong></div>
+        <div><span>Automatisch eingereicht</span><strong id="autoSubmitted">0</strong></div>
+      </div>
+      <section class="auto-settings"><div><h2>Deine Auto-Hunter-Filter</h2>
+          <p class="helper">Die öffentliche Quellensuche läuft unabhängig davon regelmäßig. Diese Schalter steuern die persönliche Vorauswahl auf deinem iPad – keine automatische Anmeldung bei einem Anbieter.</p></div>
+        <label><input id="autoHunterEnabled" type="checkbox" checked> Gefundene Websites automatisch vorsortieren</label>
+        <label><input id="autoHunterTech" type="checkbox" checked> Technik als Nebenkategorie anzeigen (Mode zuerst)</label>
+        <div class="auto-limits">0 € Kauf · Max. 5 € Versand · Gewinn behalten · 1 Teilnahme pro Person</div>
+      </section>
+      <div class="section-header section-pad"><div><span class="mini-label">AUTOMATISCH GEPRÜFTE FUNDSTELLEN</span><h2 id="autoQueueTitle">Website-Kandidaten</h2></div><span class="counter-label">Ohne Social-Media-Bots</span></div>
+      <div id="autoHunterList" class="auto-hunter-list" aria-live="polite"></div>
+      <div class="auto-conditions"><strong>Warum noch keine vollautomatischen Teilnahmen?</strong>
+        <p>Einige Anbieter verbieten Gewinnspiel-Bots ausdrücklich. Eine Einreichung ist deshalb erst möglich, wenn der Veranstalter automatische Teilnahmen ausdrücklich erlaubt, eine offizielle Schnittstelle vorhanden ist, deine Identität und Einwilligung sicher hinterlegt sind und die persönlichen Regeln erfüllt werden. Wir umgehen keine Captchas oder Teilnahmebegrenzungen und speichern keine Zugangsdaten in GitHub Pages.</p></div>
     </section>
     <section class="view" id="brandsPanel" data-panel="brands" hidden>
       <div class="section-banner brands-banner"><span class="mini-label">DEIN STREETWEAR UNIVERSUM</span><h1>Brand radar<span class="soft-accent">.</span></h1><p>Deine Lieblingslabels und neue Referenzen. Wir zeigen Profile – aktive Verlosungen erst, wenn eine passende Quelle sie bestätigt.</p><button id="addBrandButton" class="primary-btn" type="button">＋ Marke hinzufügen</button></div>
@@ -197,7 +224,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 7 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 8 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">

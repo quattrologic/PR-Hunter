@@ -3,6 +3,7 @@
 import { safeExternalUrl, normalizeBrand, validAccountLabel } from './ultimate-core.mjs';
 import { normalizeAlertsState } from './phase6-core.mjs';
 import { normalizeDisplayPrefs } from './phase7-core.mjs';
+import { normalizeAutoPrefs } from './auto-hunter-core.mjs';
 
 const MAX_BATCH = 40;
 const MAX_BACKUP_BYTES = 2_000_000;
@@ -183,6 +184,7 @@ export function parseBackup(text) {
         [...new Set(raw.integration.checked.filter(x=>['professional','app','backend','permissions'].includes(x)))] : []
     },
     alerts:normalizeAlertsState(raw.alerts),
-    display:normalizeDisplayPrefs(raw.display)
+    display:normalizeDisplayPrefs(raw.display),
+    autoPrefs:normalizeAutoPrefs(raw.autoPrefs)
   };
 }

@@ -8,6 +8,8 @@ on:
       - "config/curated-offers.json"
       - "scripts/curated.mjs"
       - "scripts/scout.mjs"
+      - "scripts/auto-hunter.mjs"
+      - "docs/auto-hunter-core.mjs"
       - ".github/workflows/scout.yml"
   schedule:
     - cron: "14 */6 * * *"
@@ -34,13 +36,15 @@ jobs:
         run: npm test
       - name: Fetch configured public feeds
         run: npm run scan
+      - name: Prepare public Auto-Hunter report
+        run: npm run auto-scan
       - name: Commit public opportunity catalog if changed
         shell: bash
         run: |
-          if ! git diff --quiet -- docs/opportunities.json; then
+          if ! git diff --quiet -- docs/opportunities.json docs/auto-hunter.json; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add docs/opportunities.json
-            git commit -m "data: refresh public PR opportunities"
+            git add docs/opportunities.json docs/auto-hunter.json
+            git commit -m "data: refresh public PR opportunities and Auto-Hunter report"
             git push
           fi

@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Ultimate Phase 7 – iPad usability, accessibility, performance and security polish.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 8 – Website Auto-Hunter (automatic scouting & compliance triage; official API submissions require separate provider authorization).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -192,3 +192,29 @@ Apple Web Push information: https://webkit.org/blog/13878/web-push-for-web-apps-
 ### Still requires separate infrastructure
 
 This is a complete *local and publicly hosted iPad UX polish iteration*, **not** the end of all Ultimate ambitions. Automatic private cloud sync and true background Web Push require a secure backend; approved Meta account connections need explicit authorization. Instagram does not permit generic mass commenting or auto-following on arbitrary third-party Reels. Final hardware acceptance requires opening Phase 7 in Safari/Home Screen on a real iPad, testing touch, screen rotation, saved state, reduced motion and import/export. CI validates source logic and static page structure, not an actual Safari WebKit device.
+
+
+## Phase 8 – Auto-Hunter for websites (no Instagram or TikTok bots)
+
+**Goal:** maximize the amount of useful work done unattended while *not* fabricating entries or violating organizer conditions.
+
+### Works automatically now
+
+- Existing GitHub Actions scans supported public RSS/Atom sources every six hours. A new \`npm run auto-scan\` stage produces the **public \`docs/auto-hunter.json\` report** from that scan. This contains **only public offer metadata**, never user names, contact details or entry credentials.
+- The new **Auto-Hunter** iPad tab automatically ranks website opportunities, prioritizes fashion, optionally includes technology, excludes social media and expired contests, and separates hard exclusions from offers with missing rules, Germany shipping or costs.
+- The engine does not turn missing data into claims. "0 € purchase", "keep the prize", Germany eligibility, shipping ≤ €5, a recent review of terms and **explicit organizer permission for automated entries** are all independently required.
+- The local user dashboard can filter and open each item's **original website** and existing participation checklist; it never submits or marks participation on its own.
+- Auto-Hunter preferences are device-local and travel with encrypted or plaintext backups.
+
+### Private-server entry adapter — prepared but not configured
+
+\`scripts/allowed-entry-runner.mjs\` provides a guarded integration point. It **only** sends entries if:
+1. The organizer explicitly allows scripts/automatic entry, evidenced by a recent official rules URL.
+2. The user has specifically opted in and identity/one-entry-per-person conditions are checked.
+3. A reviewed **official provider API** adapter exists on the same host as the organizer, with authenticated, documented permissions.
+4. Purchase-free participation, permanent prize ownership, Germany delivery, shipping ≤ €5 and a valid deadline are confirmed.
+5. A private transactional receipt store atomically prevents repeat entries. Only a real provider receipt is recorded as submitted; unknown network outcomes are not retried blindly.
+
+There are **zero approved live provider adapters** currently. The public GitHub Pages site cannot securely keep form credentials, run background browser automation on third-party websites or receive reliable API receipts. It is **not** a working auto-entry bot yet. We will need an expressly cooperating giveaway provider with a participant submission API, a private backend and user-authorized identity to make real unattended entries possible. This is particularly important because many German organizers expressly exclude contest bots and multi-account entries, including REWE Produkttests (https://produkttests.rewe.de/teilnahmebedingungen) and RTL (https://www.rtl.de/cms/service/gewinnspielbeschreibung-id30316485.html).
+
+Never put participant PII, session cookies, provider passwords or API tokens into GitHub source code, static Pages, public Actions logs or the generated public report. Do not bypass CAPTCHAs or automate entries where the organizer prohibits it.
