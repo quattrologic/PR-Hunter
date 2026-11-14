@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0a1020">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="PR-Hunter">
+  <meta name="description" content="Entdecke öffentliche PR-Angebote und verwalte deine Anfragen.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./app.css">
+  <title>PR-Hunter — Discovery Dashboard</title>
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div class="glow glow-a" aria-hidden="true"></div>
+  <div class="glow glow-b" aria-hidden="true"></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><span>PR<span class="brand-accent">Hunter</span><small>DISCOVERY STUDIO</small></span></div>
+      <div class="nav-heading">WORKSPACE</div>
+      <nav class="nav" aria-label="Hauptnavigation">
+        <button class="nav-btn active" data-tab="discover" aria-current="page"><span aria-hidden="true">◈</span> Entdecken</button>
+        <button class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
+        <button class="nav-btn" data-tab="tracked"><span aria-hidden="true">◎</span> Meine Anfragen</button>
+        <button class="nav-btn" data-tab="info"><span aria-hidden="true">ⓘ</span> So funktioniert’s</button>
+      </nav>
+      <div class="sidebar-bottom"><div class="pulse-dot"></div><div><strong>Local-first</strong><small>Deine Daten bleiben auf dem Gerät</small></div></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span class="eyebrow">DEIN GIFT & PR SCOUT</span><span class="secure">◉ PRIVATER TRACKER</span></header>
+      <section class="hero">
+        <div class="hero-copy"><div class="pill"><span class="pulse-dot"></span> DEIN DISCOVERY HUB</div>
+          <h1>Finde dein nächstes <em>PR-Paket.</em></h1>
+          <p>Entdecke öffentliche Aktionen, speichere interessante Marken und behalte deine Bewerbungen im Blick. Alles an einem Ort.</p>
+          <button class="primary-btn" id="addButton">＋ Angebot hinzufügen</button>
+        </div>
+        <div class="hero-art" aria-hidden="true"><div class="orbit orbit-1"></div><div class="orbit orbit-2"></div><span class="gift">🎁</span><span class="spark spark-1">✦</span><span class="spark spark-2">✧</span></div>
+      </section>
+      <section class="stats" aria-label="Deine Statistik">
+        <div class="stat"><span>Gefundene Angebote</span><strong id="totalCount">0</strong><small>Öffentlicher Feed + eigene</small></div>
+        <div class="stat"><span>Auf Merkliste</span><strong id="savedCount">0</strong><small>Für später gespeichert</small></div>
+        <div class="stat"><span>Anfragen</span><strong id="appliedCount">0</strong><small>Als kontaktiert markiert</small></div>
+        <div class="stat"><span>Zusagen</span><strong id="acceptedCount">0</strong><small>Selbst eingetragen</small></div>
+      </section>
+      <section class="finder">
+        <div class="section-head"><div><span class="eyebrow">DEIN ÜBERBLICK</span><h2 id="sectionTitle">Opportunities</h2></div><span class="sync" id="syncLabel">Noch kein Scan</span></div>
+        <div id="infoPanel" hidden class="info-panel">
+          <h3>So funktioniert PR-Hunter</h3>
+          <p>Der automatische Scout liest ausschließlich von dir konfigurierte, öffentlich zugängliche und zur automatischen Nutzung freigegebene RSS/Atom-Feeds. Ohne Quellen ist die Liste anfangs leer.</p>
+          <p>Hier kannst du Angebote sammeln und deinen eigenen Fortschritt verfolgen. <strong>Es werden keine Instagram-DMs, Bewerbungen oder Kontaktanfragen automatisch versendet.</strong> Der Button „Text kopieren“ erstellt nur einen persönlichen Entwurf.</p>
+          <p>Deine Merkliste und dein Status bleiben lokal in Safari. Im öffentlichen Repository dürfen keine privaten Daten gespeichert werden.</p>
+          <p><a href="https://github.com/quattrologic/PR-Hunter#enable-automated-discovery" target="_blank" rel="noopener noreferrer">Feeds einrichten auf GitHub ↗</a></p>
+        </div>
+        <div id="listArea">
+          <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Marke, Aktion oder Produkt suchen…" aria-label="Angebote durchsuchen"></label>
+            <select id="category" aria-label="Kategorie"><option value="all">Alle Kategorien</option><option>Mode</option><option>Technik</option><option>Beauty</option><option>Lifestyle</option><option>Sonstiges</option></select>
+            <button class="ghost-btn" id="refreshButton" title="Angebote aktualisieren" aria-label="Angebote aktualisieren">↻</button></div>
+          <div id="cards" class="cards" aria-live="polite"></div>
+        </div>
+      </section>
+      <footer>PR-HUNTER BETA · Keine garantierten Gratisprodukte · Keine automatischen Massen-Nachrichten</footer>
+    </main>
+  </div>
+  <dialog id="addDialog">
+    <form id="addForm" class="dialog-inner">
+      <div class="dialog-top"><h2>Neues Angebot</h2><button class="close-btn" id="closeDialog" type="button" aria-label="Schließen">×</button></div>
+      <p>Trage eine Aktion ein, die du gefunden hast. Sie wird nur auf diesem Gerät gespeichert.</p>
+      <label>Marke / Quelle<input name="brand" required maxlength="80" placeholder="z. B. Streetwear-Label"></label>
+      <label>Titel<input name="title" required maxlength="130" placeholder="z. B. Produkttester gesucht"></label>
+      <label>Link zur Aktion<input name="url" type="url" required placeholder="https://…"></label>
+      <label>Kategorie<select name="category"><option>Mode</option><option>Technik</option><option>Beauty</option><option>Lifestyle</option><option>Sonstiges</option></select></label>
+      <button type="submit" class="primary-btn">Angebot speichern</button>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
