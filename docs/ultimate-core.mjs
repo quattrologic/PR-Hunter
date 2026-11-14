@@ -57,15 +57,22 @@ export function makeActivity(input, now = new Date()) {
     note, evidenceUrl, createdAt
   };
 }
+export function isExpired(item, now = Date.now()) {
+  if (!item?.deadline) return false;
+  const expiry = Date.parse(item.deadline);
+  return Number.isFinite(expiry) ? expiry < now : false;
+}
 export function rankFeed(items, category = 'focus', query = '') {
   const term = String(query).trim().toLocaleLowerCase('de-DE');
   const filtered = items.filter(item => {
-    if (!item || !safeExternalUrl(item.url)) return false;
+    if (!item || !safeExternalUrl(item.url) || isExpired(item)) return false;
     if (category === 'focus' && !['Mode','Technik'].includes(item.category)) return false;
     if (category !== 'focus' && category !== 'all' && item.category !== category) return false;
     return [item.title,item.brand,item.source,item.description].join(' ').toLocaleLowerCase('de-DE').includes(term);
   });
-  const newerFirst = (a, b) => String(b.published || '').localeCompare(String(a.published || ''));
+  const newerFirst = (a, b) =>
+    Number(b.sourceType === 'curated') - Number(a.sourceType === 'curated') ||
+    String(b.published || '').localeCompare(String(a.published || ''));
   if (category !== 'focus') return filtered.sort(newerFirst);
   const fashion = filtered.filter(item => item.category === 'Mode').sort(newerFirst);
   const tech = filtered.filter(item => item.category === 'Technik').sort(newerFirst);

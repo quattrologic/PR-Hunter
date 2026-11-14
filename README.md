@@ -65,6 +65,20 @@ This repo is public. Never commit addresses, account credentials, API secrets, p
 
 MIT licensed. This app is independent and not affiliated with Instagram or Meta.
 
+## Ultimate Phase 2: verified Streetwear sources (2026-11)
+
+A mixed Streetwear Scout now combines public RSS/Atom feeds with a curated list of **real, date-scoped offers** from official/organizer terms in `config/curated-offers.json`.
+
+- Scanned RSS hints are still explicitly **unverified**.
+- Curated listings link to both the official action and the terms, include a known deadline, participation method, shipping verification and any unknown costs.
+- An offer is curated only if **no purchase is required** and **the winner keeps the prize**. Unknown delivery costs/regions are labeled rather than presented as fully qualified.
+- The scanner automatically removes expired curated offers at the next run, while the client also hides expired items immediately in the main feed.
+- Curated items appear first, with the 90/10 fashion-to-tech ranking preference preserved when enough genuine inventory exists.
+- A new source candidate, Beyond Pixels' publicly syndicated RSS feed, is monitored. Feed health is shown honestly in the dashboard. If it is blocked, it is not scraped or bypassed.
+- On iPad, tap **Instagram-Link einfügen** to import a copied public giveaway URL into a local manual entry. This action requires a tap and reads clipboard data locally only. Hashtag shortcuts also open Instagram for manual discovery.
+
+**Not yet available:** Automatic scanning of public Instagram Reels for user-supplied brands. Meta's official discovery capabilities require a separately authorized professional account, app registration, review and permissions; this repo does not have those credentials or permission. No automated third-party likes, follows, comments or DMs have been added.
+
 ## Ultimate Phase 1: Fashion-first iPad experience (2026-11)
 
 The first Ultimate iteration replaces the old dark dashboard with a **light iPad-first streetwear discovery interface** (inspired by the layout patterns of social and Apple apps, not a copied UI). It adds:

@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "reviewedOn": "2026-11-14",
+  "notice": "Manuell anhand öffentlich sichtbarer offizieller Teilnahmebedingungen erfasst. Die Teilnahme wird nicht automatisch vorgenommen. Vor Teilnahme Frist, Kosten, Lieferland, Größen prüfen.",
+  "offers": [
+    {
+      "slug": "bergmensch-xxl-nov-2026",
+      "title": "BERGMENSCH XXL-Gewinnspiel: Outfits & Sherpa Half-Zips",
+      "brand": "BERGMENSCH",
+      "url": "https://bergmensch.de/pages/gewinnspiel-xxl",
+      "termsUrl": "https://bergmensch.de/pages/teilnahmebedingungen-xxl-gewinnspiel",
+      "description": "31 Gewinne: 5 Outfit-Pakete, 10 Sherpa Half-Zips und Gutscheine. Teilnahme über Newsletter-Formular samt Bestätigungs-E-Mail; bestehende Abos reichen nicht.",
+      "category": "Mode",
+      "offerType": "Kleidungs-Gewinnspiel",
+      "published": "2026-11-14T11:00:00+01:00",
+      "deadline": "2026-11-15T23:59:00+01:00",
+      "noPurchase": true,
+      "keepPrize": true,
+      "shipsToGermany": true,
+      "costStatus": "Versandkosten für Gewinne nicht ausdrücklich bestätigt",
+      "method": "Newsletter + Double-Opt-in",
+      "checkedOn": "2026-11-14"
+    },
+    {
+      "slug": "beyondpixels-hoodies-nov-2026",
+      "title": "Beyond Pixels: 2 Street Fighter Hoodies gewinnen",
+      "brand": "Beyond Pixels",
+      "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
+      "termsUrl": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
+      "description": "Verlosung von 2 Street-Fighter-Hoodies über das Gewinnspielformular. Laut Veranstalter ohne zusätzliche Gewinnversandkosten; Liefermöglichkeit nach Deutschland vorab klären.",
+      "category": "Mode",
+      "offerType": "Hoodie-Gewinnspiel",
+      "published": "2026-11-14T11:00:00+01:00",
+      "deadline": "2026-11-17T23:59:00+01:00",
+      "noPurchase": true,
+      "keepPrize": true,
+      "shipsToGermany": null,
+      "costStatus": "Laut Veranstalter keine weiteren Gewinnkosten; Deutschlandversand unklar",
+      "method": "Gewinnspielformular",
+      "checkedOn": "2026-11-14"
+    },
+    {
+      "slug": "6pm-black-week-2026",
+      "title": "6PM Black Week: 500 € Store-Guthaben gewinnen",
+      "brand": "6PM",
+      "url": "https://www.6pmseason.com/",
+      "termsUrl": "https://www.6pmseason.com/",
+      "description": "Unter anderem zehn Store Credits à 500 € für den 6PM-Shop. Teilnahme über bestätigten Newsletter und WhatsApp-Kanal. Weitere Preise sind Technik und Geld; Versand- und mögliche Folgekosten prüfen.",
+      "category": "Mode",
+      "offerType": "Streetwear-Guthaben",
+      "published": "2026-11-14T11:00:00+01:00",
+      "deadline": "2026-11-29T23:59:00+01:00",
+      "noPurchase": true,
+      "keepPrize": true,
+      "shipsToGermany": true,
+      "costStatus": "Gewinnbedingte Folgekosten können beim Gewinner liegen",
+      "method": "Newsletter + WhatsApp-Kanal",
+      "checkedOn": "2026-11-14"
+    }
+  ]
+}
