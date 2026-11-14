@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseFeed, isRelevant, decodeEntities, normalizeOpportunity } from '../scripts/scout.mjs';
+import { parseFeed, isRelevant, decodeEntities, normalizeOpportunity, compareOpportunities } from '../scripts/scout.mjs';
 test('reads RSS offers without HTML markup', () => {
   const [item] = parseFeed('<rss><channel><item><title>Gratis PR-Paket &amp; Shirt</title><link>https://example.org/offer</link><description><![CDATA[<p>Streetwear</p>]]></description></item></channel></rss>', 'Example');
   assert.equal(item.title, 'Gratis PR-Paket & Shirt');
@@ -26,3 +26,16 @@ test('encodes stable IDs and rejects old offers', () => {
   assert.equal(normalizeOpportunity({ ...item, published: '2020-01-01' }), null);
 });
 test('handles entity decoding', () => assert.equal(decodeEntities('Tom &amp; Jerry &#33;'), 'Tom & Jerry !'));
+test('classifies and prioritizes fashion and technology opportunities', () => {
+  const make = (title, suffix) => normalizeOpportunity({ title: title + ' Gewinnspiel', url: 'https://example.org/' + suffix, published: '2026-11-13T10:00:00Z' });
+  const hoodie = make('Streetwear Hoodie', 'hoodie');
+  const earbuds = make('Kopfhörer', 'earbuds');
+  const other = make('Beauty', 'beauty');
+  assert.equal(hoodie.category, 'Mode');
+  assert.equal(earbuds.category, 'Technik');
+  assert.equal(other.category, 'Beauty');
+  const arranged = [other, earbuds, hoodie].sort(compareOpportunities);
+  assert.equal(arranged.at(-1).category, 'Beauty');
+  assert.ok(['Mode', 'Technik'].includes(arranged[0].category));
+  assert.ok(['Mode', 'Technik'].includes(arranged[1].category));
+});

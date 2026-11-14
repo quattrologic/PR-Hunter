@@ -20,6 +20,13 @@ const getTag = (chunk, tag) => {
   return expression.exec(chunk)?.[1] || '';
 };
 export function isRelevant(text) { return TERMS.test(String(text ?? '')); }
+
+// Prioritize clothing and technology, but keep relevant offers in other categories too.
+export const priorityRank = category => category === 'Mode' || category === 'Technik' ? 2 : 0;
+export function compareOpportunities(a, b) {
+  return priorityRank(b.category) - priorityRank(a.category)
+    || (b.published || '').localeCompare(a.published || '');
+}
 export function parseFeed(xml, sourceName = 'Öffentlicher Feed') {
   if (typeof xml !== 'string' || xml.length > 1_000_000) throw new Error('Unsupported feed size');
   const blocks = [...xml.matchAll(/<(item|entry)\b[^>]*>([\s\S]*?)<\/\1\s*>/gi)].slice(0, 200);
@@ -48,10 +55,10 @@ export function normalizeOpportunity(item) {
   const published = Number.isFinite(rawDate) ? new Date(rawDate).toISOString() : null;
   if (published && rawDate < Date.now() - 90 * 24 * 60 * 60 * 1000) return null;
   const text = (item.title + ' ' + (item.description || '')).toLowerCase();
-  const category = /fashion|streetwear|clothing|kleidung|schuhe|sneaker|mode/.test(text) ? 'Mode' :
-    /tech|technik|phone|computer|gaming|elektronik/.test(text) ? 'Technik' :
-    /beauty|skincare|kosmetik|makeup|parfum/.test(text) ? 'Beauty' :
-    /lifestyle|food|essen|fitness|sport/.test(text) ? 'Lifestyle' : 'Sonstiges';
+  const category = /\b(fashion|streetwear|clothing|kleidung|mode|sneakers?|shoes?|schuhe|hoodies?|sweatshirts?|shirts?|t-shirts?|tracksuits?|jogginganzug|jackets?|jacken?|caps?|mützen?|outfits?|pullover|jeans)\b/.test(text) ? 'Mode' :
+    /\b(tech|technik|technologie|elektronik|smartphones?|iphones?|ipads?|handys?|handys|tablets?|laptops?|notebooks?|computer|gaming|headsets?|kopfhörer|earbuds|airpods|hardware|smartwatches?|tastaturen?|maus|mäuse|gadget|gadgets|konsolen?|playstation|xbox|lautsprecher|speakers?)\b/.test(text) ? 'Technik' :
+    /\b(beauty|skincare|kosmetik|makeup|parfum)\b/.test(text) ? 'Beauty' :
+    /\b(lifestyle|food|essen|fitness|sport)\b/.test(text) ? 'Lifestyle' : 'Sonstiges';
   const canonical = url.href;
   return {
     id: createHash('sha256').update(canonical).digest('hex').slice(0, 20),
@@ -90,7 +97,7 @@ async function scan() {
   const previous = Array.isArray(existing.opportunities) ? existing.opportunities : [];
   const combined = [...found, ...previous].filter(item => item?.id && item?.url && (!item.published || Date.parse(item.published) >= Date.now() - 90 * 86400000));
   const deduped = [...new Map(combined.map(item => [item.url, item])).values()]
-    .sort((a,b) => (b.published || '').localeCompare(a.published || '')).slice(0, 200);
+    .sort(compareOpportunities).slice(0, 200);
   await writeFile(catalogPath, JSON.stringify({
     version: 1, generatedAt: new Date().toISOString(),
     sourcesChecked: config.sources.length, sourcesSucceeded: success,

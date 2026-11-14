@@ -1,6 +1,6 @@
 const KEY = 'pr-hunter-state-v1';
 const $ = selector => document.querySelector(selector);
-const ui = { tab: 'discover', query: '', category: 'all', catalog: [] };
+const ui = { tab: 'discover', query: '', category: 'focus', catalog: [] };
 const blank = { saved: [], tracked: {}, manual: [] };
 let state;
 try { state = Object.assign({}, blank, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { state = { ...blank }; }
@@ -55,8 +55,14 @@ function render() {
   const filtered = items.filter(item => {
     if (ui.tab === 'saved' && !state.saved.includes(item.id)) return false;
     if (ui.tab === 'tracked' && status(item.id) === 'new') return false;
-    if (ui.category !== 'all' && item.category !== ui.category) return false;
+    if (!['all', 'focus'].includes(ui.category) && item.category !== ui.category) return false;
     return [item.title,item.brand,item.description,item.source].join(' ').toLocaleLowerCase('de-DE').includes(q);
+  });
+  // With "Mode & Technik zuerst" selected, both categories appear before other matches.
+  // All other categories remain accessible and no actual offers are fabricated.
+  if (ui.category === 'focus') filtered.sort((a, b) => {
+    const rank = item => ['Mode', 'Technik'].includes(item.category) ? 2 : 0;
+    return rank(b) - rank(a) || (b.published || '').localeCompare(a.published || '');
   });
   $('#cards').innerHTML = filtered.length ? filtered.map(card).join('') : '<div class="empty"><span class="symbol">✧</span><strong>Hier ist noch Platz für Entdeckungen.</strong><p>Der automatische Scout benötigt erlaubte öffentliche RSS-Feeds. Du kannst auch selbst ein Angebot hinzufügen. Es werden keine erfundenen Live-Angebote angezeigt.</p><button class="primary-btn" data-action="add">＋ Angebot hinzufügen</button></div>';
 }

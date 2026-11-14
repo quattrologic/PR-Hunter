@@ -4,6 +4,12 @@
 
 **Status: v0.1 MVP.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
+## Discovery priority
+
+**Clothing and technology come first by default.** PR-Hunter prioritizes streetwear, sneakers, hoodies, tracksuits, fashion, headphones, smartphones, gaming hardware, tablets, and other consumer electronics. Other relevant categories are still visible, and the iPad dashboard lets you switch to "Alle Kategorien" or choose one category.
+
+Prioritization does **not** mean those brands are currently offering products: real public opportunities only appear when legitimate sources are configured.
+
 ## Features
 
 - Responsive, touch-friendly German dashboard, installable from Safari as a PWA
