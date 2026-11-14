@@ -11,7 +11,11 @@ export function canonicalOpportunityUrl(input) {
   const safe = safeExternalUrl(input);
   if (!safe) return null;
   const u = new URL(safe);
-  if (IG_HOSTS.has(u.hostname.toLowerCase())) {
+  const host = u.hostname.toLowerCase();
+  // Prevent lookalike links such as www.instagram.com.evil.test from
+  // masquerading as Instagram while still allowing unrelated HTTPS sites.
+  if (!IG_HOSTS.has(host) && /(?:^|\.)instagram\.com(?:\.|$)/.test(host)) return null;
+  if (IG_HOSTS.has(host)) {
     const parts = u.pathname.split('/').filter(Boolean);
     if (parts.length !== 2 || !IG_TYPES.has(parts[0]) || !/^[A-Za-z0-9_-]{5,50}$/.test(parts[1])) return null;
     return 'https://www.instagram.com/' + parts[0] + '/' + parts[1] + '/';
