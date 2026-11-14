@@ -174,6 +174,11 @@ export function parseBackup(text) {
     saved,tracked,manual,brands,
     activity:Array.isArray(raw.activity) ? raw.activity.slice(0,1000).map(safeActivity).filter(Boolean) : [],
     savedDetails,checklists,
-    accounts:accountLabels(raw.accounts)
+    accounts:accountLabels(raw.accounts),
+    integration:{
+      mode:raw.integration?.mode === 'facebook_login' ? 'facebook_login' : 'instagram_login',
+      checked:Array.isArray(raw.integration?.checked) ?
+        [...new Set(raw.integration.checked.filter(x=>['professional','app','backend','permissions'].includes(x)))] : []
+    }
   };
 }

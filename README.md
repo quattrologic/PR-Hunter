@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Ultimate Phase 4 – local Instagram link inbox, account labels and private backups.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Ultimate Phase 5 – transparent integration hub and verified-source matching.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -134,3 +134,26 @@ This phase is covered by Node.js regression tests. Physical iPad modal, scrollin
 On iPadOS Safari, a Home Screen PWA cannot reliably register as a native **Web Share Target** for Instagram, so **copy & paste** is used instead. Meta's Instagram APIs require appropriate professional accounts, explicit app authorization and approved scopes. They do not allow bulk posting of giveaway comments on arbitrary third-party reels. No Instagram account credentials, API tokens or background posting have been added. Future official integration needs a secure backend and separate user authorization.
 
 Security: backups contain personal account labels, offer URLs and self-reported activities. Export only onto devices or storage the user controls. A restore **replaces** the current device-local data after confirmation; take a separate backup first.
+
+
+## Phase 5 – Integration Hub (preparation, not OAuth yet)
+
+The iPad \`Integrationen\` tab (previously the "About" entry) adds:
+- A **truthful connection status**: Instagram is **not connected**. No login buttons that imply authorization and no secret/token fields in the public PWA.
+- A Meta platform setup checklist (Creator/Business, developer app, confidential HTTPS backend, scopes/app review). The checkboxes are **self-reported preparation only**. Even completing the checklist **does not create a Meta connection**.
+- Separate, documented **Instagram Login** and **Facebook Login** routes. Instagram Login can manage authorized professional accounts but has no general hashtag search; Facebook Login needs a Page-linked professional account and offers limited hashtag / Business Discovery endpoints with approved permissions and rate limits.
+- The existing Brand Radar is matched to actual existing public RSS/editorially reviewed entries by brand title/organizer. Results appear only if the source contains a matching item. External search links are offered for manual exploration and do not imply the source is indexed or currently running a giveaway.
+- A public-source diagnostics panel shows real GitHub Actions RSS success counts and latest matching feed items from the catalog.
+- Setup preferences are persisted device-locally, included in the existing JSON backup, and sanitized upon restore. Other stored state remains unchanged.
+
+**Not implemented**: real Meta OAuth, token exchange, webhook verification, secure token vault, reading foreign Instagram Reels, automatic comments/likes/follows/DMs, or 20-account simultaneous connections. These require a configured Meta developer app, redirect domain and **non-static backend**. No personal account access is available without explicit owner authorization.
+
+### Setup principles for future OAuth backend
+
+1. The user connects **only their own authorized professional account** in a separate Meta consent screen; neither the PWA nor GitHub repository collects an Instagram password.
+2. A private HTTPS backend creates and validates one-time OAuth state/PKCE (where supported), handles Meta's code exchange, stores encrypted tokens server-side, and sets secure HttpOnly SameSite session cookies.
+3. The backend enforces per-account permissions, opt-in, rate limits, webhook signature checks, and token revocation and deletion.
+4. Use only documented APIs. Even comment-management permissions do **not** mean unrestricted commenting on other brands' giveaway Reels.
+5. The first real integration deployment must be separately validated on an actual iPad and requires the user's explicit authorization.
+
+Official background: https://developers.facebook.com/docs/instagram/platform/instagram-api/changelog/ and https://www.postman.com/meta/instagram/folder/1z5vxzu/instagram-api-with-instagram-login

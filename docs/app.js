@@ -11,11 +11,19 @@ import {
   extractOpportunityLinks, makeImportedOffers, accountLabels, addAccountLabel,
   backupDocument, parseBackup
 } from './phase4-core.mjs';
+import {
+  META_OPTIONS, INTEGRATION_STEPS, normalizeIntegrationSetup, integrationStatus,
+  matchedPublicOffers, buildBrandSearchLink, sourceHealthSummary
+} from './integrations.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
-const ui = { tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null, assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'' };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[] };
+const ui = {
+  tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null,
+  assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
+  brandFilter:null, sourceStatus:[]
+};
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -27,6 +35,7 @@ if (!state.tracked || typeof state.tracked !== 'object') state.tracked = {};
 if (!state.savedDetails || typeof state.savedDetails !== 'object') state.savedDetails = {};
 if (!state.checklists || typeof state.checklists !== 'object' || Array.isArray(state.checklists)) state.checklists = {};
 state.accounts = accountLabels(state.accounts);
+state.integration = normalizeIntegrationSetup(state.integration);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -129,10 +138,16 @@ function renderBrands() {
   ).join('');
   $('#brandCards').innerHTML = brands.map(brand => {
     const custom = brand.id.startsWith('custom-');
+    const matched = matchedPublicOffers(brand,ui.catalog);
+    const discover = buildBrandSearchLink(brand);
     return '<article class="brand-card"><div class="brand-card-top">' + brandAvatar(brand) +
       '<div><strong>' + esc(brand.name) + '</strong><br><small>@' + esc(brand.handle) + '</small></div></div>' +
-      '<p>Gespeichertes Referenzprofil · keine aktuell bestätigte Verlosung. Prüfe neue Posts direkt auf Instagram.</p>' +
+      '<p>' + (matched.length
+        ? '<strong>' + matched.length + ' öffentliche/r Fundhinweis/e</strong> anhand von Brandname/Titel – Fristen und Teilnahme separat prüfen.'
+        : 'Noch keine passenden Fundhinweise in den öffentlichen Quellen. Instagram wird nicht automatisch durchsucht.') + '</p>' +
       '<div class="brand-card-actions"><a href="' + esc(brand.url) + '" target="_blank" rel="noopener noreferrer">Profil ansehen ↗</a>' +
+      (matched.length ? '<button type="button" data-action="brand-offers" data-brand-id="' + esc(brand.id) + '">Funde (' + matched.length + ')</button>' : '') +
+      (discover ? '<a href="' + esc(discover) + '" target="_blank" rel="noopener noreferrer" title="Externe Suchmaschine, keine direkte Instagram-Anbindung">Extern suchen ↗</a>' : '') +
       (custom ? '<button type="button" data-action="remove-brand" data-handle="' + esc(brand.handle) + '" aria-label="Marke entfernen">Entfernen</button>' : '') + '</div></article>';
   }).join('');
 }
@@ -194,6 +209,17 @@ function emptyMessage(kind) {
 }
 function renderFeed() {
   let feed = rankFeed(all(), ui.category, ui.query);
+  const brandMessage = $('#brandFilterMessage');
+  if (ui.brandFilter) {
+    const brand = watchedBrands().find(x=>x.id===ui.brandFilter);
+    if (brand) {
+      const ids = new Set(matchedPublicOffers(brand,ui.catalog).map(x=>x.id));
+      feed = feed.filter(item => ids.has(item.id));
+      brandMessage.hidden = false;
+      brandMessage.innerHTML = 'Öffentliche Treffer für <strong>' + esc(brand.name) + '</strong>' +
+        ' <button type="button" data-action="clear-brand-filter">Alle Angebote ↗</button>';
+    } else { ui.brandFilter=null; brandMessage.hidden=true; }
+  } else brandMessage.hidden = true;
   if (ui.verifiedOnly) feed = feed.filter(item => item.sourceType === 'curated');
   if (ui.endingSoonOnly) feed = feed.filter(item => {
     const d = timeUntilDeadline(item);
@@ -240,6 +266,43 @@ function renderAssistantQueue() {
       '<button class="subtle-btn" data-action="assist" data-id="' + esc(item.id) + '" type="button">Öffnen ↗</button></article>';
   }).join('') : emptyMessage('feed');
 }
+
+function renderIntegrations() {
+  const meta = integrationStatus(state.integration);
+  const option = META_OPTIONS[meta.mode];
+  const progress = $('#metaSetupProgress');
+  if (!progress) return;
+  progress.textContent = meta.checkedCount + ' / ' + meta.total + ' vorbereitet';
+  document.querySelectorAll('input[name="metaMode"]').forEach(input => {
+    input.checked = input.value === meta.mode;
+  });
+  $('#metaCapabilities').innerHTML = '<div class="capability-title"><strong>' +
+    esc(option.label) + '</strong><small>Vorgesehene Meta-API, nicht aktiviert</small></div>' +
+    '<div class="capability-group"><span>Offiziell unterstützte Bereiche</span>' +
+    option.capabilities.map(name=>'<p>✓ ' + esc(name) + '</p>').join('') + '</div>' +
+    '<div class="capability-group unavailable"><span>Damit nicht möglich</span>' +
+    option.unavailable.map(name=>'<p>× ' + esc(name) + '</p>').join('') + '</div>';
+  $('#metaSteps').innerHTML = INTEGRATION_STEPS.map(step =>
+    '<label class="integration-step"><input type="checkbox" data-meta-step="' + esc(step.id) + '"' +
+    (meta.checked.includes(step.id)?' checked':'') + '><span>' + esc(step.label) + '</span></label>'
+  ).join('');
+  $('#metaGuidance').textContent = meta.configuredForPlanning
+    ? 'Checkliste vollständig – aber noch NICHT verbunden. Der sichere OAuth-Server, die App-Freigabe und der echte Tokenaustausch müssen unabhängig geprüft und eingerichtet werden.'
+    : 'Offene Vorbereitung: ' + meta.missing.map(x=>x.label).join(' · ') +
+      '. Keine Zugangsdaten in dieser App eingeben.';
+  const health = sourceHealthSummary(ui.sourceStatus);
+  $('#sourceTotals').textContent = ui.generatedAt ?
+    health.succeeded + '/' + health.checked + ' erreichbar' : 'Noch kein Live-Status';
+  $('#integrationSourceList').innerHTML = health.checked
+    ? ui.sourceStatus.map(source =>
+      '<div class="integration-source"><span class="' + (source.status === 'ok' ? 'source-ok':'source-bad') +
+      '">' + (source.status === 'ok' ? '●':'!') + '</span><div><strong>' + esc(source.name) +
+      '</strong><small>' + esc(source.status === 'ok' ? 'Aktiv · '+(source.matching || 0)+' Hinweise im letzten Scan' : 'Nicht erreichbar') +
+      '</small></div></div>'
+    ).join('')
+    : '<p class="helper">Noch kein abrufbarer Quellenstatus. Katalog bei bestehender Internetverbindung aktualisieren.</p>';
+}
+
 function renderActivity() {
   const summary = activitySummary(state.activity);
   $('#activityEntered').textContent = String(getStatusCounts().entered);
@@ -271,8 +334,9 @@ function render() {
   renderAssistantQueue();
   renderActivity();
   renderAccounts();
+  renderIntegrations();
 }
-const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', info:'ABOUT' };
+const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', info:'INTEGRATIONS' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -297,11 +361,13 @@ async function refresh() {
       item && typeof item.id === 'string' && safeExternalUrl(item.url)
     ) : [];
     ui.generatedAt = payload.generatedAt || null;
+    ui.sourceStatus = Array.isArray(payload.sources) ? payload.sources : [];
     $('#syncLabel').textContent = ui.generatedAt ? 'Scout: ' + new Date(ui.generatedAt).toLocaleString('de-DE') : 'Noch kein Scan';
     $('#sourceHealth').textContent = 'Öffentliche Feeds: ' + (payload.sourcesSucceeded ?? '?') + '/' + (payload.sourcesChecked ?? '?') +
       ' erreichbar · ' + (payload.curatedActive ?? 0) + ' redaktionell geprüfte Aktionen · ' +
       ui.catalog.length + ' Fundhinweise · keine Instagram-Automation';
   } catch {
+    ui.sourceStatus = [];
     $('#syncLabel').textContent = 'Katalog offline';
     $('#sourceHealth').textContent = 'Zurzeit keine Verbindung zu den öffentlichen Feeds. Gespeicherte Aktionen bleiben lokal erhalten.';
   }
@@ -421,6 +487,15 @@ document.addEventListener('click', event => {
     ).catch(() => toast('Bitte Clipboard-Zugriff in Safari erlauben.'));
     return;
   }
+  if (action === 'clear-brand-filter') {
+    ui.brandFilter = null;ui.category='focus';setTab('discover');return;
+  }
+  if (action === 'brand-offers') {
+    ui.brandFilter = String(button.dataset.brandId || '');
+    ui.category = 'all';ui.query='';$('#search').value='';
+    ui.verifiedOnly=false;ui.endingSoonOnly=false;
+    setTab('discover');return;
+  }
   if (action === 'remove-account') {
     const account = String(button.dataset.account || '').toLowerCase();
     state.accounts = state.accounts.filter(x => x !== account);
@@ -458,6 +533,21 @@ $('#pasteLinkButton').addEventListener('click', async () => {
   }
 });
 $('#addBrandButton').addEventListener('click', () => openDialog('brandDialog'));
+document.querySelectorAll('input[name="metaMode"]').forEach(input => {
+  input.addEventListener('change', event => {
+    state.integration = normalizeIntegrationSetup({...state.integration,mode:event.target.value});
+    save();renderIntegrations();
+  });
+});
+$('#metaSteps').addEventListener('change', event => {
+  const box = event.target.closest('input[data-meta-step]');
+  if (!box) return;
+  const value = box.dataset.metaStep;
+  const checked = new Set(state.integration.checked);
+  if (box.checked) checked.add(value); else checked.delete(value);
+  state.integration = normalizeIntegrationSetup({...state.integration,checked:[...checked]});
+  save();renderIntegrations();
+});
 $('#batchImportText').addEventListener('input', e => {
   const links = extractOpportunityLinks(e.target.value || '');
   $('#batchImportPreview').textContent = links.length
