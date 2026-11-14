@@ -1,10 +1,12 @@
 {
   "name": "pr-hunter",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "iPad-first public PR opportunity scout and tracker",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "scan": "node scripts/scout.mjs",

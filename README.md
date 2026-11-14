@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: v0.1 MVP.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Ultimate Phase 1, evolving from the v0.1 MVP.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -64,3 +64,23 @@ This is **not** an Instagram DM spam bot. Meta's official messaging capabilities
 This repo is public. Never commit addresses, account credentials, API secrets, private contact details, or personal application responses. Browser data is local to the current device, and clearing Safari storage removes it. GitHub Pages will make the public opportunity catalog readable by everyone.
 
 MIT licensed. This app is independent and not affiliated with Instagram or Meta.
+
+## Ultimate Phase 1: Fashion-first iPad experience (2026-11)
+
+The first Ultimate iteration replaces the old dark dashboard with a **light iPad-first streetwear discovery interface** (inspired by the layout patterns of social and Apple apps, not a copied UI). It adds:
+
+- A real public feed presented in swipe-friendly vertical-style cards (cards are **not** fabricated Instagram videos or product photos).
+- A configurable **90% fashion / 10% technology feed preference**. This is a ranking objective; the number and mixture of real offers depend on available inventory. "All" still reveals other categories.
+- Brand Radar seeded with the user's five streetwear Instagram references: Suvene, Ranya, 6PM Updates, More Money More Love, and Deputy Department. **These are bookmarked reference profiles, not proof of live giveaways or automated Instagram monitoring.** Add or remove custom Instagram profiles locally.
+- A private **activity timeline** to record drafted comments, confirmed manual participation, self-reported wins and product arrival, with optional account labels, notes and HTTPS evidence links.
+- Bookmarks now snapshot their original listing so older bookmarked public opportunities remain visible when a new scan replaces the catalog.
+- Network-first caching for the public catalog with an offline fallback, and updated iPad PWA theme.
+
+The original \`pr-hunter-state-v1\` browser storage key is retained to preserve existing user bookmarks, manually added opportunities and application statuses. Additional data also stays in browser localStorage and is lost if Safari site data is cleared. The public GitHub Pages site does not store private activity.
+
+**Not implemented yet:** Instagram search/scraping, likes, follows, comments, DMs, multi-account sign-in, cloud storage, push notifications, proof of eligibility, automatic contest entries or guaranteed product delivery. Never add Instagram passwords, session cookies or other personal data to the public repository.
+
+### Validation
+
+\`npm test\` checks the feed scanner and pure Ultimate logic. GitHub Pages serves static files from \`/docs\`; test all interactive flows on a physical iPad before calling the release hardware-verified.
+
