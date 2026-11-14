@@ -7,7 +7,7 @@ const TERMS = /\b(giveaways?|freebies?|pr[\s-]?packages?|brand[\s-]?ambassador|g
 const GIVEAWAY = /\b(gewinnspiele?|giveaways?|verlosung|verlosen|produkttests?(?:er)?|product\s*tests?(?:ing|er)?|tester\s+gesucht|testpersonen\s+gesucht|pr[\s-]?paket|pr[\s-]?sample|gratis\s+testen|kostenlos\s+testen)\b/i;
 const NON_PRODUCT = /\b(girokonto|kreditkarte|versicherung|cashback|newsletter|umfragegeld|umfragen?|geld\s+verdienen|telefonvertrag|stromvertrag|katalog|kalender|broschüre|ebooks?|gutschein|versandkosten|gratisartikel\s+beigaben?)\b/i;
 const GENERAL_ARTICLE = /\b(\d+\s+(?:besten|beste|tipps|programme)|ratgeber|übersicht|guide|vergleich|aktionen\s+im\s+überblick|wie\s+(?:wird|werde|kann)\s+(?:ich|man))\b/i;
-const EXPLICIT_OFFER = /\b(gewinnspiel|verlosung|verlosen|gewinnen|giveaway|freebie|pr[\s-]?paket|produkttest|produkttester|product\s*test|tester\s+gesucht|testpersonen\s+gesucht|gratis|kostenlos\s+testen|gratisartikel|kostenlos\s+bestellen)\b/i;
+const EXPLICIT_OFFER = /\b(gewinnspiel|verlosung|verlosen|gewinnen|giveaway|freebie|pr[\s-]?paket|produkttest|produkttester|product\s*test(?:ing|er)?|tester\s+gesucht|testpersonen\s+gesucht|gratis|kostenlos\s+testen|gratisartikel|kostenlos\s+bestellen)\b/i;
 const PAID_PROMO = /\b(rabatt|deal|schnäppchen|coupon|preisfehler|spart?|nur\s+\d+[,.]?\d*\s*€|gratis\s+(?:versand|lieferung|zugabe)|kostenloser\s+versand)\b/i;
 export function decodeEntities(text = '') {
   return String(text).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
