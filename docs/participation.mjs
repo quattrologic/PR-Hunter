@@ -57,7 +57,7 @@ export function offerWarnings(item, now = Date.now()) {
     if (/unklar|nicht ausdrücklich|folgekosten|prüfen|unbestätigt/.test(cost))
       warnings.push('Mögliche Versand- oder Folgekosten ungeklärt');
   }
-  if (!item.deadline) warnings.push('Teilnahmefrist unbekannt');
+  if (!item.deadline) warnings.push('Frist unbekannt – beim Veranstalter prüfen');
   return warnings;
 }
 export function isConfirmedParticipation(activities, offerId) {
