@@ -1,0 +1,37 @@
+name: PR-Hunter public feed scan
+on:
+  schedule:
+    - cron: "14 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr-hunter-feed-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check tests
+        run: npm test
+      - name: Fetch configured public feeds
+        run: npm run scan
+      - name: Commit public opportunity catalog if changed
+        shell: bash
+        run: |
+          if ! git diff --quiet -- docs/opportunities.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/opportunities.json
+            git commit -m "data: refresh public PR opportunities"
+            git push
+          fi
