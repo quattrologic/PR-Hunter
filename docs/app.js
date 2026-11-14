@@ -1,6 +1,6 @@
 import {
   SEED_BRANDS, ACTIVITY_TYPES, safeExternalUrl, normalizeBrand,
-  makeActivity, rankFeed, activitySummary
+  makeActivity, rankFeed, activitySummary, isExpired
 } from './ultimate-core.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
@@ -109,20 +109,32 @@ function renderOffer(item) {
   const socialPost = /^https:\/\/(?:www\.)?instagram\.com\/(?:p|reel)\//i.test(url);
   const brand = clean(item.brand || item.source || 'Originalquelle');
   const desc = clean(item.description || 'Bedingungen vor der Teilnahme beim Veranstalter prüfen.').slice(0, 200);
-  const fromSource = item.manual ? 'Selbst gespeichert' : 'Öffentlicher Feed';
+  const fromSource = item.manual ? 'Selbst gespeichert' : item.sourceType === 'curated'
+    ? 'Offizielle Bedingungen geprüft' : 'Öffentlicher Feed';
   const id = esc(item.id);
+  const deadline = item.deadline ? asDate(item.deadline) : null;
+  const ended = isExpired(item);
+  const terms = safeExternalUrl(item.termsUrl);
+  const sourceInfo = item.sourceType === 'curated' ? '<div class="offer-proof">' +
+    '<strong>✓ Bedingungen gelesen am ' + esc(item.checkedOn || '–') + '</strong>' +
+    (deadline ? '<span>Frist: ' + esc(deadline) + '</span>' : '') +
+    (item.shippingStatus ? '<span>' + esc(item.shippingStatus) + '</span>' : '') +
+    (item.costStatus ? '<span>⚠ ' + esc(item.costStatus) + '</span>' : '') +
+    (item.participation ? '<span>Teilnahme: ' + esc(item.participation) + '</span>' : '') +
+    (terms ? '<a href="' + esc(terms) + '" target="_blank" rel="noopener noreferrer">Bedingungen lesen ↗</a>' : '') +
+    '</div>' : '';
   return '<article class="opportunity"><div class="card-visual' + visualClass + '">' +
     '<div class="card-topline"><span class="visual-badge">' + esc(socialPost ? 'INSTAGRAM POST' : iconText(category)) + '</span><span class="visual-type">✧ ' + esc(type) + '</span></div>' +
     '<div class="visual-title">' + esc(titlePreview) + '</div></div>' +
     '<div class="card-content"><div class="card-meta"><span>' + esc(brand) + '</span><span>·</span><span>' + esc(fromSource) + '</span>' +
     (item.published ? '<span>· ' + esc(asDate(item.published)) + '</span>' : '') + '</div>' +
-    '<h3>' + esc(offerName) + '</h3><p class="description">' + esc(desc) + '</p>' +
+    '<h3>' + esc(offerName) + '</h3><p class="description">' + esc(desc) + '</p>' + sourceInfo +
     '<div class="card-actions"><a class="open-offer" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Original öffnen ↗</a>' +
     '<button class="icon-btn' + (saved ? ' selected' : '') + '" type="button" data-action="bookmark" data-id="' + id +
     '" aria-label="' + (saved ? 'Aus Merkliste entfernen' : 'Zur Merkliste hinzufügen') + '" title="Merken">' + (saved ? '♥' : '♡') + '</button>' +
     '<button class="icon-btn" type="button" data-action="copy" data-id="' + id + '" title="Kommentar oder Anfrage kopieren">✎</button>' +
     '<button class="icon-btn" type="button" data-action="log" data-id="' + id + '" title="Aktivität dokumentieren">＋</button></div>' +
-    '<div class="card-safety">Hinweis · Frist, Kosten und Teilnahme prüfen</div></div></article>';
+    '<div class="card-safety">' + (ended ? 'Abgelaufen · nur noch im Verlauf' : 'Originalbedingungen, Versand und Frist vor Teilnahme prüfen') + '</div></div></article>';
 }
 function emptyMessage(kind) {
   const isFeed = kind === 'feed';
@@ -199,7 +211,8 @@ async function refresh() {
     ui.generatedAt = payload.generatedAt || null;
     $('#syncLabel').textContent = ui.generatedAt ? 'Scout: ' + new Date(ui.generatedAt).toLocaleString('de-DE') : 'Noch kein Scan';
     $('#sourceHealth').textContent = 'Öffentliche Feeds: ' + (payload.sourcesSucceeded ?? '?') + '/' + (payload.sourcesChecked ?? '?') +
-      ' erreichbar · ' + ui.catalog.length + ' Hinweise · Instagram nicht automatisch verbunden';
+      ' erreichbar · ' + (payload.curatedActive ?? 0) + ' redaktionell geprüfte Aktionen · ' +
+      ui.catalog.length + ' Fundhinweise · keine Instagram-Automation';
   } catch {
     $('#syncLabel').textContent = 'Katalog offline';
     $('#sourceHealth').textContent = 'Zurzeit keine Verbindung zu den öffentlichen Feeds. Gespeicherte Aktionen bleiben lokal erhalten.';
@@ -274,6 +287,22 @@ document.addEventListener('click', event => {
   if (action === 'log') return openActivityDialog(item.id);
 });
 $('#addButton').addEventListener('click', () => openDialog('addDialog'));
+$('#pasteLinkButton').addEventListener('click', async () => {
+  // Explicit iPad tap only. Clipboard data never leaves the device.
+  try {
+    const value = await navigator.clipboard.readText();
+    const url = safeExternalUrl(value.trim());
+    if (url) {
+      $('#addForm').elements.namedItem('url').value = url;
+      openDialog('addDialog');
+      toast('Link eingefügt. Ergänze Marke und Gewinnspiel-Titel.');
+    } else {
+      openDialog('addDialog');toast('Kein gültiger HTTPS-Link in der Zwischenablage.');
+    }
+  } catch {
+    openDialog('addDialog');toast('Bitte den Link selbst in das Formular einfügen.');
+  }
+});
 $('#addBrandButton').addEventListener('click', () => openDialog('brandDialog'));
 $('#logActivityButton').addEventListener('click', () => openActivityDialog());
 $('#refreshButton').addEventListener('click', refresh);

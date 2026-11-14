@@ -1,7 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { normalizeCurated, mergeCatalog } from './curated.mjs';
 const configPath = new URL('../config/sources.json', import.meta.url);
+const curatedPath = new URL('../config/curated-offers.json', import.meta.url);
 const catalogPath = new URL('../docs/opportunities.json', import.meta.url);
 const TERMS = /\b(giveaways?|freebies?|pr[\s-]?packages?|brand[\s-]?ambassador|gifted[\s-]?collab|product[\s-]?tests?(?:ing|er)?|free[\s-]?products?|sampling|collaboration|gratis|gewinnspiele?|verlosung|verlosungen|verlosen|produkttests?(?:er)?|testprodukte?|geschenkaktion|kooperation|pr[\s-]?paket|pr[\s-]?sample|kostenlos\s+testen|tester\s+gesucht|testpersonen\s+gesucht)\b/i;
 const GIVEAWAY = /\b(gewinnspiele?|giveaways?|verlosung|verlosen|produkttests?(?:er)?|product\s*tests?(?:ing|er)?|tester\s+gesucht|testpersonen\s+gesucht|pr[\s-]?paket|pr[\s-]?sample|gratis\s+testen|kostenlos\s+testen)\b/i;
@@ -117,13 +119,21 @@ async function scan() {
     }
   }
   if (!success) throw Error('All configured feeds failed; preserving existing catalog');
-  // Each successful scan replaces stale or previously misclassified entries.
-  const deduped = [...new Map(found.map(item => [item.url, item])).values()]
-    .sort(compareOpportunities).slice(0, 200);
+  // Independently reviewed official terms are stored as data, never scraped
+  // from Instagram. Expired and paid-to-enter entries are excluded every scan.
+  const curatedConfig = JSON.parse(await readFile(curatedPath, 'utf8'));
+  if (!Array.isArray(curatedConfig.offers)) throw Error('config/curated-offers.json must contain offers array');
+  const reviewed = curatedConfig.offers.map(item => normalizeCurated(item)).filter(Boolean);
+  // Editorial selections appear ahead of unreviewed RSS hints.
+  const deduped = mergeCatalog(found, reviewed)
+    .sort((a,b) => (Number(b.sourceType === 'curated') - Number(a.sourceType === 'curated')) || compareOpportunities(a,b))
+    .slice(0, 200);
   await writeFile(catalogPath, JSON.stringify({
     version: 1, generatedAt: new Date().toISOString(),
     sourcesChecked: config.sources.length, sourcesSucceeded: success,
     sources: sourceStatus,
+    curatedChecked: curatedConfig.offers.length,
+    curatedActive: reviewed.length,
     opportunities: deduped
   }, null, 2) + '\n');
   console.log('Saved', deduped.length, 'relevant opportunities');

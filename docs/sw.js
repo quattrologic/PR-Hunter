@@ -1,5 +1,5 @@
 // v4: updated light UI, cached shell and a network-first public catalog.
-const CACHE = 'pr-hunter-ultimate-v4';
+const CACHE = 'pr-hunter-ultimate-v5';
 const SHELL = ['./', './index.html', './ultimate.css', './app.js', './ultimate-core.mjs', './manifest.webmanifest', './icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

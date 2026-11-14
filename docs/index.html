@@ -39,7 +39,7 @@
           <div class="eyebrow-badge"><span class="live-dot"></span> DEIN STREETWEAR RADAR</div>
           <h1>Good style.<span>Better luck.</span></h1>
           <p>Entdecke kostenlose Streetwear, PR-Aktionen und Giveaways. Von kleinen Labels bis zu großen Brands – alles an einem Ort.</p>
-          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button></div>
+          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button></div>
           <div class="hero-trust">90 % FASHION <span>·</span> 10 % TECH <span>·</span> WELTWEIT</div>
         </div>
         <div class="hero-poster" aria-hidden="true"><div class="poster-label">THE HUNT<br>IS ON.</div><div class="poster-object">✳</div><div class="poster-footer">NO FAKE DROPS. JUST POSSIBILITIES. / 001</div></div>
@@ -58,6 +58,7 @@
       <section class="feed" aria-labelledby="feedTitle">
         <div class="section-header"><div><span class="mini-label">DEINE ENTDECKUNGEN</span><h2 id="feedTitle">The discovery feed<span class="soft-accent">.</span></h2></div><span class="sync" id="syncLabel">Lade öffentliche Feeds …</span></div>
         <p id="sourceHealth" class="helper" aria-live="polite">Quellen werden geprüft …</p>
+        <div class="scout-legend"><span>✓ Offizielle Aktionen: Bedingungen manuell geprüft</span><span>✧ RSS-Feeds: Teilnahme noch prüfen</span><span>⚠ Kosten &amp; DE-Versand immer kontrollieren</span></div>
         <div class="toolbar">
           <div class="filters" id="filters" aria-label="Angebote filtern">
             <button class="filter-chip active" type="button" data-category="focus" aria-pressed="true">Für dich · 90/10</button>
@@ -74,6 +75,9 @@
       <div class="section-banner brands-banner"><span class="mini-label">DEIN STREETWEAR UNIVERSUM</span><h1>Brand radar<span class="soft-accent">.</span></h1><p>Deine Lieblingslabels und neue Referenzen. Wir zeigen Profile – aktive Verlosungen erst, wenn eine passende Quelle sie bestätigt.</p><button id="addBrandButton" class="primary-btn" type="button">＋ Marke hinzufügen</button></div>
       <div class="section-header section-pad"><div><span class="mini-label">REFERENZEN</span><h2>Deine Watchlist</h2></div><span id="brandCount" class="counter-label">0 Marken</span></div>
       <div id="brandCards" class="brand-cards"></div>
+      <div class="social-discovery"><div><span class="mini-label">SOCIAL DISCOVERY</span><h2>Instagram-Gewinnspiele suchen</h2><p>Diese Links öffnen Instagram-Hashtags zum Selbstdurchsehen. PR-Hunter liest die Reels nicht automatisch aus und kommentiert nicht.</p></div>
+        <div class="social-links"><a href="https://www.instagram.com/explore/tags/streetweargiveaway/" target="_blank" rel="noopener noreferrer">#streetweargiveaway ↗</a><a href="https://www.instagram.com/explore/tags/hoodiegiveaway/" target="_blank" rel="noopener noreferrer">#hoodiegiveaway ↗</a><a href="https://www.instagram.com/explore/tags/sneakergiveaway/" target="_blank" rel="noopener noreferrer">#sneakergiveaway ↗</a></div>
+      </div>
     </section>
     <section class="view" id="activityPanel" data-panel="activity" hidden>
       <div class="section-banner activity-banner"><span class="mini-label">PERSONAL LOGBOOK</span><h1>Deine Aktivitäten<span class="soft-accent">.</span></h1><p>Behalte den Überblick über Kommentare, Teilnahmen und Gewinne. Nur Aktionen, die du selbst dokumentierst, werden als erledigt angezeigt.</p><button id="logActivityButton" class="primary-btn" type="button">＋ Aktivität eintragen</button></div>

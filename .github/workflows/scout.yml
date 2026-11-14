@@ -5,6 +5,8 @@ on:
       - main
     paths:
       - "config/sources.json"
+      - "config/curated-offers.json"
+      - "scripts/curated.mjs"
       - "scripts/scout.mjs"
       - ".github/workflows/scout.yml"
   schedule:
