@@ -1,30 +1,49 @@
-// v4: updated light UI, cached shell and a network-first public catalog.
-const CACHE = 'pr-hunter-ultimate-v9';
-const SHELL = ['./', './index.html', './ultimate.css', './app.js', './ultimate-core.mjs', './participation.mjs', './phase4-core.mjs', './integrations.mjs', './phase6-core.mjs', './manifest.webmanifest', './icon.svg'];
+// Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
+const CACHE_PREFIX = 'pr-hunter-ultimate-';
+const CACHE = CACHE_PREFIX + 'v10';
+const SHELL = [
+  './', './index.html', './ultimate.css', './app.js', './ultimate-core.mjs',
+  './participation.mjs', './phase4-core.mjs', './integrations.mjs',
+  './phase6-core.mjs', './phase7-core.mjs', './manifest.webmanifest', './icon.svg'
+];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))
+    Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE).map(key => caches.delete(key)))
   ).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', event => {
   const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
-  const isCatalog = new URL(req.url).pathname.endsWith('/opportunities.json');
-  if (isCatalog) {
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+  if (req.mode === 'navigate') {
     event.respondWith(caches.open(CACHE).then(async cache => {
       try {
-        const fresh = await fetch(req);
-        if (!fresh.ok) throw Error('HTTP ' + fresh.status);
-        await cache.put(req, fresh.clone());
-        return fresh;
+        const response = await fetch(req);
+        if (!response.ok) throw Error('HTTP ' + response.status);
+        await cache.put('./index.html', response.clone());
+        return response;
+      } catch {
+        return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
+      }
+    }));
+    return;
+  }
+  if (url.pathname.endsWith('/opportunities.json')) {
+    event.respondWith(caches.open(CACHE).then(async cache => {
+      try {
+        const response = await fetch(req);
+        if (!response.ok) throw Error('HTTP ' + response.status);
+        await cache.put(req, response.clone());
+        return response;
       } catch {
         return (await cache.match(req)) || Response.error();
       }
     }));
-  } else {
-    event.respondWith(caches.match(req).then(cached => cached || fetch(req)));
+    return;
   }
+  event.respondWith(caches.match(req).then(cached => cached || fetch(req)));
 });

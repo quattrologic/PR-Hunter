@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Ultimate Phase 6 – in-app notifications and passphrase-protected portable backups.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Ultimate Phase 7 – iPad usability, accessibility, performance and security polish.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -178,3 +178,17 @@ Official background: https://developers.facebook.com/docs/instagram/platform/ins
 - Automatically detecting Instagram winnings, replies, DMs or auto-entering other people's giveaways. An authorized, supported provider integration must be separately configured.
 
 Apple Web Push information: https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/ and https://developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers
+
+
+## Phase 7 — iPad Ultimate-Finish (2026-11)
+
+- **Performance:** the discovery feed and personal saved list render only 18 cards initially and progressively load more on demand (up to the configured 1000 local limit). Search rebuilds are debounced by 120 ms, lowering repeated layout work when typing on iPad.
+- **Motion & iPad usability:** smoother entry/hover animations, card interactions and responsive touch targets (~44 CSS px or more). Optional **System / Lebendig / Reduziert** modes under Link-Inbox settings. iPadOS **Reduce Motion** always takes priority. Narrower screens use horizontally scrollable bottom navigation.
+- **Verification clarity:** badges distinguish unverified manually imported posts/RSS hints from manually reviewed organizer rules. Unknown delivery costs, source legitimacy or shipping are flagged and no product-quality or win-rate guarantees are made. Users still must verify each original organizer's conditions.
+- **Accessibility:** skip-to-content link, keyboard focus outlines, reduced-motion fallback, connectivity status, visible result counts and accessible modal behavior.
+- **Offline reliability:** versioned app-shell cache v10, network-first navigation with cached fallback, offline-friendly public catalog, only PR-Hunter-owned caches are removed on upgrades. Local data and encrypted exports are not cached in the public service worker.
+- **Data portability:** the selected motion mode travels in locally exported encrypted/plaintext backups and is sanitized during restore. The existing \`pr-hunter-state-v1\` key remains unchanged.
+
+### Still requires separate infrastructure
+
+This is a complete *local and publicly hosted iPad UX polish iteration*, **not** the end of all Ultimate ambitions. Automatic private cloud sync and true background Web Push require a secure backend; approved Meta account connections need explicit authorization. Instagram does not permit generic mass commenting or auto-following on arbitrary third-party Reels. Final hardware acceptance requires opening Phase 7 in Safari/Home Screen on a real iPad, testing touch, screen rotation, saved state, reduced motion and import/export. CI validates source logic and static page structure, not an actual Safari WebKit device.

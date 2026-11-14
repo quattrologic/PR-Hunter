@@ -19,15 +19,18 @@ import {
   normalizeAlertsState, buildAlerts, unreadCount, markAlertsRead, clearReadAlerts,
   encryptBackup, decryptBackup, isEncryptedBackup
 } from './phase6-core.mjs';
+import {
+  FEED_PAGE_SIZE, normalizeDisplayPrefs, getVisibleSlice, offerVerification
+} from './phase7-core.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
 const ui = {
   tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null,
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
-  brandFilter:null, sourceStatus:[]
+  brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -41,6 +44,7 @@ if (!state.checklists || typeof state.checklists !== 'object' || Array.isArray(s
 state.accounts = accountLabels(state.accounts);
 state.integration = normalizeIntegrationSetup(state.integration);
 state.alerts = normalizeAlertsState(state.alerts);
+state.display = normalizeDisplayPrefs(state.display);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -179,6 +183,11 @@ function renderOffer(item) {
   const deadline = item.deadline ? asDate(item.deadline) : null;
   const ended = isExpired(item);
   const terms = safeExternalUrl(item.termsUrl);
+  const verification = offerVerification(item);
+  const verificationInfo = '<div class="verification-meta ' + esc(verification.status) +
+    '"><strong>' + esc(verification.label) + '</strong>' +
+    (verification.problems.length ? '<span> · ' + esc(verification.problems[0]) + '</span>' : '') +
+    '</div>';
   const sourceInfo = item.sourceType === 'curated' ? '<div class="offer-proof">' +
     '<strong>✓ Bedingungen gelesen am ' + esc(item.checkedOn || '–') + '</strong>' +
     (deadline ? '<span>Frist: ' + esc(deadline) + '</span>' : '') +
@@ -192,7 +201,7 @@ function renderOffer(item) {
     '<div class="visual-title">' + esc(titlePreview) + '</div></div>' +
     '<div class="card-content"><div class="card-meta"><span>' + esc(brand) + '</span><span>·</span><span>' + esc(fromSource) + '</span>' +
     (item.published ? '<span>· ' + esc(asDate(item.published)) + '</span>' : '') + '</div>' +
-    '<h3>' + esc(offerName) + '</h3><p class="description">' + esc(desc) + '</p>' + sourceInfo +
+    '<h3>' + esc(offerName) + '</h3><p class="description">' + esc(desc) + '</p>' + verificationInfo + sourceInfo +
     '<div class="card-actions"><a class="open-offer" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Original öffnen ↗</a>' +
     '<button class="icon-btn' + (saved ? ' selected' : '') + '" type="button" data-action="bookmark" data-id="' + id +
     '" aria-label="' + (saved ? 'Aus Merkliste entfernen' : 'Zur Merkliste hinzufügen') + '" title="Merken">' + (saved ? '♥' : '♡') + '</button>' +
@@ -234,9 +243,22 @@ function renderFeed() {
   const ending = $('#endingSoonButton');
   if (verified) { verified.classList.toggle('active', ui.verifiedOnly); verified.setAttribute('aria-pressed', String(ui.verifiedOnly)); }
   if (ending) { ending.classList.toggle('active', ui.endingSoonOnly); ending.setAttribute('aria-pressed', String(ui.endingSoonOnly)); }
-  $('#discoverCards').innerHTML = feed.length ? feed.map(renderOffer).join('') : emptyMessage('feed');
-  const saved = getSaved();
-  $('#savedCards').innerHTML = saved.length ? saved.map(renderOffer).join('') : emptyMessage('saved');
+  const page = getVisibleSlice(feed,ui.visibleFeed);
+  $('#discoverCards').innerHTML = page.total ?
+    page.items.map(renderOffer).join('') +
+    (page.remaining ? '<div class="load-more"><span>' + page.items.length + ' von ' + page.total +
+      ' Angeboten sichtbar</span><button type="button" data-action="load-more" data-target="feed">Weitere ' +
+      Math.min(FEED_PAGE_SIZE,page.remaining) + ' laden ↓</button></div>' : '') : emptyMessage('feed');
+  const feedCount = $('#feedResultCount');
+  if (feedCount) feedCount.textContent = page.total
+    ? page.total + ' passende Fundhinweise · ' + page.items.length + ' angezeigt'
+    : 'Keine passenden Fundhinweise – Filter ändern oder einen eigenen Link speichern.';
+  const savedPage = getVisibleSlice(getSaved(),ui.visibleSaved);
+  $('#savedCards').innerHTML = savedPage.total ?
+    savedPage.items.map(renderOffer).join('') +
+    (savedPage.remaining ? '<div class="load-more"><span>' + savedPage.items.length +
+      ' von ' + savedPage.total + ' gespeichert</span><button type="button" data-action="load-more" data-target="saved">Weitere ' +
+      Math.min(FEED_PAGE_SIZE,savedPage.remaining) + ' laden ↓</button></div>' : '') : emptyMessage('saved');
   document.querySelectorAll('[data-category]').forEach(button => {
     const active = button.dataset.category === ui.category;
     button.classList.toggle('active', active);
@@ -362,7 +384,15 @@ function renderAlerts() {
   else if (typeof navigator.clearAppBadge === 'function' && !count)
     navigator.clearAppBadge().catch(()=>{});
 }
+function renderDisplay() {
+  state.display = normalizeDisplayPrefs(state.display);
+  document.documentElement.dataset.motion = state.display.motion;
+  document.querySelectorAll('input[name="motionMode"]').forEach(input => {
+    input.checked = input.value === state.display.motion;
+  });
+}
 function render() {
+  renderDisplay();
   updateStats();
   renderBrands();
   renderFeed();
@@ -510,7 +540,7 @@ document.addEventListener('click', event => {
   const nav = event.target.closest('[data-tab]');
   if (nav) { setTab(nav.dataset.tab); return; }
   const filter = event.target.closest('[data-category]');
-  if (filter) { ui.category = filter.dataset.category; renderFeed(); return; }
+  if (filter) { ui.category = filter.dataset.category; ui.visibleFeed=FEED_PAGE_SIZE; renderFeed(); return; }
   const close = event.target.closest('[data-close]');
   if (close) { $('#' + close.dataset.close)?.close(); return; }
   const button = event.target.closest('[data-action]');
@@ -518,6 +548,11 @@ document.addEventListener('click', event => {
   const action = button.dataset.action;
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
+  if (action === 'load-more') {
+    if (button.dataset.target === 'feed') ui.visibleFeed = Math.min(1000,ui.visibleFeed+FEED_PAGE_SIZE);
+    if (button.dataset.target === 'saved') ui.visibleSaved = Math.min(1000,ui.visibleSaved+FEED_PAGE_SIZE);
+    renderFeed();return;
+  }
   if (action === 'read-alert') {
     state.alerts = markAlertsRead(state.alerts,button.dataset.alertId);
     save();renderAlerts();return;
@@ -539,11 +574,11 @@ document.addEventListener('click', event => {
     return;
   }
   if (action === 'clear-brand-filter') {
-    ui.brandFilter = null;ui.category='focus';setTab('discover');return;
+    ui.brandFilter = null;ui.category='focus';ui.visibleFeed=FEED_PAGE_SIZE;setTab('discover');return;
   }
   if (action === 'brand-offers') {
     ui.brandFilter = String(button.dataset.brandId || '');
-    ui.category = 'all';ui.query='';$('#search').value='';
+    ui.category = 'all';ui.query='';ui.visibleFeed=FEED_PAGE_SIZE;$('#search').value='';
     ui.verifiedOnly=false;ui.endingSoonOnly=false;
     setTab('discover');return;
   }
@@ -584,6 +619,12 @@ $('#pasteLinkButton').addEventListener('click', async () => {
   }
 });
 $('#addBrandButton').addEventListener('click', () => openDialog('brandDialog'));
+document.querySelectorAll('input[name="motionMode"]').forEach(input => {
+  input.addEventListener('change', event => {
+    state.display=normalizeDisplayPrefs({motion:event.target.value});
+    save();renderDisplay();
+  });
+});
 document.querySelectorAll('input[name="metaMode"]').forEach(input => {
   input.addEventListener('change', event => {
     state.integration = normalizeIntegrationSetup({...state.integration,mode:event.target.value});
@@ -728,7 +769,16 @@ $('#participationConfirm').addEventListener('click', () => {
 });
 $('#logActivityButton').addEventListener('click', () => openActivityDialog());
 $('#refreshButton').addEventListener('click', refresh);
-$('#search').addEventListener('input', event => { ui.query = event.target.value.trim(); renderFeed(); });
+let searchTimer;
+$('#search').addEventListener('input', event => {
+  const value = event.target.value.trim();
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    ui.query = value;
+    ui.visibleFeed = FEED_PAGE_SIZE;
+    renderFeed();
+  }, 120);
+});
 $('#addForm').addEventListener('submit', event => {
   event.preventDefault();
   const form = new FormData(event.currentTarget);
@@ -785,5 +835,11 @@ $('#activityForm').addEventListener('submit', event => {
 });
 if ('serviceWorker' in navigator)
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+function updateConnectionStatus() {
+  $('#connectionStatus').hidden = navigator.onLine !== false;
+}
+window.addEventListener('online', () => { updateConnectionStatus(); refresh(); });
+window.addEventListener('offline',updateConnectionStatus);
+updateConnectionStatus();
 render();
 refresh();
