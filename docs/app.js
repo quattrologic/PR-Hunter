@@ -106,12 +106,13 @@ function renderOffer(item) {
   const offerName = clean(item.title).slice(0, 130);
   const titlePreview = offerName.length > 53 ? offerName.slice(0, 50) + '…' : offerName;
   const type = clean(item.offerType || 'Öffentliche Aktion');
+  const socialPost = /^https:\/\/(?:www\.)?instagram\.com\/(?:p|reel)\//i.test(url);
   const brand = clean(item.brand || item.source || 'Originalquelle');
   const desc = clean(item.description || 'Bedingungen vor der Teilnahme beim Veranstalter prüfen.').slice(0, 200);
   const fromSource = item.manual ? 'Selbst gespeichert' : 'Öffentlicher Feed';
   const id = esc(item.id);
   return '<article class="opportunity"><div class="card-visual' + visualClass + '">' +
-    '<div class="card-topline"><span class="visual-badge">' + esc(iconText(category)) + '</span><span class="visual-type">✧ ' + esc(type) + '</span></div>' +
+    '<div class="card-topline"><span class="visual-badge">' + esc(socialPost ? 'INSTAGRAM POST' : iconText(category)) + '</span><span class="visual-type">✧ ' + esc(type) + '</span></div>' +
     '<div class="visual-title">' + esc(titlePreview) + '</div></div>' +
     '<div class="card-content"><div class="card-meta"><span>' + esc(brand) + '</span><span>·</span><span>' + esc(fromSource) + '</span>' +
     (item.published ? '<span>· ' + esc(asDate(item.published)) + '</span>' : '') + '</div>' +
