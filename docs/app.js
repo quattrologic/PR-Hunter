@@ -32,13 +32,18 @@ import {
   normalizeDmDrafts, addDmDraft, updateDmStatus, dmStats,
   dmBrandProfile, dmCopyText
 } from './dm-assistant.mjs';
+import {
+  DISCOVERY_FILTERS, reelUrl, publicEmbedUrl, discoveryCards,
+  filterEmptyMessage
+} from './discovery-grid.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
 const ui = {
   tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null,
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
-  brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE
+  brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE,
+  discoveryMode:'for-you', galleryItems:[], activeGalleryItem:null
 };
 const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[] };
 let state;
@@ -156,8 +161,11 @@ function renderBrands() {
   const brands = watchedBrands();
   $('#brandCount').textContent = brands.length + ' Marken';
   $('#brandStrip').innerHTML = brands.map(brand =>
-    '<a class="brand-pill" href="' + esc(brand.url) + '" target="_blank" rel="noopener noreferrer" title="Instagram-Profil öffnen">' +
-    brandAvatar(brand) + '<span><strong>' + esc(brand.name) + '</strong><small>@' + esc(brand.handle) + '</small></span></a>'
+    '<button class="story-entry story-brand" type="button" data-action="story-brand" data-brand-id="' + esc(brand.id) +
+    '" aria-label="Marke ' + esc(brand.name) + ' anzeigen">' +
+    '<span class="story-ring"><span class="story-ring-inner">' +
+    esc(brand.name.split(/\s+/).slice(0,2).map(word=>word.slice(0,1)).join('').toUpperCase().slice(0,2)) +
+    '</span></span><span class="story-name">' + esc(brand.handle) + '</span></button>'
   ).join('');
   $('#brandCards').innerHTML = brands.map(brand => {
     const custom = brand.id.startsWith('custom-');
@@ -235,6 +243,89 @@ function emptyMessage(kind) {
       : 'Du kannst interessante Aktionen mit ♡ merken oder eine Aktion selbst hinzufügen.') +
     '</p><button class="primary-btn" type="button" data-action="add">＋ Aktion hinzufügen</button></div>';
 }
+function tileTheme(key){
+  const styles=['art-ink','art-stone','art-sand','art-ash','art-blue','art-paper'];
+  let hash=0;
+  for(const char of String(key||'brand')) hash=(hash*31 + char.charCodeAt(0))>>>0;
+  return styles[hash%styles.length];
+}
+function renderDiscoveryTile(item,index) {
+  const brand=clean(item.brand).replace(/^@/,'') || 'Originalquelle';
+  const title=clean(item.title);
+  const kind=item.kind === 'reel' ? 'REEL' :
+    item.kind==='giveaway' ? 'GEWINNSPIEL' :
+    item.kind==='drop' ? 'DROP' : item.kind==='pr' ? 'PR' : 'FUNDHINWEIS';
+  const brandInitials=brand.replace(/[^a-z0-9]+/ig,' ').trim().split(/\s+/).slice(0,2)
+    .map(word=>word.slice(0,1)).join('').toUpperCase() || 'PR';
+  const label=item.kind==='reel' ? 'Instagram · selbst gespeichert' :
+    item.verifiedPrice!==null ? item.verifiedPrice.toLocaleString('de-DE',{style:'currency',currency:'EUR'}) :
+    title;
+  return '<article class="discover-tile"><button type="button" class="discover-tile-open" data-action="open-discovery" data-tile-index="' + index +
+    '" aria-label="' + esc(kind+' von '+brand+': '+title) + '">' +
+    '<span class="tile-art ' + esc(tileTheme(brand+title)) + '">' +
+    '<span class="tile-category">' + esc(kind) + '</span>' +
+    '<span class="tile-mark" aria-hidden="true">' + esc(brandInitials) + '</span>' +
+    (item.kind==='reel' ? '<span class="tile-play" aria-hidden="true">▶</span>' : '') +
+    '<span class="tile-label">' + esc(label.slice(0,70)) + '</span></span>' +
+    '<span class="tile-footer"><span class="tile-avatar" aria-hidden="true">' + esc(brandInitials) +
+    '</span><span class="tile-brand">' + esc(brand) + '</span><span class="tile-action-icon" aria-hidden="true">↗</span></span>' +
+    '</button></article>';
+}
+function openDiscovery(item){
+  if(!item)return;
+  ui.activeGalleryItem=item;
+  const offer=byId(item.offerId);
+  const link=safeExternalUrl(item.url);
+  if(!link)return;
+  $('#discoveryTitle').textContent=item.title;
+  $('#discoveryKind').textContent=item.kind==='reel'?'Instagram Reel':'Öffentliche Fundstelle';
+  $('#discoveryBrand').textContent=item.brand;
+  const original=$('#discoveryOriginal');
+  original.href=link;
+  original.textContent=item.kind==='reel'?'Original-Reel öffnen ↗':'Original-Angebot öffnen ↗';
+  const preview=$('#discoveryPreview');
+  preview.textContent='';
+  const embed=item.kind==='reel'?publicEmbedUrl(link):null;
+  const message=document.createElement('p');
+  message.className='preview-placeholder';
+  if(embed){
+    const heading=document.createElement('strong');
+    heading.textContent='Instagram-Vorschau';
+    message.append(heading,'Wird nur für öffentliche Beiträge geladen. Falls Instagram die Einbettung blockiert, öffne das Original.');
+    const load=document.createElement('button');
+    load.type='button';
+    load.className='primary-btn';
+    load.textContent='Vorschau laden';
+    load.addEventListener('click',()=>{
+      const iframe=document.createElement('iframe');
+      iframe.title='Öffentliche Instagram-Vorschau: '+item.brand;
+      iframe.loading='lazy';
+      iframe.referrerPolicy='strict-origin-when-cross-origin';
+      iframe.allow='fullscreen';
+      iframe.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+      iframe.src=embed;
+      preview.replaceChildren(iframe);
+    });
+    preview.append(message,load);
+    $('#discoveryDisclaimer').textContent=
+      'Instagram kann öffentliche Einbettungen einschränken. Kein Login in PR-Hunter und keine automatische Weiterleitung per DM.';
+  }else {
+    const heading=document.createElement('strong');
+    heading.textContent='Originalquelle ansehen';
+    message.append(heading,'Für diesen Web-Fund liegt kein öffentlich freigegebenes Videovorschaubild vor. Prüfe die Bedingungen auf der Originalseite.');
+    preview.append(message);
+    $('#discoveryDisclaimer').textContent=
+      'Ungeprüfte Inhalte werden nicht als echte Deals, Produkte oder Videos ausgegeben.';
+  }
+  const userOffer=Boolean(offer);
+  $('#discoveryBookmark').hidden=!userOffer;
+  $('#discoveryChecklist').hidden=!userOffer;
+  $('#discoveryDmButton').hidden=!embed;
+  $('#discoveryBookmark').textContent=userOffer && state.saved.includes(offer.id) ?
+    'Aus Merkliste entfernen' : 'Merken';
+  openDialog('discoveryDialog');
+}
+
 function renderFeed() {
   let feed = rankFeed(all(), ui.category, ui.query);
   const brandMessage = $('#brandFilterMessage');
@@ -257,16 +348,26 @@ function renderFeed() {
   const ending = $('#endingSoonButton');
   if (verified) { verified.classList.toggle('active', ui.verifiedOnly); verified.setAttribute('aria-pressed', String(ui.verifiedOnly)); }
   if (ending) { ending.classList.toggle('active', ui.endingSoonOnly); ending.setAttribute('aria-pressed', String(ui.endingSoonOnly)); }
-  const page = getVisibleSlice(feed,ui.visibleFeed);
-  $('#discoverCards').innerHTML = page.total ?
-    page.items.map(renderOffer).join('') +
+  const candidates=discoveryCards(feed,
+    ui.verifiedOnly || ui.endingSoonOnly || ui.brandFilter ? [] : state.dmDrafts,
+    {mode:ui.discoveryMode,query:ui.query});
+  const page=getVisibleSlice(candidates,ui.visibleFeed);
+  ui.galleryItems=page.items;
+  $('#discoverCards').innerHTML=page.total ?
+    page.items.map(renderDiscoveryTile).join('') +
     (page.remaining ? '<div class="load-more"><span>' + page.items.length + ' von ' + page.total +
-      ' Angeboten sichtbar</span><button type="button" data-action="load-more" data-target="feed">Weitere ' +
-      Math.min(FEED_PAGE_SIZE,page.remaining) + ' laden ↓</button></div>' : '') : emptyMessage('feed');
-  const feedCount = $('#feedResultCount');
-  if (feedCount) feedCount.textContent = page.total
-    ? page.total + ' passende Fundhinweise · ' + page.items.length + ' angezeigt'
-    : 'Keine passenden Fundhinweise – Filter ändern oder einen eigenen Link speichern.';
+      ' Einträgen</span><button type="button" data-action="load-more" data-target="feed">Mehr anzeigen ↓</button></div>' : '') :
+    '<div class="empty"><div class="symbol">⌕</div><strong>Noch keine passenden Einträge</strong><p>' +
+      esc(filterEmptyMessage(ui.discoveryMode)) +
+      '</p><button class="subtle-btn" type="button" data-tab="inbox">Original-Link hinzufügen</button></div>';
+  const feedCount=$('#feedResultCount');
+  if(feedCount)feedCount.textContent=page.total ?
+    page.items.length+' von '+page.total+' Einträgen' : '0 Einträge';
+  document.querySelectorAll('[data-discovery]').forEach(button=>{
+    const active=button.dataset.discovery===ui.discoveryMode;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
   const savedPage = getVisibleSlice(getSaved(),ui.visibleSaved);
   $('#savedCards').innerHTML = savedPage.total ?
     savedPage.items.map(renderOffer).join('') +
@@ -547,7 +648,7 @@ function render() {
   renderFreeProducts();
   renderDmDrafts();
 }
-const topTitles = { discover:'DISCOVER', products:'FREE PRODUCTS', dm:'VIDEO DM', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
+const topTitles = { discover:'DISCOVER', profile:'PROFIL', products:'FREE PRODUCTS', dm:'VIDEO DM', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -684,6 +785,14 @@ async function copyText(item) {
 document.addEventListener('click', event => {
   const nav = event.target.closest('[data-tab]');
   if (nav) { setTab(nav.dataset.tab); return; }
+  const discoveryFilter=event.target.closest('[data-discovery]');
+  if(discoveryFilter && DISCOVERY_FILTERS.includes(discoveryFilter.dataset.discovery)){
+    ui.discoveryMode=discoveryFilter.dataset.discovery;
+    ui.visibleFeed=FEED_PAGE_SIZE;ui.brandFilter=null;
+    ui.category='focus';ui.verifiedOnly=false;ui.endingSoonOnly=false;
+    if(ui.tab!=='discover') setTab('discover'); else renderFeed();
+    return;
+  }
   const filter = event.target.closest('[data-category]');
   if (filter) { ui.category = filter.dataset.category; ui.visibleFeed=FEED_PAGE_SIZE; renderFeed(); return; }
   const dmPreset=event.target.closest('[data-dm-preset]');
@@ -704,6 +813,25 @@ document.addEventListener('click', event => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   const action = button.dataset.action;
+  if (action === 'focus-discovery-search'){
+    if(ui.tab!=='discover')setTab('discover');
+    $('#search').focus();return;
+  }
+  if (action === 'story-brand'){
+    const brand=watchedBrands().find(x=>x.id===button.dataset.brandId);
+    if(!brand)return;
+    ui.brandFilter=brand.id;ui.category='all';ui.discoveryMode='for-you';
+    ui.verifiedOnly=false;ui.endingSoonOnly=false;ui.visibleFeed=FEED_PAGE_SIZE;
+    ui.query='';$('#search').value='';
+    setTab('discover');
+    if(!ui.galleryItems.length)toast('Für diese Marke sind noch keine öffentlichen Fundhinweise gespeichert. Profil im Brand Radar öffnen.');
+    return;
+  }
+  if (action === 'open-discovery'){
+    const index=Number(button.dataset.tileIndex);
+    if(Number.isInteger(index) && index>=0 && index<ui.galleryItems.length)openDiscovery(ui.galleryItems[index]);
+    return;
+  }
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
   if (action.startsWith('dm-')) {
@@ -774,11 +902,11 @@ document.addEventListener('click', event => {
     return;
   }
   if (action === 'clear-brand-filter') {
-    ui.brandFilter = null;ui.category='focus';ui.visibleFeed=FEED_PAGE_SIZE;setTab('discover');return;
+    ui.brandFilter = null;ui.category='focus';ui.discoveryMode='for-you';ui.visibleFeed=FEED_PAGE_SIZE;setTab('discover');return;
   }
   if (action === 'brand-offers') {
     ui.brandFilter = String(button.dataset.brandId || '');
-    ui.category = 'all';ui.query='';ui.visibleFeed=FEED_PAGE_SIZE;$('#search').value='';
+    ui.category = 'all';ui.discoveryMode='for-you';ui.query='';ui.visibleFeed=FEED_PAGE_SIZE;$('#search').value='';
     ui.verifiedOnly=false;ui.endingSoonOnly=false;
     setTab('discover');return;
   }
@@ -800,6 +928,29 @@ document.addEventListener('click', event => {
   if (action === 'bookmark') return toggleSaved(item);
   if (action === 'copy') return copyText(item);
   if (action === 'log') return openActivityDialog(item.id);
+});
+$('#discoveryDialog').addEventListener('close',()=>{
+  $('#discoveryPreview').replaceChildren();ui.activeGalleryItem=null;
+});
+$('#discoveryBookmark').addEventListener('click',()=>{
+  const item=ui.activeGalleryItem && byId(ui.activeGalleryItem.offerId);
+  if(!item)return;
+  toggleSaved(item);
+  $('#discoveryBookmark').textContent=state.saved.includes(item.id)?'Aus Merkliste entfernen':'Merken';
+});
+$('#discoveryChecklist').addEventListener('click',()=>{
+  const item=ui.activeGalleryItem && byId(ui.activeGalleryItem.offerId);
+  $('#discoveryDialog').close();
+  if(item)showParticipationDialog(item);
+});
+$('#discoveryDmButton').addEventListener('click',()=>{
+  const item=ui.activeGalleryItem;
+  if(!item || !reelUrl(item.url))return;
+  $('#dmReel').value=item.url;
+  const handle=item.brand.replace(/^@/,'');
+  $('#dmBrand').value=/^[a-z0-9._]{1,30}$/i.test(handle)?'@'+handle:'';
+  $('#discoveryDialog').close();
+  // The data-tab handler navigates to the DM form on this same tap.
 });
 $('#addButton').addEventListener('click', () => openDialog('addDialog'));
 $('#pasteLinkButton').addEventListener('click', async () => {
