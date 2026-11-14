@@ -14,6 +14,7 @@
   <script type="module" src="./app.js"></script>
 </head>
 <body>
+<a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
 <div class="ambient ambient-one" aria-hidden="true"></div><div class="ambient ambient-two" aria-hidden="true"></div>
 <div class="shell">
   <aside class="sidebar">
@@ -35,6 +36,7 @@
       <div><span class="tiny-overline">PR-HUNTER / </span><span id="topTitle">DISCOVER</span></div>
       <div class="top-actions"><span class="live"><span class="live-dot"></span> PUBLIC FEED SCOUT</span><button type="button" class="alert-trigger" data-tab="alerts" aria-label="Benachrichtigungen ansehen">♧<span id="alertCount" class="alert-count" hidden>0</span></button></div>
     </header>
+    <div id="connectionStatus" class="connection-status" role="status" hidden>Du bist offline. Bereits gespeicherte Links und lokale Daten bleiben verfügbar; neue Funde benötigen Internet.</div>
     <section class="view" id="discoverPanel" data-panel="discover">
       <div class="hero">
         <div class="hero-content">
@@ -60,7 +62,8 @@
       <section class="feed" aria-labelledby="feedTitle">
         <div class="section-header"><div><span class="mini-label">DEINE ENTDECKUNGEN</span><h2 id="feedTitle">The discovery feed<span class="soft-accent">.</span></h2></div><span class="sync" id="syncLabel">Lade öffentliche Feeds …</span></div>
         <p id="sourceHealth" class="helper" aria-live="polite">Quellen werden geprüft …</p>
-        <div class="scout-legend"><span>✓ Offizielle Aktionen: Bedingungen manuell geprüft</span><span>✧ RSS-Feeds: Teilnahme noch prüfen</span><span>⚠ Kosten &amp; DE-Versand immer kontrollieren</span></div>
+        <p id="feedResultCount" class="feed-result-count" aria-live="polite">Angebote werden geladen …</p>
+        <div class="scout-legend"><span>✓ Quellen- und Regelprüfung ist keine Produktgarantie</span><span>✧ RSS- und Instagram-Links bleiben ungeprüft</span><span>⚠ Kosten, Versand &amp; Qualität vor Teilnahme prüfen</span></div>
         <div class="toolbar">
           <div class="filters" id="filters" aria-label="Angebote filtern">
             <button class="filter-chip active" type="button" data-category="focus" aria-pressed="true">Für dich · 90/10</button>
@@ -121,6 +124,16 @@
           <p>Bis zu 20 selbst verwaltete Account-Namen für deinen Verlauf. Es wird kein Account verbunden oder automatisch für Gewinnspiele genutzt.</p>
           <form id="accountLabelForm" class="account-inline-form"><label>Account-Namen hinzufügen <input id="accountLabelInput" name="account" maxlength="31" placeholder="@dein.instagram" required autocomplete="off"></label><button type="submit" class="subtle-btn">Hinzufügen</button></form>
           <div id="accountLabels" class="account-label-list" aria-live="polite"></div>
+        </section>
+        <section class="inbox-settings-box display-settings">
+          <h3>Darstellung &amp; Animationen</h3>
+          <p>Weiche Übergänge auf dem iPad. Die Einstellung „System“ respektiert die Bedienungshilfen von iPadOS; „Reduziert“ schaltet zusätzliche Bewegungen ab.</p>
+          <div class="display-options" role="radiogroup" aria-label="Animationsstärke">
+            <label><input name="motionMode" type="radio" value="system" checked><span>System</span></label>
+            <label><input name="motionMode" type="radio" value="smooth"><span>Lebendig</span></label>
+            <label><input name="motionMode" type="radio" value="reduced"><span>Reduziert</span></label>
+          </div>
+          <p class="helper">Bei aktivierter iPadOS-Einstellung „Bewegung reduzieren“ bleiben Animationen immer deaktiviert.</p>
         </section>
         <section class="inbox-settings-box">
           <h3>Private Daten sichern</h3>
@@ -184,7 +197,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 6 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 7 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">

@@ -2,6 +2,7 @@
 // Does not access Instagram, enumerate followers, log in, or post comments.
 import { safeExternalUrl, normalizeBrand, validAccountLabel } from './ultimate-core.mjs';
 import { normalizeAlertsState } from './phase6-core.mjs';
+import { normalizeDisplayPrefs } from './phase7-core.mjs';
 
 const MAX_BATCH = 40;
 const MAX_BACKUP_BYTES = 2_000_000;
@@ -181,6 +182,7 @@ export function parseBackup(text) {
       checked:Array.isArray(raw.integration?.checked) ?
         [...new Set(raw.integration.checked.filter(x=>['professional','app','backend','permissions'].includes(x)))] : []
     },
-    alerts:normalizeAlertsState(raw.alerts)
+    alerts:normalizeAlertsState(raw.alerts),
+    display:normalizeDisplayPrefs(raw.display)
   };
 }
