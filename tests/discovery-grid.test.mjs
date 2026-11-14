@@ -121,7 +121,7 @@ test('new Instagram-style iPad screen remains navigable, offline, accessible and
   ]) assert.ok(html.includes('id="'+id+'"'),id);
   for(const mode of DISCOVERY_FILTERS)
     assert.ok(html.includes('data-discovery="'+mode+'"'),mode);
-  assert.equal((html.match(/class="nav-btn(?: active)?"/g)||[]).length>=5,true);
+  assert.equal((html.match(/class="nav-btn\b/g)||[]).length>=5,true);
   assert.ok(html.includes('data-action="focus-discovery-search"'));
   assert.ok(html.includes('class="cards discover-grid"'));
   assert.ok(app.includes('page.items.map(renderDiscoveryTile)'));

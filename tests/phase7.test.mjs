@@ -88,7 +88,7 @@ test('Phase 7 iPad UI shows accessible motion settings, offline status and progr
     'name="motionMode" type="radio" value="smooth"',
     'name="motionMode" type="radio" value="reduced"'
   ]) assert.ok(html.includes(marker),marker);
-  assert.ok(app.includes('getVisibleSlice(feed,ui.visibleFeed)'));
+  assert.ok(app.includes('getVisibleSlice(candidates,ui.visibleFeed)'));
   assert.ok(app.includes('getVisibleSlice(getSaved(),ui.visibleSaved)'));
   assert.ok(app.includes('setTimeout(() => {'));
   assert.ok(app.includes('offerVerification(item)'));
