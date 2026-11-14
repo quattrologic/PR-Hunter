@@ -24,7 +24,8 @@
       <button type="button" class="nav-btn" data-tab="brands"><span aria-hidden="true">◎</span> Brand Radar</button>
       <button type="button" class="nav-btn" data-tab="assistant"><span aria-hidden="true">✓</span> Teilnahme</button>
       <button type="button" class="nav-btn" data-tab="activity"><span aria-hidden="true">▤</span> Aktivitäten</button>
-      <button type="button" class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
+      <button type="button" class="nav-btn" data-tab="inbox"><span aria-hidden="true">⌁</span> Link-Inbox</button>
+        <button type="button" class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
       <button type="button" class="nav-btn" data-tab="info"><span aria-hidden="true">ⓘ</span> Über die App</button>
     </nav>
     <div class="sidebar-bottom"><span class="sidebar-status">●</span><div><strong>Private Workspace</strong><small>Verlauf nur auf diesem Gerät</small></div></div>
@@ -40,7 +41,7 @@
           <div class="eyebrow-badge"><span class="live-dot"></span> DEIN STREETWEAR RADAR</div>
           <h1>Good style.<span>Better luck.</span></h1>
           <p>Entdecke kostenlose Streetwear, PR-Aktionen und Giveaways. Von kleinen Labels bis zu großen Brands – alles an einem Ort.</p>
-          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button><button type="button" class="subtle-btn" data-tab="assistant">Teilnahme-Assistent ✓</button></div>
+          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="inbox">Mehrere Links sammeln ↗</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button><button type="button" class="subtle-btn" data-tab="assistant">Teilnahme-Assistent ✓</button></div>
           <div class="hero-trust">90 % FASHION <span>·</span> 10 % TECH <span>·</span> WELTWEIT</div>
         </div>
         <div class="hero-poster" aria-hidden="true"><div class="poster-label">THE HUNT<br>IS ON.</div><div class="poster-object">✳</div><div class="poster-footer">NO FAKE DROPS. JUST POSSIBILITIES. / 001</div></div>
@@ -97,6 +98,36 @@
       <div class="section-header section-pad"><div><span class="mini-label">DEIN VERLAUF</span><h2>Activity timeline</h2></div><label class="account-search"><span>Account-Filter</span><input id="activityAccountFilter" type="search" placeholder="@instagramname" aria-label="Aktivitäten nach Instagram-Account filtern"></label></div>
       <div id="activityList" class="timeline"></div>
     </section>
+    <section class="view" id="inboxPanel" data-panel="inbox" hidden>
+      <div class="section-banner inbox-banner"><span class="mini-label">PHASE 4 · IPAD SOCIAL INBOX</span>
+        <h1>Deine Link-Inbox<span class="soft-accent">.</span></h1>
+        <p>Kopiere Instagram-Reel-Links oder Links zu Gewinnspielseiten hier hinein. PR-Hunter speichert nur die URLs – Inhalte, Gültigkeit und Teilnahmebedingungen müssen weiterhin am Original geprüft werden.</p>
+      </div>
+      <form id="batchImportForm" class="batch-form">
+        <label>Instagram-Links und Gewinnspiel-Websites <textarea id="batchImportText" name="links" required maxlength="20000" rows="8" placeholder="Füge hier mehrere Links ein – je Zeile ein Link oder kopierter Instagram-Text mit Link. Maximal 40 unterschiedliche Links pro Import."></textarea></label>
+        <label>Marke (optional, gilt für den gesamten Import) <input name="brand" maxlength="80" placeholder="z. B. SUVENE, wenn die Links wirklich zu dieser Marke gehören"></label>
+        <div class="inbox-action-row">
+          <p id="batchImportPreview" class="helper" role="status">Noch keine Links eingefügt.</p>
+          <button class="primary-btn" type="submit">Gültige Links lokal speichern</button>
+        </div>
+      </form>
+      <div class="inbox-note">⚠ Ein gespeicherter Beitrag ist noch kein bestätigtes Gewinnspiel. Safari auf dem iPad unterstützt das direkte Teilen an eine PWA nicht überall – Kopieren und Einfügen funktioniert als Alternative.</div>
+      <div class="section-header section-pad"><div><span class="mini-label">DEINE PRIVATEN DATEN</span><h2>Accounts & Sicherung</h2></div><span class="counter-label">Kein Instagram-Login</span></div>
+      <div class="inbox-settings-grid">
+        <section class="inbox-settings-box">
+          <h3>Instagram-Account-Labels</h3>
+          <p>Bis zu 20 selbst verwaltete Account-Namen für deinen Verlauf. Es wird kein Account verbunden oder automatisch für Gewinnspiele genutzt.</p>
+          <form id="accountLabelForm" class="account-inline-form"><label>Account-Namen hinzufügen <input id="accountLabelInput" name="account" maxlength="31" placeholder="@dein.instagram" required autocomplete="off"></label><button type="submit" class="subtle-btn">Hinzufügen</button></form>
+          <div id="accountLabels" class="account-label-list" aria-live="polite"></div>
+        </section>
+        <section class="inbox-settings-box">
+          <h3>Private Daten sichern</h3>
+          <p>Exportiert Merkliste, eigene Links, Checklisten, Account-Labels und Teilnahmeverlauf in eine JSON-Datei. Die Datei enthält persönliche Informationen; teile sie nicht öffentlich.</p>
+          <div class="backup-controls"><button id="downloadBackup" type="button" class="primary-btn">↓ Sicherung speichern</button><label class="import-file-label">↑ Sicherung wiederherstellen<input id="restoreBackup" type="file" accept=".json,application/json"></label></div>
+          <p id="backupStatus" class="helper" role="status">Die Sicherung wird nur auf deinem Gerät erstellt und geladen.</p>
+        </section>
+      </div>
+    </section>
     <section class="view" id="savedPanel" data-panel="saved" hidden>
       <div class="section-banner saved-banner"><span class="mini-label">FÜR SPÄTER</span><h1>Deine Merkliste<span class="soft-accent">.</span></h1><p>Alle Aktionen, die du mit ♡ gespeichert hast, an einem Ort.</p></div>
       <div class="cards saved-cards" id="savedCards"></div>
@@ -106,12 +137,12 @@
       <div class="info-grid">
         <article><h3>Wie werden Aktionen gefunden?</h3><p>Der Scout liest öffentlich bereitgestellte RSS/Atom-Feeds ungefähr alle sechs Stunden. Die fünf Instagram-Brands sind Referenzen und werden noch nicht automatisch überwacht.</p></article>
         <article><h3>Wird automatisch kommentiert?</h3><p>Nein. Kommentarvorschläge werden nur kopiert. Öffne Instagram oder die Originalseite selbst, prüfe die Regeln und bestätige deine Teilnahme.</p></article>
-        <article><h3>Was wird gespeichert?</h3><p>Merkliste, manuelle Angebote, Marken und Aktivitäten ausschließlich lokal im Browser. Keine Instagram-Passwörter, API-Tokens oder persönlichen Informationen im öffentlichen Repository.</p></article>
+        <article><h3>Was wird gespeichert?</h3><p>Merkliste, manuelle Angebote, Marken, Account-Labels und Aktivitäten ausschließlich lokal im Browser. Die Link-Inbox bietet einen privaten Export und Import – bitte sichere die JSON-Datei an einem geschützten Ort. Keine Instagram-Passwörter oder Tokens im öffentlichen Repository.</p></article>
         <article><h3>Welche Angebote sind gültig?</h3><p>Jeder Treffer ist zunächst ungeprüft. Kontrolliere Mindestalter, Frist, Versand nach Deutschland, mögliche Kosten (deine Grenze: 5 €) und Rückgabepflichten.</p></article>
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 3 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 4 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">
@@ -135,7 +166,7 @@
   <p>Nur wirklich erledigte Aktionen bestätigen. Hier wird nichts automatisch in Instagram veröffentlicht.</p>
   <label>Aktion<select name="offerId" id="activityOffer" required></select></label>
   <label>Status<select name="type"><option value="prepared">Kommentar vorbereitet</option><option value="entered">Teilnahme selbst bestätigt</option><option value="won">Gewinn / Zusage selbst eingetragen</option><option value="received">Produkt erhalten</option></select></label>
-  <label>Instagram-Account (optional)<input name="account" maxlength="31" placeholder="@deinaccount" autocomplete="off"></label>
+  <label>Instagram-Account (optional)<input name="account" list="accountLabelSuggestions" maxlength="31" placeholder="@deinaccount" autocomplete="off"><datalist id="accountLabelSuggestions"></datalist></label>
   <label>Kommentar- oder Nachweislink (optional)<input name="evidenceUrl" type="url" placeholder="https://…"></label>
   <label>Notiz (optional)<textarea name="note" maxlength="500" rows="3" placeholder="z. B. Teilnahmebedingungen erfüllt"></textarea></label>
   <button type="submit" class="primary-btn">Im Verlauf speichern</button>

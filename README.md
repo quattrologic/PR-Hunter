@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Ultimate Phase 3 – participation assistant and streetwear discovery workflow.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Ultimate Phase 4 – local Instagram link inbox, account labels and private backups.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -118,3 +118,19 @@ The iPad dashboard includes a private guided workflow to prepare, verify, confir
 Meta's official Instagram APIs chiefly manage authorised professional account media, comments on owned media, and some documented discovery cases. This is not unrestricted permission to scrape Instagram, like or comment on unrelated giveaways. There is no account connection, login automation, scraping, mass posting, messaging, or credentials in this public repository. Official OAuth integration would need specific Meta permissions, app review and a secure service.
 
 This phase is covered by Node.js regression tests. Physical iPad modal, scrolling and keyboard testing is a separate final acceptance step.
+
+
+## Phase 4 — Streetwear Link Inbox + local resilience
+
+- **Link Inbox** accepts up to 40 distinct HTTPS URLs per batch, including URLs extracted from copied Instagram captions/messages. Instagram \`/p/\`, \`/reel/\` and \`/tv/\` references are canonicalized and tracking parameters removed. This **does not** read reel captions, scrape accounts or confirm that a giveaway actually exists.
+- Imported posts are tagged **"Instagram-Beitrag – Gewinnspiel selbst prüfen"**. They appear as manually collected, **unverified** fashion hints rather than invented active contests.
+- User may assign a single self-reported brand name per batch, which is not verified from Instagram.
+- **Account labels (max 20)** help organize locally documented entries. These are NOT linked Instagram accounts. PR-Hunter does not perform repeat entries or mass interaction across accounts.
+- **Private JSON backup/export and restore**: stored bookmarks, saved offer snapshots, manually collected links, custom brands, checklists, account labels, and participation logs are all included. Import limits, data validation, URL validation and explicit replacement confirmation prevent accidental corruption and risky links. All processing happens locally; do not upload personal JSON backups to GitHub.
+- Same \`pr-hunter-state-v1\` storage key for migration compatibility. The new PWA shell cache includes \`phase4-core.mjs\`.
+
+### Important platform boundary
+
+On iPadOS Safari, a Home Screen PWA cannot reliably register as a native **Web Share Target** for Instagram, so **copy & paste** is used instead. Meta's Instagram APIs require appropriate professional accounts, explicit app authorization and approved scopes. They do not allow bulk posting of giveaway comments on arbitrary third-party reels. No Instagram account credentials, API tokens or background posting have been added. Future official integration needs a secure backend and separate user authorization.
+
+Security: backups contain personal account labels, offer URLs and self-reported activities. Export only onto devices or storage the user controls. A restore **replaces** the current device-local data after confirmation; take a separate backup first.
