@@ -22,6 +22,7 @@
     <nav class="nav" aria-label="Hauptnavigation">
       <button type="button" class="nav-btn active" data-tab="discover" aria-current="page"><span aria-hidden="true">◈</span> Entdecken</button>
       <button type="button" class="nav-btn" data-tab="brands"><span aria-hidden="true">◎</span> Brand Radar</button>
+      <button type="button" class="nav-btn" data-tab="assistant"><span aria-hidden="true">✓</span> Teilnahme</button>
       <button type="button" class="nav-btn" data-tab="activity"><span aria-hidden="true">▤</span> Aktivitäten</button>
       <button type="button" class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
       <button type="button" class="nav-btn" data-tab="info"><span aria-hidden="true">ⓘ</span> Über die App</button>
@@ -39,7 +40,7 @@
           <div class="eyebrow-badge"><span class="live-dot"></span> DEIN STREETWEAR RADAR</div>
           <h1>Good style.<span>Better luck.</span></h1>
           <p>Entdecke kostenlose Streetwear, PR-Aktionen und Giveaways. Von kleinen Labels bis zu großen Brands – alles an einem Ort.</p>
-          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button></div>
+          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button><button type="button" class="subtle-btn" data-tab="assistant">Teilnahme-Assistent ✓</button></div>
           <div class="hero-trust">90 % FASHION <span>·</span> 10 % TECH <span>·</span> WELTWEIT</div>
         </div>
         <div class="hero-poster" aria-hidden="true"><div class="poster-label">THE HUNT<br>IS ON.</div><div class="poster-object">✳</div><div class="poster-footer">NO FAKE DROPS. JUST POSSIBILITIES. / 001</div></div>
@@ -65,6 +66,8 @@
             <button class="filter-chip" type="button" data-category="Mode" aria-pressed="false">Streetwear</button>
             <button class="filter-chip" type="button" data-category="Technik" aria-pressed="false">Technik</button>
             <button class="filter-chip" type="button" data-category="all" aria-pressed="false">Alles</button>
+            <button id="verifiedOnlyButton" class="filter-chip focus-filter" type="button" aria-pressed="false">✓ Geprüfte Regeln</button>
+            <button id="endingSoonButton" class="filter-chip focus-filter" type="button" aria-pressed="false">⏳ Endet bald</button>
           </div>
           <div class="search-group"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Brands, Hoodies, Sneaker …" aria-label="Angebote suchen"></label><button type="button" id="refreshButton" class="refresh" aria-label="Katalog aktualisieren" title="Katalog aktualisieren">↻</button></div>
         </div>
@@ -79,10 +82,19 @@
         <div class="social-links"><a href="https://www.instagram.com/explore/tags/streetweargiveaway/" target="_blank" rel="noopener noreferrer">#streetweargiveaway ↗</a><a href="https://www.instagram.com/explore/tags/hoodiegiveaway/" target="_blank" rel="noopener noreferrer">#hoodiegiveaway ↗</a><a href="https://www.instagram.com/explore/tags/sneakergiveaway/" target="_blank" rel="noopener noreferrer">#sneakergiveaway ↗</a></div>
       </div>
     </section>
+    <section class="view" id="assistantPanel" data-panel="assistant" hidden>
+      <div class="section-banner assistant-banner"><span class="mini-label">PHASE 3 · DEIN WORKFLOW</span><h1>Teilnahme-Assistent<span class="soft-accent">.</span></h1>
+        <p>Erkenne wichtige Fristen, prüfe Regeln und hake deine Aufgaben selbst ab. Wir posten nichts in fremden Instagram-Accounts und melden keine Teilnahme ohne deine Bestätigung.</p>
+        <button type="button" class="primary-btn" data-tab="discover">Neue Aktionen entdecken ↗</button></div>
+      <div class="assistant-summary"><div><span>Aktionen mit Frist innerhalb von 72 Stunden</span><strong id="assistantDeadlineCount">0</strong></div><div><span>Deine Teilnahmebedingungen</span><strong>0 € Kauf</strong><small>Maximal 5 € Versand · Produkt behalten</small></div></div>
+      <div class="section-header section-pad"><div><span class="mini-label">DEIN PERSÖNLICHER ABLAUF</span><h2>Gewinnspiele vorbereiten</h2></div><span class="counter-label">Nur echte Fundstellen · keine Auto-Kommentare</span></div>
+      <div class="assistant-instructions"><span>1. Originalregeln lesen</span><span>2. Kosten &amp; Versand prüfen</span><span>3. Geforderte Aufgaben selbst ausführen</span><span>4. Teilnahme bestätigen</span></div>
+      <div id="assistantQueue" class="assistant-queue"></div>
+    </section>
     <section class="view" id="activityPanel" data-panel="activity" hidden>
       <div class="section-banner activity-banner"><span class="mini-label">PERSONAL LOGBOOK</span><h1>Deine Aktivitäten<span class="soft-accent">.</span></h1><p>Behalte den Überblick über Kommentare, Teilnahmen und Gewinne. Nur Aktionen, die du selbst dokumentierst, werden als erledigt angezeigt.</p><button id="logActivityButton" class="primary-btn" type="button">＋ Aktivität eintragen</button></div>
       <div class="activity-stats"><div><span>Teilnahmen</span><strong id="activityEntered">0</strong></div><div><span>Gewinne</span><strong id="activityWon">0</strong></div><div><span>Erhalten</span><strong id="activityReceived">0</strong></div></div>
-      <div class="section-header section-pad"><div><span class="mini-label">DEIN VERLAUF</span><h2>Activity timeline</h2></div><span class="counter-label">Lokal auf diesem Gerät</span></div>
+      <div class="section-header section-pad"><div><span class="mini-label">DEIN VERLAUF</span><h2>Activity timeline</h2></div><label class="account-search"><span>Account-Filter</span><input id="activityAccountFilter" type="search" placeholder="@instagramname" aria-label="Aktivitäten nach Instagram-Account filtern"></label></div>
       <div id="activityList" class="timeline"></div>
     </section>
     <section class="view" id="savedPanel" data-panel="saved" hidden>
@@ -99,7 +111,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 1 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 3 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">
@@ -128,6 +140,18 @@
   <label>Notiz (optional)<textarea name="note" maxlength="500" rows="3" placeholder="z. B. Teilnahmebedingungen erfüllt"></textarea></label>
   <button type="submit" class="primary-btn">Im Verlauf speichern</button>
 </form></dialog>
+<dialog id="participationDialog" class="participation-dialog">
+  <div class="participation-inner">
+    <div class="dialog-top"><div><span class="mini-label">PRIVATE TEILNAHME-CHECKLISTE</span><h2 id="participationTitle">Teilnahme vorbereiten</h2></div><button type="button" class="close-btn" data-close="participationDialog" aria-label="Schließen">×</button></div>
+    <p>Diese Aufgaben sind nur deine lokale Checkliste. Es werden keine Instagram-Aktionen automatisch ausgeführt oder erfunden.</p>
+    <div class="participation-links"><a id="participationOriginal" href="#" target="_blank" rel="noopener noreferrer">Original öffnen ↗</a><a id="participationTerms" href="#" target="_blank" rel="noopener noreferrer" hidden>Teilnahmebedingungen ↗</a></div>
+    <div id="participationWarnings" class="participation-warnings" role="status"></div>
+    <div class="participation-section"><h3>Verbindliche Prüfschritte</h3><div id="participationTasks" class="participation-tasks"></div></div>
+    <div class="participation-section"><h3>Zusätzliche Instagram-Aufgaben</h3><p>Wähle nur Aufgaben aus, die der Originalbeitrag tatsächlich verlangt.</p><div id="participationExtra" class="participation-extras"></div></div>
+    <div class="participation-section"><h3>Kommentarvorschläge</h3><p>Nur zum manuellen Kopieren. Vor dem Veröffentlichen an die Aktion anpassen.</p><div id="participationTemplates" class="participation-templates"></div></div>
+    <div class="participation-bottom"><span id="participationCounter">0 Aufgaben erledigt</span><button id="participationConfirm" type="button" class="primary-btn" disabled>Erst Aufgaben prüfen</button></div>
+  </div>
+</dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
