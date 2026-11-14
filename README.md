@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Ultimate Phase 1, evolving from the v0.1 MVP.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Ultimate Phase 3 – participation assistant and streetwear discovery workflow.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -98,3 +98,23 @@ The original \`pr-hunter-state-v1\` browser storage key is retained to preserve 
 
 \`npm test\` checks the feed scanner and pure Ultimate logic. GitHub Pages serves static files from \`/docs\`; test all interactive flows on a physical iPad before calling the release hardware-verified.
 
+
+
+## Phase 3 – Local-first participation assistant
+
+The iPad dashboard includes a private guided workflow to prepare, verify, confirm, and track real giveaway opportunities without automating unsupported actions:
+
+- **Teilnahme** tab prioritizes known deadlines and shows per-offer checklists. No deadline is invented.
+- Read organizer rules, verify Germany eligibility, shipping costs (maximum €5), no purchase and no return obligation. The checkbox confirms the user checked these conditions, not that the app independently verified them.
+- Curated organizer terms may require newsletter, Double-Opt-In, an external form or WhatsApp. Instagram tasks (follow, like, comment, tag, story) are manually selected and never presumed to be part of the rules.
+- Three comment suggestions can be copied for the user to personalize and post by hand. Nothing is submitted to Instagram.
+- Entry confirmation is a second deliberate action, with a local activity log. Double confirmation of the same giveaway is blocked, including across account labels; no duplicate-entry encouragement.
+- Discovery filters support **reviewed source rules** and **ending within 72 hours**; reviewed conditions do not imply verified eligibility or delivery.
+- An account-label filter helps search the existing local activity history; it does not connect Instagram accounts.
+- The existing \`pr-hunter-state-v1\` key is preserved so earlier bookmarks and entries remain available in Safari.
+
+### Instagram API boundary
+
+Meta's official Instagram APIs chiefly manage authorised professional account media, comments on owned media, and some documented discovery cases. This is not unrestricted permission to scrape Instagram, like or comment on unrelated giveaways. There is no account connection, login automation, scraping, mass posting, messaging, or credentials in this public repository. Official OAuth integration would need specific Meta permissions, app review and a secure service.
+
+This phase is covered by Node.js regression tests. Physical iPad modal, scrolling and keyboard testing is a separate final acceptance step.

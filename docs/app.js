@@ -2,11 +2,16 @@ import {
   SEED_BRANDS, ACTIVITY_TYPES, safeExternalUrl, normalizeBrand,
   makeActivity, rankFeed, activitySummary, isExpired
 } from './ultimate-core.mjs';
+import {
+  CHECKLIST_TASKS, requiredSteps, normalizeSelectedSteps, stepDefinitions,
+  checklistProgress, offerWarnings, isConfirmedParticipation,
+  canConfirmEntry, timeUntilDeadline, urgentOffers, suggestedComments, safeTaskSelection
+} from './participation.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
-const ui = { tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{} };
+const ui = { tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null, assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'' };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -16,6 +21,7 @@ if (!Array.isArray(state.brands)) state.brands = [];
 if (!Array.isArray(state.activity)) state.activity = [];
 if (!state.tracked || typeof state.tracked !== 'object') state.tracked = {};
 if (!state.savedDetails || typeof state.savedDetails !== 'object') state.savedDetails = {};
+if (!state.checklists || typeof state.checklists !== 'object' || Array.isArray(state.checklists)) state.checklists = {};
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -50,6 +56,21 @@ function watchedBrands() {
     if (brand && !map.has(brand.handle.toLowerCase())) map.set(brand.handle.toLowerCase(), brand);
   });
   return [...map.values()];
+}
+function checklistFor(item) {
+  const raw = state.checklists[item.id] || {};
+  return {
+    selected: safeTaskSelection(raw.selected),
+    completed: Array.isArray(raw.completed) ? raw.completed.filter(id => CHECKLIST_TASKS.some(t => t.id === id)) : []
+  };
+}
+function storeChecklist(item, data) {
+  state.checklists[item.id] = {
+    selected: safeTaskSelection(data.selected),
+    completed: [...new Set(data.completed)].filter(id => CHECKLIST_TASKS.some(task => task.id === id)),
+    updatedAt: new Date().toISOString()
+  };
+  save();
 }
 function getSaved() {
   return state.saved.map(id => byId(id)).filter(item => item && safeExternalUrl(item.url));
@@ -112,6 +133,11 @@ function renderOffer(item) {
   const fromSource = item.manual ? 'Selbst gespeichert' : item.sourceType === 'curated'
     ? 'Offizielle Bedingungen geprüft' : 'Öffentlicher Feed';
   const id = esc(item.id);
+  const checklist = checklistFor(item);
+  const progress = checklistProgress(item, checklist.selected, checklist.completed);
+  const remaining = timeUntilDeadline(item);
+  const entered = isConfirmedParticipation(state.activity, item.id) ||
+    ['applied','accepted','received'].includes(state.tracked[item.id]);
   const deadline = item.deadline ? asDate(item.deadline) : null;
   const ended = isExpired(item);
   const terms = safeExternalUrl(item.termsUrl);
@@ -134,6 +160,9 @@ function renderOffer(item) {
     '" aria-label="' + (saved ? 'Aus Merkliste entfernen' : 'Zur Merkliste hinzufügen') + '" title="Merken">' + (saved ? '♥' : '♡') + '</button>' +
     '<button class="icon-btn" type="button" data-action="copy" data-id="' + id + '" title="Kommentar oder Anfrage kopieren">✎</button>' +
     '<button class="icon-btn" type="button" data-action="log" data-id="' + id + '" title="Aktivität dokumentieren">＋</button></div>' +
+    '<button class="assist-card-btn" type="button" data-action="assist" data-id="' + id + '">' +
+    (entered ? '✓ Teilnahme dokumentiert' : '◎ Teilnahme vorbereiten · ' + progress.finished + '/' + progress.total) +
+    (remaining ? ' · ' + esc(remaining.label) : '') + '</button>' +
     '<div class="card-safety">' + (ended ? 'Abgelaufen · nur noch im Verlauf' : 'Originalbedingungen, Versand und Frist vor Teilnahme prüfen') + '</div></div></article>';
 }
 function emptyMessage(kind) {
@@ -146,7 +175,16 @@ function emptyMessage(kind) {
     '</p><button class="primary-btn" type="button" data-action="add">＋ Aktion hinzufügen</button></div>';
 }
 function renderFeed() {
-  const feed = rankFeed(all(), ui.category, ui.query);
+  let feed = rankFeed(all(), ui.category, ui.query);
+  if (ui.verifiedOnly) feed = feed.filter(item => item.sourceType === 'curated');
+  if (ui.endingSoonOnly) feed = feed.filter(item => {
+    const d = timeUntilDeadline(item);
+    return d && d.status !== 'expired' && d.hours <= 72;
+  });
+  const verified = $('#verifiedOnlyButton');
+  const ending = $('#endingSoonButton');
+  if (verified) { verified.classList.toggle('active', ui.verifiedOnly); verified.setAttribute('aria-pressed', String(ui.verifiedOnly)); }
+  if (ending) { ending.classList.toggle('active', ui.endingSoonOnly); ending.setAttribute('aria-pressed', String(ui.endingSoonOnly)); }
   $('#discoverCards').innerHTML = feed.length ? feed.map(renderOffer).join('') : emptyMessage('feed');
   const saved = getSaved();
   $('#savedCards').innerHTML = saved.length ? saved.map(renderOffer).join('') : emptyMessage('saved');
@@ -156,12 +194,42 @@ function renderFeed() {
     button.setAttribute('aria-pressed', String(active));
   });
 }
+function renderAssistantQueue() {
+  const items = rankFeed(all(), 'focus');
+  const urgent = urgentOffers(items);
+  const urgentLabel = $('#assistantDeadlineCount');
+  if (urgentLabel) urgentLabel.textContent = String(urgent.length);
+  const queue = $('#assistantQueue');
+  if (!queue) return;
+  const ranked = [...items].sort((a,b) => {
+    const dateA = timeUntilDeadline(a), dateB = timeUntilDeadline(b);
+    const urgency = d => !d ? 3 : d.status === 'urgent' ? 0 : d.status === 'soon' ? 1 : 2;
+    return urgency(dateA) - urgency(dateB) ||
+      Number(b.sourceType === 'curated') - Number(a.sourceType === 'curated');
+  }).slice(0,40);
+  queue.innerHTML = ranked.length ? ranked.map(item => {
+    const selected = checklistFor(item);
+    const progress = checklistProgress(item, selected.selected, selected.completed);
+    const remaining = timeUntilDeadline(item);
+    const completed = isConfirmedParticipation(state.activity,item.id) ||
+      ['applied','accepted','received'].includes(state.tracked[item.id]);
+    const label = completed ? '✓ Selbst bestätigt' : progress.complete ? 'Bereit zur Bestätigung' : progress.finished + '/' + progress.total + ' Schritte';
+    return '<article class="assistant-queue-item"><div><div class="queue-meta">' +
+      esc(item.category || 'Aktion') + ' · ' + esc(item.sourceType === 'curated' ? 'Regeln geprüft' : 'Ungeprüft') +
+      (remaining ? ' · ' + esc(remaining.label) : '') +
+      '</div><h3>' + esc(item.title) + '</h3><p>' + esc(item.brand || 'Originalquelle') + ' · ' + esc(label) + '</p>' +
+      '<div class="queue-progress"><span style="width:' + Math.min(100,Math.round(progress.finished/Math.max(1,progress.total)*100)) + '%"></span></div></div>' +
+      '<button class="subtle-btn" data-action="assist" data-id="' + esc(item.id) + '" type="button">Öffnen ↗</button></article>';
+  }).join('') : emptyMessage('feed');
+}
 function renderActivity() {
   const summary = activitySummary(state.activity);
   $('#activityEntered').textContent = String(getStatusCounts().entered);
   $('#activityWon').textContent = String(getStatusCounts().wins);
   $('#activityReceived').textContent = String(summary.received);
-  const list = [...state.activity].filter(x => x && ACTIVITY_TYPES[x.type]).sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const list = [...state.activity].filter(x => x && ACTIVITY_TYPES[x.type] &&
+    (!ui.accountQuery || String(x.account || '').toLocaleLowerCase('de-DE').includes(ui.accountQuery)))
+    .sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   $('#activityList').innerHTML = list.length ? list.map(entry => {
     const item = byId(entry.offerId);
     const title = entry.offerTitle || item?.title || 'Frühere Aktion';
@@ -182,9 +250,10 @@ function render() {
   updateStats();
   renderBrands();
   renderFeed();
+  renderAssistantQueue();
   renderActivity();
 }
-const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', activity:'ACTIVITY LOG', saved:'SAVED', info:'ABOUT' };
+const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', saved:'SAVED', info:'ABOUT' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -197,7 +266,7 @@ function setTab(tab) {
   });
   $('#topTitle').textContent = topTitles[tab];
   render();
-  window.scrollTo({ top:0, behavior:'instant' });
+  window.scrollTo({ top:0, behavior:'auto' });
 }
 async function refresh() {
   $('#syncLabel').textContent = 'Katalog wird geladen …';
@@ -223,7 +292,7 @@ function openDialog(id) {
   const dialog = $('#' + id);
   if (dialog && !dialog.open) dialog.showModal();
 }
-function openActivityDialog(id) {
+function openActivityDialog(id, type) {
   const select = $('#activityOffer');
   const items = all();
   if (!items.length) {
@@ -232,8 +301,55 @@ function openActivityDialog(id) {
   }
   select.innerHTML = items.map(item => '<option value="' + esc(item.id) + '">' + esc(clean(item.title).slice(0, 95)) + '</option>').join('');
   if (id && items.some(item => item.id === id)) select.value = id;
+  if (type && ['prepared','entered','won','received'].includes(type))
+    $('#activityForm').elements.namedItem('type').value = type;
   openDialog('activityDialog');
 }
+
+function showParticipationDialog(item) {
+  if (!item) return;
+  ui.assistantOfferId = item.id;
+  $('#participationTitle').textContent = String(item.title).slice(0,130);
+  const url = safeExternalUrl(item.url);
+  const original = $('#participationOriginal');
+  original.href = url || '#';
+  original.textContent = 'Originalbeitrag / Regeln öffnen ↗';
+  const terms = $('#participationTerms');
+  const termsUrl = safeExternalUrl(item.termsUrl);
+  terms.hidden = !termsUrl;
+  if (termsUrl) terms.href = termsUrl;
+  renderParticipationDialog(item);
+  openDialog('participationDialog');
+}
+function renderParticipationDialog(item) {
+  const data = checklistFor(item);
+  const definitions = stepDefinitions(item, data.selected);
+  const progress = checklistProgress(item, data.selected, data.completed);
+  const already = isConfirmedParticipation(state.activity,item.id) ||
+    ['applied','accepted','received'].includes(state.tracked[item.id]);
+  $('#participationWarnings').innerHTML = offerWarnings(item).map(warning =>
+    '<p>⚠ ' + esc(warning) + '</p>').join('') ||
+    '<p>✓ Keine offenen Hinweise in den hinterlegten Daten. Originalbedingungen trotzdem prüfen.</p>';
+  $('#participationTasks').innerHTML = definitions.map(task =>
+    '<label class="participation-task"><input type="checkbox" data-check-step="' + esc(task.id) + '"' +
+    (data.completed.includes(task.id) ? ' checked' : '') + '>' + esc(task.label) + '</label>').join('');
+  const extra = CHECKLIST_TASKS.filter(task => task.section === 'social');
+  $('#participationExtra').innerHTML = extra.map(task =>
+    '<label class="participation-extra"><input type="checkbox" data-opt-step="' + esc(task.id) + '"' +
+    (data.selected.includes(task.id) ? ' checked' : '') + '>' + esc(task.label) + '</label>').join('');
+  $('#participationCounter').textContent =
+    progress.finished + ' von ' + progress.total + ' Aufgaben bestätigt · nur auf diesem Gerät';
+  const complete = canConfirmEntry(item,data.selected,data.completed,state.activity) &&
+    !['applied','accepted','received'].includes(state.tracked[item.id]);
+  const confirm = $('#participationConfirm');
+  confirm.disabled = !complete || already;
+  confirm.textContent = already ? 'Bereits als Teilnahme erfasst' :
+    complete ? 'Teilnahme selbst bestätigen ↗' : 'Erst Aufgaben abhaken';
+  $('#participationTemplates').innerHTML = suggestedComments(item).map((message,index) =>
+    '<div class="comment-choice"><span>' + esc(message) + '</span><button class="icon-btn" data-action="copy-template" data-template="' +
+    index + '" type="button" aria-label="Kommentarvorlage kopieren">Kopieren</button></div>').join('');
+}
+
 function toggleSaved(item) {
   if (state.saved.includes(item.id)) {
     state.saved = state.saved.filter(id => id !== item.id);
@@ -245,7 +361,10 @@ function toggleSaved(item) {
     state.savedDetails[item.id] = {
       id:item.id, title:item.title, brand:item.brand, source:item.source,
       url:item.url, description:item.description, category:item.category,
-      published:item.published, offerType:item.offerType, manual:!!item.manual
+      published:item.published, deadline:item.deadline, offerType:item.offerType,
+      sourceType:item.sourceType, termsUrl:item.termsUrl, checkedOn:item.checkedOn,
+      shippingStatus:item.shippingStatus, costStatus:item.costStatus,
+      participation:item.participation, manual:!!item.manual
     };
     toast('In deiner Merkliste gespeichert.');
   }
@@ -274,6 +393,15 @@ document.addEventListener('click', event => {
   const action = button.dataset.action;
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
+  if (action === 'copy-template') {
+    const item = byId(ui.assistantOfferId);
+    const index = Number(button.dataset.template);
+    const value = item && suggestedComments(item)[index];
+    if (value) navigator.clipboard.writeText(value).then(() =>
+      toast('Kommentar kopiert – veröffentliche ihn selbst beim Veranstalter.')
+    ).catch(() => toast('Bitte Clipboard-Zugriff in Safari erlauben.'));
+    return;
+  }
   if (action === 'remove-brand') {
     const handle = button.dataset.handle;
     state.brands = state.brands.filter(b => b.handle?.toLowerCase() !== handle.toLowerCase());
@@ -282,6 +410,7 @@ document.addEventListener('click', event => {
   }
   const item = byId(button.dataset.id);
   if (!item) return;
+  if (action === 'assist') return showParticipationDialog(item);
   if (action === 'bookmark') return toggleSaved(item);
   if (action === 'copy') return copyText(item);
   if (action === 'log') return openActivityDialog(item.id);
@@ -304,6 +433,38 @@ $('#pasteLinkButton').addEventListener('click', async () => {
   }
 });
 $('#addBrandButton').addEventListener('click', () => openDialog('brandDialog'));
+$('#verifiedOnlyButton').addEventListener('click', () => { ui.verifiedOnly = !ui.verifiedOnly; renderFeed(); });
+$('#endingSoonButton').addEventListener('click', () => { ui.endingSoonOnly = !ui.endingSoonOnly; renderFeed(); });
+$('#activityAccountFilter').addEventListener('input', e => {
+  ui.accountQuery = String(e.target.value || '').trim().toLocaleLowerCase('de-DE');
+  renderActivity();
+});
+$('#participationDialog').addEventListener('change', e => {
+  const item = byId(ui.assistantOfferId);
+  if (!item) return;
+  const stored = checklistFor(item);
+  const optional = e.target.closest('[data-opt-step]');
+  const step = e.target.closest('[data-check-step]');
+  if (optional) {
+    const id = optional.dataset.optStep;
+    stored.selected = optional.checked ? [...stored.selected,id] : stored.selected.filter(x=>x!==id);
+    if (!optional.checked) stored.completed = stored.completed.filter(x=>x!==id);
+  } else if (step) {
+    const id = step.dataset.checkStep;
+    stored.completed = step.checked ? [...stored.completed,id] : stored.completed.filter(x=>x!==id);
+  } else return;
+  storeChecklist(item,stored);renderParticipationDialog(item);renderFeed();renderAssistantQueue();
+});
+$('#participationConfirm').addEventListener('click', () => {
+  const item = byId(ui.assistantOfferId);
+  if (!item) return;
+  const data = checklistFor(item);
+  if (!canConfirmEntry(item,data.selected,data.completed,state.activity) ||
+      ['applied','accepted','received'].includes(state.tracked[item.id]))
+    return toast('Teilnahme noch nicht vollständig geprüft oder bereits dokumentiert.');
+  $('#participationDialog').close();
+  openActivityDialog(item.id,'entered');
+});
 $('#logActivityButton').addEventListener('click', () => openActivityDialog());
 $('#refreshButton').addEventListener('click', refresh);
 $('#search').addEventListener('input', event => { ui.query = event.target.value.trim(); renderFeed(); });
@@ -349,6 +510,10 @@ $('#activityForm').addEventListener('submit', event => {
   if (!item) return toast('Wähle eine vorhandene Aktion.');
   log.offerTitle = clean(item.title).slice(0,130);
   log.offerUrl = safeExternalUrl(item.url);
+  if (log.type === 'entered' && (
+    isConfirmedParticipation(state.activity,item.id) ||
+    ['applied','accepted','received'].includes(state.tracked[item.id])
+  )) return toast('Diese Aktion wurde schon als Teilnahme erfasst.');
   state.activity.unshift(log);
   state.activity = state.activity.slice(0,1000);
   if (log.type === 'entered') state.tracked[item.id] = 'applied';
