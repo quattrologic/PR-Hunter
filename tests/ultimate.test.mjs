@@ -84,3 +84,14 @@ test('service worker includes every new module for offline shell', async () => {
   assert.ok(sw.includes('ultimate-core.mjs'));
   assert.ok(sw.includes('opportunities.json'));
 });
+
+
+test('browser scripts parse as JavaScript modules', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const { fileURLToPath } = await import('node:url');
+  for (const filename of ['app.js','ultimate-core.mjs','sw.js']) {
+    const path = fileURLToPath(new URL('../docs/' + filename, import.meta.url));
+    const check = spawnSync(process.execPath, ['--check',path], {encoding:'utf8'});
+    assert.equal(check.status, 0, filename + ': ' + check.stderr);
+  }
+});
