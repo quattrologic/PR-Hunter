@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T13:57:55.751Z",
-  "sourcesChecked": 4,
+  "generatedAt": "2026-11-14T14:58:05.413Z",
+  "sourcesChecked": 3,
   "sourcesSucceeded": 3,
   "sources": [
     {
@@ -14,33 +14,16 @@
       "name": "Testpiloten.de · Produkttests",
       "status": "ok",
       "entries": 10,
-      "matching": 1
+      "matching": 0
     },
     {
       "name": "Pfennigfuchs · Technik-Tests",
       "status": "ok",
       "entries": 18,
-      "matching": 8
-    },
-    {
-      "name": "Gewinnspielefinder · Aktionen",
-      "status": "error",
-      "entries": 0,
-      "matching": 0
+      "matching": 7
     }
   ],
   "opportunities": [
-    {
-      "id": "0028f7d9f7eef94944fd",
-      "title": "Kalender 2027 gratis : Freebies komplett kostenlos bestellen!",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Wer benötigt einen Kalender für 2027? Vielleicht wirst du jetzt zum Nulltarif fündig?!* Obwohl wahrscheinlich jeder von uns quasi jederzeit einen Kalender auf seinem Smartphone griffbereit hat, können Kalender zum Anfassen durchaus ihre Vorteile haben. Es ist daher gar keine schlechte Idee, wenn ma",
-      "url": "https://pfennigfuchs.com/2026/kalender-gratis-kostenlos/",
-      "category": "Technik",
-      "published": "2026-11-14T02:47:11.000Z",
-      "offerType": "PR-Aufruf"
-    },
     {
       "id": "718ce4579e7be4d05303",
       "title": "SoundPEATS CC3 Pro im Test: Das Dual-Treiber Kraftpaket unter den Open-Ear Sport Bluetooth Kopfhörern + Gewinnspiel",
@@ -64,15 +47,15 @@
       "offerType": "PR-Aufruf"
     },
     {
-      "id": "38827ef1f5d0b0319a3c",
-      "title": "Torte als Freebie 🍰 Cashback, Produkttest und mehr Gratis-Deals",
+      "id": "d39d3c1ced0c02f9e8dd",
+      "title": "Nahrungsergänzungsmittel: Produktmuster kostenlos bestellen",
       "brand": "Pfennigfuchs · Technik-Tests",
       "source": "Pfennigfuchs · Technik-Tests",
-      "description": "Bist du ein Feinschmecker? Willst du von einem großzügigen Unternehmen auf (mindestens) ein Stück Torte oder Kuchen eingeladen werden? Vielleicht sorgt dieser Beitrag dann für eine Portion Glück. Ab und an werden Cashback-Deals, Produkttests, Gewinnspiele und Konsorten veranstaltet, bei denen der gr",
-      "url": "https://pfennigfuchs.com/2026/torte-freebie-cashback-test/",
+      "description": "*Es gibt wieder attraktive Gratisdinge!* Aus der großen und weiten Welt der Nahrungsergänzungsmittel gibt es immer mal wieder Zuwachs. Da der Markt für Verbraucher schnell unübersichtlich werden kann, setzen viele Unternehmen auf Produktmuster. Das heißt, dass es kostenlose Produktproben gibt, durch",
+      "url": "https://pfennigfuchs.com/2026/nahrungsergaenzungsmittel-produktmuster/",
       "category": "Sonstiges",
-      "published": "2026-11-14T11:01:46.000Z",
-      "offerType": "Produkttest"
+      "published": "2026-11-14T03:28:01.000Z",
+      "offerType": "PR-Aufruf"
     },
     {
       "id": "41317402636e2389e4b3",
@@ -103,7 +86,7 @@
       "source": "Pfennigfuchs · Technik-Tests",
       "description": "Kannst du einen neuen Damen-Rasierer mindestens ganz gut gebrauchen? Hättest du gar nichts dagegen, wenn du das gute Stück nicht kaufen musst, sondern als Freebie frei Haus geliefert bekommst? Dann bist du bei dieser Deal-Sammlung an der richtigen Stelle. Wir sammeln hier Gratisaktionen rund um Dame",
       "url": "https://pfennigfuchs.com/2026/damen-rasierer-freebies/",
-      "category": "Sonstiges",
+      "category": "Beauty",
       "published": "2026-11-13T14:00:31.000Z",
       "offerType": "Produkttest"
     },
@@ -127,17 +110,6 @@
       "url": "https://pfennigfuchs.com/2026/produkte-testen-loreal/",
       "category": "Sonstiges",
       "published": "2026-11-13T08:48:58.000Z",
-      "offerType": "Produkttest"
-    },
-    {
-      "id": "ab2d9469bc556a0a6633",
-      "title": "Produkte testen 2026: Die 10 besten Programme für Produkttester",
-      "brand": "Testpiloten.de · Produkttests",
-      "source": "Testpiloten.de · Produkttests",
-      "description": "Produkte kostenlos testen und behalten: Unsere 10 Empfehlungen für Produkttester 2026 – von empfohlen.de und Pinecone über dm, ALDI und MediaMarkt bis Degustabox.",
-      "url": "https://testpiloten.de/965-produkte-testen-und-probieren/",
-      "category": "Sonstiges",
-      "published": "2026-11-10T18:46:22.000Z",
       "offerType": "Produkttest"
     }
   ]
