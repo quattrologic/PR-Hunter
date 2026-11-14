@@ -94,7 +94,8 @@ test('the connected UI is never faked; has real controls, source status and bran
   assert.ok(app.includes('sourceHealthSummary(ui.sourceStatus)'));
   assert.ok(app.includes('normalizeIntegrationSetup(state.integration)'));
   assert.ok(sw.includes('./integrations.mjs'));
-  assert.ok(!html.includes('<input type="password"'));
+  assert.ok(html.includes('id="backupPassword" type="password"')); // local-only encrypted backup passphrase
+  assert.ok(!html.slice(html.indexOf('id="infoPanel"'),html.indexOf('id="infoPanel"')+4500).includes('type="password"'));
   assert.ok(!app.includes('fetch("https://graph.instagram.com'));
   for(const file of ['integrations.mjs','app.js','sw.js','phase4-core.mjs']) {
     const syntax=spawnSync(process.execPath,['--check',fileURLToPath(new URL('../docs/'+file,import.meta.url))],{encoding:'utf8'});
