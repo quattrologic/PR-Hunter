@@ -28,6 +28,10 @@ import {
   normalizeFreeProductPrefs, normalizeProgramProgress, programWarnings,
   rankPrograms, classifyPublicLeads, programMessage, programStats
 } from './free-products.mjs';
+import {
+  normalizeDmDrafts, addDmDraft, updateDmStatus, dmStats,
+  dmBrandProfile, dmCopyText
+} from './dm-assistant.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -36,7 +40,7 @@ const ui = {
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
   brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[] };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -54,6 +58,7 @@ state.display = normalizeDisplayPrefs(state.display);
 state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
 state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
 state.programProgress = normalizeProgramProgress(state.programProgress);
+state.dmDrafts = normalizeDmDrafts(state.dmDrafts);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -401,6 +406,40 @@ function renderDisplay() {
   });
 }
 
+
+function renderDmDrafts(){
+  state.dmDrafts=normalizeDmDrafts(state.dmDrafts);
+  const stats=dmStats(state.dmDrafts);
+  $('#dmPreparedCount').textContent=String(stats.prepared);
+  $('#dmSentCount').textContent=String(stats.sent);
+  $('#dmRepliedCount').textContent=String(stats.replied);
+  $('#dmDraftList').innerHTML=state.dmDrafts.length ? state.dmDrafts.map(draft=>{
+    const name='@'+draft.brand;
+    const profile=dmBrandProfile(draft.brand);
+    const message=dmCopyText(draft);
+    const status=draft.status==='sent'?'Laut dir gesendet':
+      draft.status==='replied'?'Antwort laut dir erhalten':'Nur vorbereitet · nicht gesendet';
+    return '<article class="dm-card"><div class="dm-card-top"><div><span class="free-kind">INSTAGRAM REEL · PRIVATE NACHRICHT</span>'+
+      '<h3>'+esc(name)+'</h3></div><span class="dm-status'+(draft.status==='prepared'?'':' dm-finished')+'">'+esc(status)+'</span></div>'+
+      '<p class="dm-text-preview">'+esc(message)+'</p>'+
+      '<div class="dm-card-actions">'+
+        '<button type="button" data-action="dm-copy" data-dm-id="'+esc(draft.id)+'">✎ Nachricht kopieren</button>'+
+        '<button type="button" data-action="dm-copy-link" data-dm-id="'+esc(draft.id)+'">✎ Text + Link kopieren</button>'+
+        '<a href="'+esc(draft.reelUrl)+'" target="_blank" rel="noopener noreferrer">↗ Video öffnen &amp; teilen</a>'+
+        '<a href="'+esc(profile)+'" target="_blank" rel="noopener noreferrer">↗ Markenprofil</a>'+
+      '</div>'+
+      '<div class="dm-card-progress">'+
+        (draft.status==='prepared'
+          ? '<button type="button" data-action="dm-sent" data-dm-id="'+esc(draft.id)+'">Ich habe es selbst gesendet ✓</button>'
+          : draft.status==='sent'
+            ? '<button type="button" data-action="dm-replied" data-dm-id="'+esc(draft.id)+'">Marke hat geantwortet ✓</button>'
+            : '')+
+        '<button type="button" data-action="dm-remove" data-dm-id="'+esc(draft.id)+'">Entfernen</button>'+
+      '</div></article>';
+  }).join('') :
+    '<div class="empty"><strong>Noch keine Video-DMs vorbereitet.</strong><p>Füge einen echten Instagram-Reel-Link ein und wähle die Marke. Senden musst du die DM anschließend selbst in Instagram.</p></div>';
+}
+
 function renderFreeProducts() {
   const prefs=normalizeFreeProductPrefs(state.freePrefs);
   const progress=normalizeProgramProgress(state.programProgress);
@@ -506,8 +545,9 @@ function render() {
   renderAlerts();
   renderAutoHunter();
   renderFreeProducts();
+  renderDmDrafts();
 }
-const topTitles = { discover:'DISCOVER', products:'FREE PRODUCTS', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
+const topTitles = { discover:'DISCOVER', products:'FREE PRODUCTS', dm:'VIDEO DM', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -646,6 +686,14 @@ document.addEventListener('click', event => {
   if (nav) { setTab(nav.dataset.tab); return; }
   const filter = event.target.closest('[data-category]');
   if (filter) { ui.category = filter.dataset.category; ui.visibleFeed=FEED_PAGE_SIZE; renderFeed(); return; }
+  const dmPreset=event.target.closest('[data-dm-preset]');
+  if(dmPreset) {
+    $('#dmBrand').value='@'+dmPreset.dataset.dmPreset;
+    $('#dmKind').value=dmPreset.dataset.dmPreset==='lucidclub'?'tracksuit':'shirt';
+    $('#dmFormStatus').textContent='Marke übernommen. Kopiere jetzt den Original-Reel-Link in das Feld darüber.';
+    $('#dmReel').focus();
+    return;
+  }
   const freeFilter=event.target.closest('[data-free-filter]');
   if (freeFilter) {
     state.freePrefs=normalizeFreeProductPrefs({...state.freePrefs,view:freeFilter.dataset.freeFilter});
@@ -658,6 +706,34 @@ document.addEventListener('click', event => {
   const action = button.dataset.action;
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
+  if (action.startsWith('dm-')) {
+    const id=button.dataset.dmId;
+    const draft=state.dmDrafts.find(x=>x.id===id);
+    if(!draft)return;
+    if(action==='dm-copy' || action==='dm-copy-link'){
+      const message=dmCopyText({...draft,includeLink:action==='dm-copy-link'});
+      if(!message)return;
+      navigator.clipboard.writeText(message)
+        .then(()=>toast('Text kopiert – sende ihn selbst in Instagram.'))
+        .catch(()=>toast('Kopieren fehlgeschlagen. Du kannst den Text in der Karte markieren.'));
+      return;
+    }
+    if(action==='dm-sent' && window.confirm('Hast du das Originalvideo und die Nachricht wirklich über Instagram an @'+draft.brand+' gesendet?')){
+      state.dmDrafts=updateDmStatus(state.dmDrafts,id,'sent');
+      save();renderDmDrafts();toast('Nur deine eigene Sendebestätigung gespeichert.');
+      return;
+    }
+    if(action==='dm-replied' && window.confirm('Hat die Marke in Instagram tatsächlich geantwortet?')){
+      state.dmDrafts=updateDmStatus(state.dmDrafts,id,'replied');
+      save();renderDmDrafts();toast('Deine Antwortbestätigung gespeichert – nicht automatisch aus Instagram ausgelesen.');
+      return;
+    }
+    if(action==='dm-remove' && window.confirm('Diese DM-Vorlage lokal entfernen?')){
+      state.dmDrafts=state.dmDrafts.filter(x=>x.id!==id);
+      save();renderDmDrafts();return;
+    }
+    return;
+  }
   if (action === 'copy-free-draft') {
     const program=OFFICIAL_PROGRAMS.find(x=>x.id===button.dataset.programId);
     const draft=programMessage(program);
@@ -895,6 +971,24 @@ $('#logActivityButton').addEventListener('click', () => openActivityDialog());
 $('#refreshButton').addEventListener('click', refresh);
 $('#autoRefreshButton').addEventListener('click', refresh);
 $('#freeProductsRefresh').addEventListener('click',refresh);
+$('#dmForm').addEventListener('submit',event=>{
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const result=addDmDraft(state.dmDrafts,{
+    reelUrl:String(data.get('reelUrl')||''),brand:String(data.get('brand')||''),
+    language:String(data.get('language')||'en'),
+    kind:String(data.get('kind')||'generic')
+  });
+  if(!result.added){
+    $('#dmFormStatus').textContent=result.reason;
+    toast(result.reason);return;
+  }
+  state.dmDrafts=result.drafts;
+  save();renderDmDrafts();
+  $('#dmFormStatus').textContent='Vorlage lokal gespeichert. Noch nichts an Instagram gesendet.';
+  event.currentTarget.reset();
+  toast('DM-Nachricht vorbereitet – Video musst du in Instagram selbst teilen.');
+});
 $('#freeHideFollower').addEventListener('change',event=>{
   state.freePrefs=normalizeFreeProductPrefs({...state.freePrefs,showFollowerRestricted:!event.target.checked});
   save();renderFreeProducts();

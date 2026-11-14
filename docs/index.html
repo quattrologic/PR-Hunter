@@ -23,6 +23,7 @@
     <nav class="nav" aria-label="Hauptnavigation">
       <button type="button" class="nav-btn active" data-tab="discover" aria-current="page"><span aria-hidden="true">◈</span> Entdecken</button>
       <button type="button" class="nav-btn" data-tab="products"><span aria-hidden="true">🎁</span> Free Products</button>
+      <button type="button" class="nav-btn" data-tab="dm"><span aria-hidden="true">✉</span> Video-DM</button>
       <button type="button" class="nav-btn" data-tab="auto"><span aria-hidden="true">⚡</span> Auto-Hunter</button>
       <button type="button" class="nav-btn" data-tab="brands"><span aria-hidden="true">◎</span> Brand Radar</button>
       <button type="button" class="nav-btn" data-tab="assistant"><span aria-hidden="true">✓</span> Teilnahme</button>
@@ -80,6 +81,38 @@
         <div id="brandFilterMessage" class="brand-filter-message" hidden></div>
         <div class="cards" id="discoverCards" aria-live="polite"></div>
       </section>
+    </section>
+    <section class="view" id="dmPanel" data-panel="dm" hidden>
+      <div class="section-banner dm-banner">
+        <span class="mini-label">VIDEO AN MARKE SENDEN · PRIVATE FAN MODE</span>
+        <h1>Video-DM-Assistent<span class="soft-accent">.</span></h1>
+        <p>Für Aktionen wie „Send us this video“. PR-Hunter bereitet die passende private Nachricht vor – ohne dich als Creator oder Markenbotschafter auszugeben. Du leitest das Video in Instagram selbst per Teilen-Pfeil an die Marke weiter.</p>
+      </div>
+      <div class="dm-how">
+        <div><strong>1</strong><span>Reel-Link aus Instagram kopieren</span></div>
+        <div><strong>2</strong><span>Nachricht in PR-Hunter vorbereiten</span></div>
+        <div><strong>3</strong><span>Video selbst per Instagram-DM teilen &amp; Text einfügen</span></div>
+      </div>
+      <form id="dmForm" class="dm-form">
+        <h2>Neue Video-Nachricht</h2>
+        <p>Beispiele aus deinen Bildern: <button type="button" data-dm-preset="brkdwn.studios"> @brkdwn.studios</button> <button type="button" data-dm-preset="lucidclub">@lucidclub</button>. Der jeweilige Original-Reel-Link muss noch eingefügt werden.</p>
+        <label>Instagram-Reel-Link<input id="dmReel" name="reelUrl" inputmode="url" type="url" required placeholder="https://www.instagram.com/reel/…" autocomplete="off"></label>
+        <label>Markenprofil<input id="dmBrand" name="brand" required maxlength="31" placeholder="@marke" autocomplete="off"></label>
+        <div class="dm-form-options">
+          <label>Sprache<select id="dmLanguage" name="language"><option value="en">Englisch (empfohlen für die Beispiele)</option><option value="de">Deutsch</option></select></label>
+          <label>Gewünschtes Produkt<select id="dmKind" name="kind"><option value="generic">Streetwear allgemein</option><option value="shirt">Shirt</option><option value="tracksuit">Tracksuit</option></select></label>
+        </div>
+        <button class="primary-btn" type="submit">Nachricht vorbereiten &amp; merken</button>
+        <p id="dmFormStatus" class="helper" role="status">Noch nichts versendet. Die Nachricht wird nur auf deinem iPad gespeichert.</p>
+      </form>
+      <div class="dm-stats">
+        <div><span>Vorbereitet</span><strong id="dmPreparedCount">0</strong></div>
+        <div><span>Selbst gesendet</span><strong id="dmSentCount">0</strong></div>
+        <div><span>Antwort erhalten</span><strong id="dmRepliedCount">0</strong></div>
+      </div>
+      <div class="section-header section-pad"><div><span class="mini-label">DEINE VIDEO-ANFRAGEN</span><h2>Vorbereitete DMs</h2></div><span class="counter-label">Keine automatischen Massen-DMs</span></div>
+      <div id="dmDraftList" class="dm-draft-list" aria-live="polite"></div>
+      <div class="dm-limits"><strong>Instagram-Versand bleibt manuell</strong><p>Die offizielle Messaging-API lässt keine frei adressierbaren ersten DMs an beliebige Marken zu. Die App kann Texte und Links kopieren, die Original-Reels öffnen und deine eigenen Bestätigungen speichern – aber weder eigenständig verschicken noch echte Instagram-Antworten auslesen. Wenn die Marke ausdrücklich das Video verlangt, nutze den <strong>Teilen-Pfeil direkt im Original-Reel</strong>; ein Link allein erfüllt möglicherweise nicht die Aufgabe.</p></div>
     </section>
     <section class="view" id="productsPanel" data-panel="products" hidden>
       <div class="section-banner free-products-banner">
@@ -264,7 +297,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 9 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 10 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">

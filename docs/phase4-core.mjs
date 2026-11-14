@@ -5,6 +5,7 @@ import { normalizeAlertsState } from './phase6-core.mjs';
 import { normalizeDisplayPrefs } from './phase7-core.mjs';
 import { normalizeAutoPrefs } from './auto-hunter-core.mjs';
 import { normalizeFreeProductPrefs, normalizeProgramProgress } from './free-products.mjs';
+import { normalizeDmDrafts } from './dm-assistant.mjs';
 
 const MAX_BATCH = 40;
 const MAX_BACKUP_BYTES = 2_000_000;
@@ -188,6 +189,7 @@ export function parseBackup(text) {
     display:normalizeDisplayPrefs(raw.display),
     autoPrefs:normalizeAutoPrefs(raw.autoPrefs),
     freePrefs:normalizeFreeProductPrefs(raw.freePrefs),
-    programProgress:normalizeProgramProgress(raw.programProgress)
+    programProgress:normalizeProgramProgress(raw.programProgress),
+    dmDrafts:normalizeDmDrafts(raw.dmDrafts)
   };
 }

@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 9 – Free-Product-Hunter with product testing, creator collaborations and giveaways.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 10 – private Instagram video-DM preparation added to Free-Product-Hunter.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -253,3 +253,17 @@ Official sources:
 - https://www.for-me-online.de/testen-und-gewinnen
 
 Physical iPad Safari behavior and sign-in workflows at each provider are not included in CI and require separate user acceptance; real automatic submission remains gated by documented provider permission, secure hosting and identity verification.
+
+
+## Phase 10 — Send-a-Reel DM Assistant (iPad)
+
+Small streetwear brands sometimes ask people to **send their Reel by Instagram DM** to be considered for a possible free shirt or tracksuit. This is distinct from commenting, collaborating as a creator, or an approved giveaway-entry API. PR-Hunter adds a **Video-DM** tab for such opportunities:
+
+- Copy the original public Instagram Reel URL into PR-Hunter, provide the real brand handle (two optional examples from the user's screenshots: \`@brkdwn.studios\` and \`@lucidclub\`). The screenshots themselves do **not** identify the posts' URLs.
+- PR-Hunter creates a short English/German DM **without pretending to be a creator, ambassador or influencer**, then remembers the draft locally. Users can select a generic piece, a shirt or a tracksuit, and copy the text alone or with the video link.
+- "Video öffnen & teilen" opens the original Instagram post, where the user can use Instagram's **native Share/Send button** to forward the video to the brand. A pasted URL is not necessarily equivalent to the native video-forward the organizer requested.
+- Status stays **Prepared** until the user explicitly confirms sending, and stays **Sent** until the user explicitly confirms a reply. Never infer, scrape or fabricate Instagram sending, eligibility, replies, or a free-product delivery.
+- Deduplicates by verified brand handle + canonical Reel URL. Blocks malformed/social-lookalike links and never stores a password/token. Local drafts are included in the existing private JSON and encrypted backup workflow; storage key remains \`pr-hunter-state-v1\`.
+- No automatic DM sending, bulk outreach, repeated messages, multiple-account campaigns, or bypassing Instagram restrictions. Meta's official Instagram Send API operates from professional accounts and generally requires the Instagram user to contact the account before it can send a message; it cannot send arbitrary first DMs to brands. See https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api?entity=request-23987686-fc851f39-7194-4522-a475-2cea8de46d16.
+
+**No promise of free products.** Such Reels may be selective marketing, unavailable in Germany or subject to specific rules. The user checks the original video, current organizer account, shipping costs and conditions, and sends one authentic note rather than mass messages.
