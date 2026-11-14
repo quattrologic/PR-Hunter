@@ -26,7 +26,7 @@
       <button type="button" class="nav-btn" data-tab="activity"><span aria-hidden="true">▤</span> Aktivitäten</button>
       <button type="button" class="nav-btn" data-tab="inbox"><span aria-hidden="true">⌁</span> Link-Inbox</button>
         <button type="button" class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
-      <button type="button" class="nav-btn" data-tab="info"><span aria-hidden="true">ⓘ</span> Über die App</button>
+      <button type="button" class="nav-btn" data-tab="info"><span aria-hidden="true">◎</span> Integrationen</button>
     </nav>
     <div class="sidebar-bottom"><span class="sidebar-status">●</span><div><strong>Private Workspace</strong><small>Verlauf nur auf diesem Gerät</small></div></div>
   </aside>
@@ -72,6 +72,7 @@
           </div>
           <div class="search-group"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Brands, Hoodies, Sneaker …" aria-label="Angebote suchen"></label><button type="button" id="refreshButton" class="refresh" aria-label="Katalog aktualisieren" title="Katalog aktualisieren">↻</button></div>
         </div>
+        <div id="brandFilterMessage" class="brand-filter-message" hidden></div>
         <div class="cards" id="discoverCards" aria-live="polite"></div>
       </section>
     </section>
@@ -79,6 +80,7 @@
       <div class="section-banner brands-banner"><span class="mini-label">DEIN STREETWEAR UNIVERSUM</span><h1>Brand radar<span class="soft-accent">.</span></h1><p>Deine Lieblingslabels und neue Referenzen. Wir zeigen Profile – aktive Verlosungen erst, wenn eine passende Quelle sie bestätigt.</p><button id="addBrandButton" class="primary-btn" type="button">＋ Marke hinzufügen</button></div>
       <div class="section-header section-pad"><div><span class="mini-label">REFERENZEN</span><h2>Deine Watchlist</h2></div><span id="brandCount" class="counter-label">0 Marken</span></div>
       <div id="brandCards" class="brand-cards"></div>
+      <p class="helper brand-radar-note">Der Brand-Radar vergleicht Namen ausschließlich mit öffentlichen RSS- und redaktionell geprüften Einträgen. Er liest keine fremden Instagram-Reels automatisch aus. Eine externe Suche kann unvollständige Ergebnisse liefern.</p>
       <div class="social-discovery"><div><span class="mini-label">SOCIAL DISCOVERY</span><h2>Instagram-Gewinnspiele suchen</h2><p>Diese Links öffnen Instagram-Hashtags zum Selbstdurchsehen. PR-Hunter liest die Reels nicht automatisch aus und kommentiert nicht.</p></div>
         <div class="social-links"><a href="https://www.instagram.com/explore/tags/streetweargiveaway/" target="_blank" rel="noopener noreferrer">#streetweargiveaway ↗</a><a href="https://www.instagram.com/explore/tags/hoodiegiveaway/" target="_blank" rel="noopener noreferrer">#hoodiegiveaway ↗</a><a href="https://www.instagram.com/explore/tags/sneakergiveaway/" target="_blank" rel="noopener noreferrer">#sneakergiveaway ↗</a></div>
       </div>
@@ -133,7 +135,29 @@
       <div class="cards saved-cards" id="savedCards"></div>
     </section>
     <section class="view" id="infoPanel" data-panel="info" hidden>
-      <div class="section-banner info-banner"><span class="mini-label">TRANSPARENT & SICHER</span><h1>Über PR-Hunter<span class="soft-accent">.</span></h1><p>Eine unabhängige iPad-Web-App für öffentliche Aktionen – keine Instagram-Automatisierung im Hintergrund.</p></div>
+      <div class="section-banner info-banner"><span class="mini-label">PHASE 5 · OFFIZIELLE SCHNITTSTELLEN</span><h1>Integration Hub<span class="soft-accent">.</span></h1><p>Instagram sicher vorbereiten und öffentliche Gewinnspielquellen überprüfen. Keine Zugangsdaten und keine simulierten Verbindungen.</p></div>
+      <div class="integration-status" role="status"><div class="integration-status-bubble" aria-hidden="true">◎</div><div><strong>Instagram nicht verbunden</strong><p>PR-Hunter kann noch keine Instagram-Konten oder fremden Reels über eine autorisierte Meta-Verbindung abrufen.</p></div></div>
+      <div class="integration-layout">
+        <section class="integration-setup">
+          <div class="section-header"><div><span class="mini-label">META DEVELOPERS</span><h2>Instagram vorbereiten</h2></div><span id="metaSetupProgress" class="counter-label">0 / 4</span></div>
+          <p class="helper">Wähle den geplanten offiziellen Zugang. Die Checkliste speichert nur deine Selbsteinschätzung, keine tatsächliche Authentifizierung.</p>
+          <div class="integration-modes" aria-label="API-Zugang auswählen">
+            <label><input type="radio" name="metaMode" value="instagram_login" checked> Instagram Login <small>Ohne Facebook-Seite, professionelle Accounts</small></label>
+            <label><input type="radio" name="metaMode" value="facebook_login"> Facebook Login <small>Verknüpfte Facebook-Seite; bestimmte Hashtag-Suche</small></label>
+          </div>
+          <div id="metaCapabilities" class="integration-capabilities"></div>
+          <div id="metaSteps" class="integration-step-list"></div>
+          <div class="integration-guidance" id="metaGuidance" aria-live="polite">Aktuell noch nicht verbunden.</div>
+          <div class="integration-doclinks"><a href="https://developers.facebook.com/docs/instagram/platform/instagram-api/changelog/" target="_blank" rel="noopener noreferrer">Offizielle Meta-API-Dokumentation ↗</a><a href="https://www.postman.com/meta/instagram/folder/1z5vxzu/instagram-api-with-instagram-login" target="_blank" rel="noopener noreferrer">Instagram-Login-API ↗</a></div>
+          <p class="helper">Keine Passwörter, Access Tokens, Client Secrets oder Session-Cookies in dieses Dashboard eingeben. GitHub Pages kann keinen vertraulichen OAuth-Tokenaustausch durchführen.</p>
+        </section>
+        <section class="integration-sources">
+          <div class="section-header"><div><span class="mini-label">AUTOMATISCHE QUELLEN</span><h2>Scanner-Status</h2></div><span id="sourceTotals" class="counter-label">–</span></div>
+          <p class="helper">Nur öffentlich bereitgestellte RSS/Atom-Feeds werden automatisch gescannt. Statusmeldungen stammen aus dem letzten abgeschlossenen GitHub-Actions-Lauf.</p>
+          <div id="integrationSourceList" class="integration-source-list"></div>
+        </section>
+      </div>
+      <div class="section-header section-pad"><div><span class="mini-label">TRANSPARENT & SICHER</span><h2>Über PR-Hunter</h2></div></div>
       <div class="info-grid">
         <article><h3>Wie werden Aktionen gefunden?</h3><p>Der Scout liest öffentlich bereitgestellte RSS/Atom-Feeds ungefähr alle sechs Stunden. Die fünf Instagram-Brands sind Referenzen und werden noch nicht automatisch überwacht.</p></article>
         <article><h3>Wird automatisch kommentiert?</h3><p>Nein. Kommentarvorschläge werden nur kopiert. Öffne Instagram oder die Originalseite selbst, prüfe die Regeln und bestätige deine Teilnahme.</p></article>
@@ -142,7 +166,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 4 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 5 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">

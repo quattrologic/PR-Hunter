@@ -73,3 +73,41 @@
 .import-file-label input{display:block;max-width:260px;margin-top:8px;font-size:10px;color:#766b83}
 @media(max-width:800px){.inbox-settings-grid{grid-template-columns:1fr}}
 @media(max-width:525px){.batch-form{padding:15px}.inbox-settings-box{padding:15px}.inbox-action-row button{width:100%}.nav-btn{padding-left:0;padding-right:0;font-size:7.5px}}
+
+/* Phase 5 – truthful Meta integration readiness and official source status */
+.integration-status{display:flex;align-items:center;gap:15px;background:#fff9ed;border:1px solid #efddbf;border-radius:17px;padding:19px;margin-bottom:19px}
+.integration-status-bubble{flex-shrink:0;background:#f2e5ce;color:#8e6734;border-radius:50%;height:43px;width:43px;display:grid;place-items:center;font-size:23px}
+.integration-status strong{font-size:14px;color:#59472e}.integration-status p{color:#84715a;font-size:11px;margin-top:4px;line-height:1.55}
+.integration-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr);gap:15px;margin-bottom:29px}
+.integration-setup,.integration-sources{background:#fff;border:1px solid #e8e3ed;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.integration-setup .section-header,.integration-sources .section-header{margin-bottom:0}
+.integration-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.integration-modes label{display:flex;align-items:flex-start;flex-wrap:wrap;gap:8px;font-size:12px;font-weight:760;border:1px solid #e9e1f3;padding:13px;border-radius:13px;background:#fcfaff}
+.integration-modes input{accent-color:#8260cf;margin-top:4px}
+.integration-modes small{display:block;flex-basis:100%;font-size:10px;color:#8c839a;font-weight:400;line-height:1.5}
+.integration-capabilities{border:1px solid #efeaf4;border-radius:14px;overflow:hidden}
+.capability-title{background:#f4f0fb;padding:12px 15px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.capability-title strong{font-size:12px}.capability-title small{font-size:10px;color:#806f9b}
+.capability-group{padding:12px 15px;display:grid;gap:6px}
+.capability-group>span{font-size:10px;font-weight:770;color:#776785}
+.capability-group p{font-size:11px;color:#6b6674}
+.capability-group.unavailable{border-top:1px solid #eee9f2;background:#fbfafc}
+.capability-group.unavailable p{color:#a28586}
+.integration-step-list{display:grid;gap:8px}
+.integration-step{border:1px solid #eae4f4;border-radius:12px;padding:11px 13px;display:flex;align-items:flex-start;gap:11px;font-size:11px;color:#63556d;background:#fcfaff}
+.integration-step input{flex-shrink:0;width:18px;height:18px;accent-color:#795ac0;margin:0}
+.integration-guidance{background:#f5f1fc;color:#6b588c;font-size:11px;line-height:1.55;padding:13px;border-radius:13px}
+.integration-doclinks{display:flex;gap:11px;flex-wrap:wrap}
+.integration-doclinks a{font-size:11px;background:#292337;color:#fff;border-radius:10px;padding:9px 12px;font-weight:700}
+.integration-doclinks a+a{background:#e9e0f8;color:#6c4ba7}
+.integration-source-list{display:grid;gap:10px}
+.integration-source{display:flex;align-items:center;gap:10px;border-radius:13px;background:#f9f7fc;padding:11px}
+.integration-source>span{font-size:19px;flex-shrink:0}
+.source-ok{color:#2fad7b}.source-bad{color:#d27854}
+.integration-source strong{display:block;font-size:12px}.integration-source small{font-size:10px;color:#968ba1}
+.brand-radar-note{margin:12px 0 2px}
+.brand-filter-message{background:#efebfb;color:#695295;border-radius:13px;margin:0 0 13px;padding:10px 13px;font-size:11px}
+.brand-filter-message button{background:none;border:0;color:#6750ad;text-decoration:underline;font-size:11px;font-weight:740}
+.brand-card-actions{flex-wrap:wrap}.brand-card-actions a,.brand-card-actions button{flex:1;min-width:85px}
+@media(max-width:960px){.integration-layout{grid-template-columns:1fr}}
+@media(max-width:580px){.integration-setup,.integration-sources{padding:16px}.integration-modes{grid-template-columns:1fr}.integration-status{padding:13px}.integration-doclinks a{width:100%;text-align:center}}
