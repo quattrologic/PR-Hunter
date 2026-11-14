@@ -1,5 +1,12 @@
 name: PR-Hunter public feed scan
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "config/sources.json"
+      - "scripts/scout.mjs"
+      - ".github/workflows/scout.yml"
   schedule:
     - cron: "14 */6 * * *"
   workflow_dispatch:

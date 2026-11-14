@@ -39,3 +39,16 @@ test('classifies and prioritizes fashion and technology opportunities', () => {
   assert.ok(['Mode', 'Technik'].includes(arranged[0].category));
   assert.ok(['Mode', 'Technik'].includes(arranged[1].category));
 });
+
+test('rejects ordinary paid promotions mentioning free shipping', () => {
+  const item = { title:'Tech-Angebot: Gratis Versand beim Einkauf', description:'20% Rabatt', url:'https://example.org/deal' };
+  assert.equal(normalizeOpportunity(item), null);
+  assert.equal(normalizeOpportunity({ ...item, title:'50% Rabatt Hoodie Deal', description:'Gewinnspiel im Footer' }), null);
+});
+test('recognizes giveaway and product test types without claiming guaranteed gifts', () => {
+  const giveaway = normalizeOpportunity({ title: 'Playstation Gewinnspiel', url: 'https://example.org/a' });
+  const testOffer = normalizeOpportunity({ title: 'Produkttester für Headset gesucht', url: 'https://example.org/b' });
+  assert.equal(giveaway.offerType, 'Gewinnspiel');
+  assert.equal(testOffer.offerType, 'Produkttest');
+  assert.equal(testOffer.category, 'Technik');
+});

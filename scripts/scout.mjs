@@ -3,7 +3,9 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 const configPath = new URL('../config/sources.json', import.meta.url);
 const catalogPath = new URL('../docs/opportunities.json', import.meta.url);
-const TERMS = /\b(giveaway|freebie|pr[\s-]?package|brand[\s-]?ambassador|gifted[\s-]?collab|product[\s-]?test(?:ing|er)?|free[\s-]?product|sampling|collaboration|gratis|gewinnspiel|verlosung|produkttest(?:er)?|testprodukt|geschenkaktion|kooperation|pr[\s-]?paket|pr[\s-]?sample)\b/i;
+const TERMS = /\b(giveaways?|freebies?|pr[\s-]?packages?|brand[\s-]?ambassador|gifted[\s-]?collab|product[\s-]?tests?(?:ing|er)?|free[\s-]?products?|sampling|collaboration|gratis|gewinnspiele?|verlosung|verlosungen|verlosen|produkttests?(?:er)?|testprodukte?|geschenkaktion|kooperation|pr[\s-]?paket|pr[\s-]?sample|kostenlos\s+testen|tester\s+gesucht|testpersonen\s+gesucht)\b/i;
+const GIVEAWAY = /\b(gewinnspiele?|giveaways?|verlosung|verlosen|produkttests?(?:er)?|product\s*tests?(?:ing|er)?|tester\s+gesucht|testpersonen\s+gesucht|pr[\s-]?paket|pr[\s-]?sample|gratis\s+testen|kostenlos\s+testen)\b/i;
+const PAID_PROMO = /\b(rabatt|deal|schnäppchen|coupon|preisfehler|spart?|nur\s+\d+[,.]?\d*\s*€|gratis\s+(?:versand|lieferung|zugabe)|kostenloser\s+versand)\b/i;
 export function decodeEntities(text = '') {
   return String(text).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
     .replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (whole, entity) => {
@@ -50,11 +52,17 @@ export function normalizeOpportunity(item) {
     if (url.protocol !== 'https:' || url.username || url.password) return null;
     url.hash = '';
   } catch { return null; }
-  if (!isRelevant(item.title + ' ' + (item.description || ''))) return null;
+  // Only the title and opening summary are considered. Footer promos often say
+  // "giveaway" or "gratis" on ordinary paid product reviews.
+  const offerText = item.title + ' ' + String(item.description || '').slice(0, 340);
+  if (!isRelevant(offerText)) return null;
+  // A discount/free shipping is not a free physical product.
+  if (PAID_PROMO.test(item.title) && !GIVEAWAY.test(item.title)) return null;
+  if (/\b(?:gratis|kostenlos)\s+(?:versand|lieferung|zugabe)\b/i.test(item.title) && !GIVEAWAY.test(item.title)) return null;
   const rawDate = Date.parse(item.published);
   const published = Number.isFinite(rawDate) ? new Date(rawDate).toISOString() : null;
   if (published && rawDate < Date.now() - 90 * 24 * 60 * 60 * 1000) return null;
-  const text = (item.title + ' ' + (item.description || '')).toLowerCase();
+  const text = offerText.toLowerCase();
   const category = /\b(fashion|streetwear|clothing|kleidung|mode|sneakers?|shoes?|schuhe|hoodies?|sweatshirts?|shirts?|t-shirts?|tracksuits?|jogginganzug|jackets?|jacken?|caps?|mützen?|outfits?|pullover|jeans)\b/.test(text) ? 'Mode' :
     /\b(tech|technik|technologie|elektronik|smartphones?|iphones?|ipads?|handys?|handys|tablets?|laptops?|notebooks?|computer|gaming|headsets?|kopfhörer|earbuds|airpods|hardware|smartwatches?|tastaturen?|maus|mäuse|gadget|gadgets|konsolen?|playstation|xbox|lautsprecher|speakers?)\b/.test(text) ? 'Technik' :
     /\b(beauty|skincare|kosmetik|makeup|parfum)\b/.test(text) ? 'Beauty' :
@@ -66,7 +74,9 @@ export function normalizeOpportunity(item) {
     brand: String(item.source || 'Öffentlicher Feed').slice(0, 80),
     source: String(item.source || 'Öffentlicher Feed').slice(0, 80),
     description: String(item.description || 'Bedingungen bei der Quelle prüfen.').slice(0, 300),
-    url: canonical, category, published
+    url: canonical, category, published,
+    offerType: /produkttest|product\s*test|tester gesucht|testpersonen gesucht|kostenlos testen/i.test(offerText)
+      ? 'Produkttest' : /gewinnspiel|verlosung|verlosen|giveaway/i.test(offerText) ? 'Gewinnspiel' : 'PR-Aufruf'
   };
 }
 async function scan() {
@@ -76,6 +86,7 @@ async function scan() {
   if (config.sources.length > 20) throw Error('Maximum 20 sources');
   let success = 0;
   const found = [];
+  const sourceStatus = [];
   for (const source of config.sources) {
     let url;
     try {
@@ -86,11 +97,17 @@ async function scan() {
       if (!response.ok || new URL(response.url).protocol !== 'https:') throw Error('HTTP ' + response.status);
       const data = await response.text();
       if (data.length > 1_000_000) throw Error('Feed exceeds 1MB');
+      if (!/<(?:rss|feed|rdf:RDF)\b/i.test(data.slice(0, 2500))) throw Error('Endpoint did not return RSS/Atom XML');
       const items = parseFeed(data, String(source.name || url.hostname));
-      found.push(...items.map(normalizeOpportunity).filter(Boolean));
+      const matching = items.map(normalizeOpportunity).filter(Boolean);
+      found.push(...matching);
       success++;
-      console.log('OK:', url.hostname, items.length, 'entries');
-    } catch (error) { console.warn('SKIP:', source?.name || source?.url || 'unknown', error.message); }
+      sourceStatus.push({ name: source.name, status: 'ok', entries: items.length, matching: matching.length });
+      console.log('OK:', url.hostname, items.length, 'entries,', matching.length, 'matches');
+    } catch (error) {
+      sourceStatus.push({ name: source?.name || 'Quelle', status: 'error', entries: 0, matching: 0 });
+      console.warn('SKIP:', source?.name || source?.url || 'unknown', error.message);
+    }
   }
   if (!success) throw Error('All configured feeds failed; preserving existing catalog');
   const existing = JSON.parse(await readFile(catalogPath, 'utf8'));
@@ -101,6 +118,7 @@ async function scan() {
   await writeFile(catalogPath, JSON.stringify({
     version: 1, generatedAt: new Date().toISOString(),
     sourcesChecked: config.sources.length, sourcesSucceeded: success,
+    sources: sourceStatus,
     opportunities: deduped
   }, null, 2) + '\n');
   console.log('Saved', deduped.length, 'relevant opportunities');

@@ -1,3 +1,24 @@
 {
-  "sources": []
+  "sources": [
+    {
+      "name": "freitest · Produkttests",
+      "url": "https://freitest.de/feed/",
+      "focus": "Mode & Technik"
+    },
+    {
+      "name": "Testpiloten.de · Produkttests",
+      "url": "https://testpiloten.de/feed/",
+      "focus": "Technik"
+    },
+    {
+      "name": "Pfennigfuchs · Technik-Tests",
+      "url": "https://pfennigfuchs.com/feed/",
+      "focus": "Technik"
+    },
+    {
+      "name": "Gewinnspielefinder · Aktionen",
+      "url": "https://gewinnspielefinder.de/feed/",
+      "focus": "Mode & Technik"
+    }
+  ]
 }

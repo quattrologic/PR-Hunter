@@ -4,3 +4,9 @@
 .focus-note{display:flex;align-items:center;flex-wrap:wrap;gap:8px;color:#9bb1db;font-size:10px;letter-spacing:1.1px;margin:-8px 0 18px}
 .focus-note span{color:#c1b1ff;font-size:17px}.focus-note strong{color:#d7e4ff;letter-spacing:1.2px}
 @media(max-width:730px){.focus-note{line-height:1.6;font-size:9px;gap:5px}.toolbar select{max-width:136px}}
+
+/* Source transparency and verification */
+.source-health{font-size:12px;color:#a5b6d5;margin:-8px 0 14px}
+.portal-links{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;color:#879bba;font-size:10px;letter-spacing:1px}
+.portal-links a{display:inline-flex;align-items:center;border:1px solid rgba(161,187,255,.15);border-radius:100px;padding:7px 11px;background:rgba(106,133,209,.09);font-size:11px;letter-spacing:0;text-decoration:none}
+.offer-type{font-size:10px;color:#95bbed;letter-spacing:.5px;margin:-2px 0}
