@@ -14,7 +14,11 @@ import {
 import {
   META_OPTIONS, INTEGRATION_STEPS, normalizeIntegrationSetup, integrationStatus,
   matchedPublicOffers, buildBrandSearchLink, sourceHealthSummary
-} from './integrations.mjs';
+ } from './integrations.mjs';
+import {
+  normalizeAlertsState, buildAlerts, unreadCount, markAlertsRead, clearReadAlerts,
+  encryptBackup, decryptBackup, isEncryptedBackup
+} from './phase6-core.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -23,7 +27,7 @@ const ui = {
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
   brandFilter:null, sourceStatus:[]
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -36,6 +40,7 @@ if (!state.savedDetails || typeof state.savedDetails !== 'object') state.savedDe
 if (!state.checklists || typeof state.checklists !== 'object' || Array.isArray(state.checklists)) state.checklists = {};
 state.accounts = accountLabels(state.accounts);
 state.integration = normalizeIntegrationSetup(state.integration);
+state.alerts = normalizeAlertsState(state.alerts);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -327,6 +332,36 @@ function renderActivity() {
       '</div></article>';
   }).join('') : '<div class="empty"><div class="symbol">▤</div><strong>Dein Logbook ist noch leer.</strong><p>Halte hier fest, wenn du wirklich kommentiert, teilgenommen oder gewonnen hast. Wir senden nichts automatisch.</p><button class="primary-btn" type="button" data-action="add-activity">＋ Erste Aktivität eintragen</button></div>';
 }
+function renderAlerts() {
+  const count = unreadCount(state.alerts);
+  const badge = $('#alertCount');
+  badge.hidden = count === 0;
+  badge.textContent = count > 99 ? '99+' : String(count);
+  $('#alertNewPref').checked = state.alerts.prefs.newOffers;
+  $('#alertDeadlinePref').checked = state.alerts.prefs.expiring;
+  const list = $('#alertList');
+  list.innerHTML = state.alerts.inbox.length ? state.alerts.inbox.map(note => {
+    const item = byId(note.offerId);
+    const readable = note.read ? ' gelesen' : '';
+    return '<article class="alert-entry' + readable + '"><span class="alert-glyph">' +
+      (note.kind === 'deadline' ? '⏳' : '✳') + '</span><div class="alert-details">' +
+      '<div class="alert-metadata">' + (note.kind === 'deadline' ? 'Frist' : 'Neuer Hinweis') +
+      ' · ' + esc(asDate(note.createdAt)) + (note.read ? ' · Gelesen' : ' · Neu') + '</div>' +
+      '<strong>' + esc(note.title) + '</strong><p>' + esc(note.message) + '</p>' +
+      '<div class="alert-actions">' +
+      (item ? '<button type="button" data-action="open-alert-offer" data-offer-id="' +
+        esc(note.offerId) + '" data-alert-id="' + esc(note.id) + '">Aktion prüfen ↗</button>' :
+        '<span>Aktion nicht mehr im aktuellen Katalog</span>') +
+      (!note.read ? '<button type="button" data-action="read-alert" data-alert-id="' + esc(note.id) +
+        '">Als gelesen markieren</button>' : '') + '</div></div></article>';
+  }).join('') : '<div class="empty"><div class="symbol">♧</div><strong>Keine neuen Hinweise.</strong>' +
+    '<p>Beim ersten Abgleich merken wir den aktuellen Katalog. Später neu auftauchende öffentliche Fundhinweise und bekannte Fristen erscheinen hier, wenn du die App öffnest.</p></div>';
+  // Badges are optional; never imply background delivery on static hosting.
+  if (typeof navigator.setAppBadge === 'function' && count)
+    navigator.setAppBadge(count).catch(()=>{});
+  else if (typeof navigator.clearAppBadge === 'function' && !count)
+    navigator.clearAppBadge().catch(()=>{});
+}
 function render() {
   updateStats();
   renderBrands();
@@ -335,8 +370,9 @@ function render() {
   renderActivity();
   renderAccounts();
   renderIntegrations();
+  renderAlerts();
 }
-const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', info:'INTEGRATIONS' };
+const topTitles = { discover:'DISCOVER', brands:'BRAND RADAR', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -362,6 +398,10 @@ async function refresh() {
     ) : [];
     ui.generatedAt = payload.generatedAt || null;
     ui.sourceStatus = Array.isArray(payload.sources) ? payload.sources : [];
+    const beforeAlerts = state.alerts;
+    const nextAlerts = buildAlerts(ui.catalog, beforeAlerts);
+    state.alerts = nextAlerts.state;
+    if (nextAlerts.added || !beforeAlerts.initialized) save();
     $('#syncLabel').textContent = ui.generatedAt ? 'Scout: ' + new Date(ui.generatedAt).toLocaleString('de-DE') : 'Noch kein Scan';
     $('#sourceHealth').textContent = 'Öffentliche Feeds: ' + (payload.sourcesSucceeded ?? '?') + '/' + (payload.sourcesChecked ?? '?') +
       ' erreichbar · ' + (payload.curatedActive ?? 0) + ' redaktionell geprüfte Aktionen · ' +
@@ -478,6 +518,17 @@ document.addEventListener('click', event => {
   const action = button.dataset.action;
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
+  if (action === 'read-alert') {
+    state.alerts = markAlertsRead(state.alerts,button.dataset.alertId);
+    save();renderAlerts();return;
+  }
+  if (action === 'open-alert-offer') {
+    const item = byId(button.dataset.offerId);
+    state.alerts = markAlertsRead(state.alerts,button.dataset.alertId);
+    save();renderAlerts();
+    if (item) showParticipationDialog(item);
+    return;
+  }
   if (action === 'copy-template') {
     const item = byId(ui.assistantOfferId);
     const index = Number(button.dataset.template);
@@ -579,19 +630,30 @@ $('#accountLabelForm').addEventListener('submit', e => {
   save();e.currentTarget.reset();renderAccounts();
   toast('Account-Label hinzugefügt (kein Instagram-Login).');
 });
+function downloadPrivateFile(contents,extension,mediaType) {
+  const blob = new Blob([contents],{type:mediaType});
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href=url;
+  anchor.download='pr-hunter-backup-'+new Date().toISOString().slice(0,10)+'.'+extension;
+  document.body.appendChild(anchor);anchor.click();anchor.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+$('#encryptedBackup').addEventListener('click', async () => {
+  const field=$('#backupPassword');
+  try {
+    const contents=await encryptBackup(backupDocument(state),field.value);
+    downloadPrivateFile(contents,'prh','application/json');
+    $('#backupStatus').textContent='Verschlüsselte Sicherung zum Speichern angeboten. Bewahre dein Passwort getrennt auf.';
+    toast('Passwortgeschützte Sicherung erstellt.');
+  } catch(error) {
+    toast(String(error?.message || 'Verschlüsselung fehlgeschlagen').slice(0,120));
+  } finally {field.value='';}
+});
 $('#downloadBackup').addEventListener('click', () => {
   try {
-    const contents = backupDocument(state);
-    const file = new Blob([contents],{type:'application/json'});
-    const url = URL.createObjectURL(file);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = 'pr-hunter-backup-' + new Date().toISOString().slice(0,10) + '.json';
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    setTimeout(() => URL.revokeObjectURL(url),5000);
-    $('#backupStatus').textContent = 'Sicherung erstellt. Bewahre die Datei privat auf.';
+    downloadPrivateFile(backupDocument(state),'json','application/json');
+    $('#backupStatus').textContent = 'Unverschlüsselte Sicherung erstellt. Die Datei enthält private Informationen.';
   } catch {
     toast('Sicherung nicht möglich. Bitte Safari-Dateizugriff prüfen.');
   }
@@ -600,17 +662,37 @@ $('#restoreBackup').addEventListener('change', async e => {
   const file = e.target.files?.[0];
   e.target.value = '';
   if (!file) return;
-  if (file.size > 2_000_000) return toast('Sicherung zu groß (max. 2 MB).');
+  if (file.size > 3_500_000) return toast('Sicherung zu groß (max. 3,5 MB).');
   try {
-    const parsed = parseBackup(await file.text());
+    const text=await file.text();
+    const encrypted=isEncryptedBackup(text);
+    const passphrase=$('#backupPassword').value;
+    if (encrypted && passphrase.length<12) return toast('Zum Entschlüsseln das Passwort mit mindestens 12 Zeichen eingeben.');
+    const data=encrypted ? await decryptBackup(text,passphrase) : text;
+    const parsed = parseBackup(data);
     if (!window.confirm('Bestehende lokale Daten durch die Sicherung ersetzen? Dein aktueller Stand wird überschrieben.')) return;
     state = parsed;
+    state.alerts = normalizeAlertsState(state.alerts);
+    $('#backupPassword').value='';
     save();render();setTab('inbox');
     $('#backupStatus').textContent = 'Sicherung geladen. Bitte Einträge kontrollieren.';
     toast('Lokale Sicherung erfolgreich wiederhergestellt.');
   } catch (error) {
     toast('Import abgebrochen: ' + String(error?.message || 'Ungültige Datei').slice(0,90));
   }
+});
+$('#refreshAlertsButton').addEventListener('click', refresh);
+$('#markAllAlertsRead').addEventListener('click', () => {
+  state.alerts=markAlertsRead(state.alerts);save();renderAlerts();
+});
+$('#clearReadAlerts').addEventListener('click', () => {
+  state.alerts=clearReadAlerts(state.alerts);save();renderAlerts();
+});
+$('#alertNewPref').addEventListener('change',e => {
+  state.alerts.prefs.newOffers=e.target.checked;save();renderAlerts();
+});
+$('#alertDeadlinePref').addEventListener('change',e => {
+  state.alerts.prefs.expiring=e.target.checked;save();renderAlerts();
 });
 $('#verifiedOnlyButton').addEventListener('click', () => { ui.verifiedOnly = !ui.verifiedOnly; renderFeed(); });
 $('#endingSoonButton').addEventListener('click', () => { ui.endingSoonOnly = !ui.endingSoonOnly; renderFeed(); });

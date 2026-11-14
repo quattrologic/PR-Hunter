@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Ultimate Phase 5 – transparent integration hub and verified-source matching.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Ultimate Phase 6 – in-app notifications and passphrase-protected portable backups.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -157,3 +157,24 @@ The iPad \`Integrationen\` tab (previously the "About" entry) adds:
 5. The first real integration deployment must be separately validated on an actual iPad and requires the user's explicit authorization.
 
 Official background: https://developers.facebook.com/docs/instagram/platform/instagram-api/changelog/ and https://www.postman.com/meta/instagram/folder/1z5vxzu/instagram-api-with-instagram-login
+
+
+## Phase 6 – Local notifications and encrypted portable backups
+
+### Implemented
+
+- A new notification center (bell in the iPad header) for **newly seen public catalog hints** and **existing opportunities with known deadlines in the next 72 hours**. The initial catalog load is a baseline; its existing results are not misrepresented as newly discovered giveaways.
+- Alerts are local, de-duplicated, marked read individually or all at once, with controls for new-offer/deadline notifications. An optional Home Screen badge can show an unread count while the PWA is open if Safari supports Badging API.
+- **No background Web Push, no scheduled device notifications, no Instagram message or winner monitoring.** GitHub Pages has no private push server or backend subscription database; the app checks and updates notices **when opened or the public catalog is refreshed**.
+- The Link-Inbox backup section can now export **AES-256-GCM encrypted backups** using a passphrase of at least 12 characters; keys are derived with PBKDF2-SHA-256 (250,000 rounds, random salt and IV). Encryption/decryption is **local on-device using Web Crypto**; the passphrase is never saved in GitHub, localStorage, or the backup.
+- Files use \`.prh\` format. They can be carried manually through the iPad Files app, AirDrop or iCloud Drive, and imported with the user's passphrase. The existing plaintext JSON export/import remains for backwards compatibility but exposes private data if shared.
+- Backup restoration still requires explicit confirmation before replacing local state and validates data as in Phase 4; the local unread notification inbox, preferences and known public-offer IDs are included in backups.
+- The app retains the same \`pr-hunter-state-v1\` storage key and maintains offline caching of all new JavaScript modules.
+
+### Deferred until the user configures a private backend
+
+- **Automatic cloud synchronization** across multiple devices (requires account authentication, private database, encrypted transport and a credential-handling backend).
+- **Web Push when the PWA is closed** (requires Push API subscription with user gesture, server-side push delivery, and service-worker push notification handling). Supported by iPadOS Home Screen PWAs; this implementation deliberately does not claim to provide it.
+- Automatically detecting Instagram winnings, replies, DMs or auto-entering other people's giveaways. An authorized, supported provider integration must be separately configured.
+
+Apple Web Push information: https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/ and https://developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers

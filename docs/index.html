@@ -33,7 +33,7 @@
   <main class="main">
     <header class="topbar">
       <div><span class="tiny-overline">PR-HUNTER / </span><span id="topTitle">DISCOVER</span></div>
-      <div class="top-actions"><span class="live"><span class="live-dot"></span> PUBLIC FEED SCOUT</span><span class="header-avatar" aria-hidden="true">✦</span></div>
+      <div class="top-actions"><span class="live"><span class="live-dot"></span> PUBLIC FEED SCOUT</span><button type="button" class="alert-trigger" data-tab="alerts" aria-label="Benachrichtigungen ansehen">♧<span id="alertCount" class="alert-count" hidden>0</span></button></div>
     </header>
     <section class="view" id="discoverPanel" data-panel="discover">
       <div class="hero">
@@ -125,14 +125,32 @@
         <section class="inbox-settings-box">
           <h3>Private Daten sichern</h3>
           <p>Exportiert Merkliste, eigene Links, Checklisten, Account-Labels und Teilnahmeverlauf in eine JSON-Datei. Die Datei enthält persönliche Informationen; teile sie nicht öffentlich.</p>
-          <div class="backup-controls"><button id="downloadBackup" type="button" class="primary-btn">↓ Sicherung speichern</button><label class="import-file-label">↑ Sicherung wiederherstellen<input id="restoreBackup" type="file" accept=".json,application/json"></label></div>
+          <label class="backup-password">Passwort für verschlüsselte Sicherung (mindestens 12 Zeichen)<input id="backupPassword" type="password" minlength="12" maxlength="256" autocomplete="new-password" placeholder="Eigenes starkes Passwort wählen"></label>
+          <div class="backup-controls"><button id="encryptedBackup" type="button" class="primary-btn">🔒 Verschlüsselt sichern</button><button id="downloadBackup" type="button" class="subtle-btn">Unverschlüsselte JSON-Datei</button>
+          <label class="import-file-label">↑ Sicherung wiederherstellen<input id="restoreBackup" type="file" accept=".json,.prh,application/json"></label></div>
+          <p class="helper">Mit Passwort verschlüsselte .prh-Dateien können auch über iCloud Drive oder AirDrop auf ein anderes Gerät übertragen werden. Das ist <strong>manuelle</strong> Übertragung, keine laufende Cloud-Synchronisierung. Ohne Passwort ist die Sicherung nicht wiederherstellbar.</p>
           <p id="backupStatus" class="helper" role="status">Die Sicherung wird nur auf deinem Gerät erstellt und geladen.</p>
+          <div class="cloud-status"><strong>☁ Cloud-Synchronisierung: nicht verbunden</strong><p>Für automatische Synchronisierung zwischen Geräten brauchen wir später einen privaten Server, sichere Anmeldung und Verschlüsselung. Bis dahin kannst du Backups manuell übertragen.</p></div>
         </section>
       </div>
     </section>
     <section class="view" id="savedPanel" data-panel="saved" hidden>
       <div class="section-banner saved-banner"><span class="mini-label">FÜR SPÄTER</span><h1>Deine Merkliste<span class="soft-accent">.</span></h1><p>Alle Aktionen, die du mit ♡ gespeichert hast, an einem Ort.</p></div>
       <div class="cards saved-cards" id="savedCards"></div>
+    </section>
+    <section class="view" id="alertsPanel" data-panel="alerts" hidden>
+      <div class="section-banner alerts-banner"><span class="mini-label">PHASE 6 · NUR WÄHREND DER NUTZUNG</span><h1>Benachrichtigungen<span class="soft-accent">.</span></h1>
+      <p>Neue öffentliche Gewinnspielhinweise und bald ablaufende Aktionen. Die App prüft beim Öffnen und Aktualisieren des Katalogs. Ohne Push-Server gibt es keine Mitteilungen bei geschlossener App.</p>
+      <button id="refreshAlertsButton" type="button" class="primary-btn">↻ Feed & Hinweise aktualisieren</button></div>
+      <section class="alerts-preferences">
+        <div><h2>Hinweise einstellen</h2><p class="helper">Auf diesem Gerät gespeichert · keine Instagram-Nachrichten und keine Gewinnerzusagen automatisch abrufbar</p></div>
+        <label><input id="alertNewPref" type="checkbox" checked> Neue öffentliche Fundhinweise</label>
+        <label><input id="alertDeadlinePref" type="checkbox" checked> Fristen innerhalb der nächsten 72 Stunden</label>
+      </section>
+      <div class="section-header section-pad"><div><span class="mini-label">LOKALER POSTEINGANG</span><h2>Deine Hinweise</h2></div><div class="alert-tools">
+        <button id="markAllAlertsRead" class="text-btn" type="button">Alle als gelesen markieren</button>
+        <button id="clearReadAlerts" class="text-btn" type="button">Gelesene entfernen</button></div></div>
+      <div id="alertList" class="alert-list" aria-live="polite"></div>
     </section>
     <section class="view" id="infoPanel" data-panel="info" hidden>
       <div class="section-banner info-banner"><span class="mini-label">PHASE 5 · OFFIZIELLE SCHNITTSTELLEN</span><h1>Integration Hub<span class="soft-accent">.</span></h1><p>Instagram sicher vorbereiten und öffentliche Gewinnspielquellen überprüfen. Keine Zugangsdaten und keine simulierten Verbindungen.</p></div>
@@ -166,7 +184,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 5 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 6 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">
