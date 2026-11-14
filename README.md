@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 10 – private Instagram video-DM preparation added to Free-Product-Hunter.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 11 – white Instagram-inspired iPad discovery redesign with honest public Reel previews and verified-price deal filters.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -267,3 +267,22 @@ Small streetwear brands sometimes ask people to **send their Reel by Instagram D
 - No automatic DM sending, bulk outreach, repeated messages, multiple-account campaigns, or bypassing Instagram restrictions. Meta's official Instagram Send API operates from professional accounts and generally requires the Instagram user to contact the account before it can send a message; it cannot send arbitrary first DMs to brands. See https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api?entity=request-23987686-fc851f39-7194-4522-a475-2cea8de46d16.
 
 **No promise of free products.** Such Reels may be selective marketing, unavailable in Germany or subject to specific rules. The user checks the original video, current organizer account, shipping costs and conditions, and sends one authentic note rather than mass messages.
+
+
+## Phase 11 — Instagram-inspired white Discover UI (no invented videos)
+
+The primary iPad home view is redesigned from the purple dashboard to a **minimal white / black Instagram-like feed**:
+
+- Thin black icons and a fixed 5-item bottom navigation on iPad: Home, Search, Video-DM, Offers, Profile. The Profile tab provides access to all earlier tools: account activity, manual link inbox, brand radar, auto-hunter, integrations, private encrypted backups and notifications. No feature or stored record is deleted.
+- Real brand watchlist handles appear as circular story-like **shortcuts**. They are not Instagram Stories and don't falsely show view counts or live status. Extra shortcuts open Drops, Black-Friday leads, and 1–10 € offers.
+- A fast search, horizontally scrollable filters and a clean **three-column square/portrait grid** replace the old large purple hero and dense cards. Tiles show only locally saved Reel URLs, manual entries or records already present in the public catalog. If there is no authorized photo, a neutral typographic cover is shown instead of pretending to show a real video screenshot. Source details remain available on tapping a tile.
+- Tapping a **real user-saved public Instagram Reel** opens a detail dialog. An optional **Vorschau laden** button loads the official Instagram embed on explicit tap; Instagram may refuse playback, so the **Original-Reel öffnen** link is always present. We do not extract/record Instagram content, bypass Instagram or auto-send DMs.
+- From a saved Reel, the Video-DM button populates the existing manual DM assistant with the URL and a valid brand handle if known. Actual DMs still require the user's explicit native Instagram share action.
+- One-to-ten-euro filters require structured proof of a real product price: numeric \`dealPriceEUR\`, fresh \`priceCheckedAt\` (≤7 days), and a price evidence URL on the offer's own domain. Numbers in giveaway titles, unrelated shopping blogs or artwork are **not** treated as prices. With no verified data, the app shows **zero confirmed bargains**, not synthetic Black-Friday deals.
+- The original local key \`pr-hunter-state-v1\`, saved links, selected categories, backups and manual participation records are untouched. The white stylesheet is cached in service worker v14 for iPad home-screen offline use.
+
+### Required validation before promising video playback
+
+Instagram cross-origin embeds may require user login or may be blocked on iPad Safari depending on the Reel's privacy settings and Instagram's current policies. The video preview is an optional best-effort official embed only. No Instagram API token or third-party scraping system is in the public GitHub Pages app. Physical iPad Safari confirmation is still necessary.
+
+The examples shown in a visual concept are **not** confirmed live products or deals; only actual locally imported links and verified public sources populate the deployed app.

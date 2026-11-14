@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f7f7f9">
+  <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="PR-Hunter">
   <meta name="description" content="Dein Streetwear-Radar für echte öffentliche Gewinnspiele und Produkttest-Aktionen.">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <title>PR-Hunter Ultimate · Streetwear Radar</title>
+  <link rel="stylesheet" href="./instagram-white.css">
+  <title>PR-Hunter · Streetwear Discover</title>
   <script type="module" src="./app.js"></script>
 </head>
 <body>
@@ -18,69 +19,126 @@
 <div class="ambient ambient-one" aria-hidden="true"></div><div class="ambient ambient-two" aria-hidden="true"></div>
 <div class="shell">
   <aside class="sidebar">
-    <div class="logo" aria-label="PR-Hunter"><span class="logo-sign">✳</span><span>PR<span class="logo-light">HUNTER</span><small>ULTIMATE EDITION</small></span></div>
-    <div class="nav-section">WORKSPACE</div>
     <nav class="nav" aria-label="Hauptnavigation">
-      <button type="button" class="nav-btn active" data-tab="discover" aria-current="page"><span aria-hidden="true">◈</span> Entdecken</button>
-      <button type="button" class="nav-btn" data-tab="products"><span aria-hidden="true">🎁</span> Free Products</button>
-      <button type="button" class="nav-btn" data-tab="dm"><span aria-hidden="true">✉</span> Video-DM</button>
-      <button type="button" class="nav-btn" data-tab="auto"><span aria-hidden="true">⚡</span> Auto-Hunter</button>
-      <button type="button" class="nav-btn" data-tab="brands"><span aria-hidden="true">◎</span> Brand Radar</button>
-      <button type="button" class="nav-btn" data-tab="assistant"><span aria-hidden="true">✓</span> Teilnahme</button>
-      <button type="button" class="nav-btn" data-tab="activity"><span aria-hidden="true">▤</span> Aktivitäten</button>
-      <button type="button" class="nav-btn" data-tab="inbox"><span aria-hidden="true">⌁</span> Link-Inbox</button>
-        <button type="button" class="nav-btn" data-tab="saved"><span aria-hidden="true">♡</span> Merkliste</button>
-      <button type="button" class="nav-btn" data-tab="info"><span aria-hidden="true">◎</span> Integrationen</button>
+      <button type="button" class="nav-btn active" data-tab="discover" aria-current="page" aria-label="Startseite">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span><span class="nav-label">Home</span>
+      </button>
+      <button type="button" class="nav-btn nav-search" data-action="focus-discovery-search" aria-label="Suchen">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 6 6"/></svg></span><span class="nav-label">Suche</span>
+      </button>
+      <button type="button" class="nav-btn" data-tab="dm" aria-label="Video-DM-Assistent">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="m10 8 7 4-7 4Z"/></svg></span><span class="nav-label">Video-DM</span>
+      </button>
+      <button type="button" class="nav-btn" data-tab="products" aria-label="Free Products und Angebote">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9h18l-1 12H4L3 9ZM7 9V7a5 5 0 0 1 10 0v2"/></svg></span><span class="nav-label">Offers</span>
+      </button>
+      <button type="button" class="nav-btn" data-tab="profile" aria-label="Profil und Einstellungen">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2c0-4.5 16-4.5 16 0v2"/></svg></span><span class="nav-label">Profil</span>
+      </button>
+      <button type="button" class="nav-btn nav-extra" data-tab="auto">Auto-Hunter</button>
+      <button type="button" class="nav-btn nav-extra" data-tab="brands">Brand Radar</button>
+      <button type="button" class="nav-btn nav-extra" data-tab="assistant">Teilnahme</button>
+      <button type="button" class="nav-btn nav-extra" data-tab="activity">Aktivitäten</button>
+      <button type="button" class="nav-btn nav-extra" data-tab="inbox">Link-Inbox</button>
+      <button type="button" class="nav-btn nav-extra" data-tab="saved">Merkliste</button>
+      <button type="button" class="nav-btn nav-extra" data-tab="info">Integrationen</button>
     </nav>
-    <div class="sidebar-bottom"><span class="sidebar-status">●</span><div><strong>Private Workspace</strong><small>Verlauf nur auf diesem Gerät</small></div></div>
   </aside>
   <main class="main">
     <header class="topbar">
-      <div><span class="tiny-overline">PR-HUNTER / </span><span id="topTitle">DISCOVER</span></div>
-      <div class="top-actions"><span class="live"><span class="live-dot"></span> PUBLIC FEED SCOUT</span><button type="button" class="alert-trigger" data-tab="alerts" aria-label="Benachrichtigungen ansehen">♧<span id="alertCount" class="alert-count" hidden>0</span></button></div>
+      <button type="button" class="top-brand" data-tab="discover">PR-Hunter</button>
+      <span class="top-section-label" id="topTitle">DISCOVER</span>
+      <div class="top-actions">
+        <button type="button" class="top-icon-btn" id="addButton" aria-label="Aktion hinzufügen" title="Aktion hinzufügen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 7v10M7 12h10"/></svg>
+        </button>
+        <button type="button" class="top-icon-btn" data-tab="dm" aria-label="Video-DM-Assistent öffnen" title="Video-DM-Assistent">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21.5 2.5-19 9 8 3 3 8 8-20ZM10.5 14.5l11-12"/></svg>
+        </button>
+        <button type="button" class="alert-trigger" data-tab="alerts" aria-label="Benachrichtigungen ansehen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 8H4c0-1 2-2 2-8ZM10 21h4"/></svg>
+          <span id="alertCount" class="alert-count" hidden>0</span>
+        </button>
+      </div>
     </header>
-    <div id="connectionStatus" class="connection-status" role="status" hidden>Du bist offline. Bereits gespeicherte Links und lokale Daten bleiben verfügbar; neue Funde benötigen Internet.</div>
+    <div id="connectionStatus" class="connection-status" role="status" hidden>Offline – gespeicherte Inhalte bleiben verfügbar, neue Funde benötigen Internet.</div>
     <section class="view" id="discoverPanel" data-panel="discover">
-      <div class="hero">
-        <div class="hero-content">
-          <div class="eyebrow-badge"><span class="live-dot"></span> DEIN STREETWEAR RADAR</div>
-          <h1>Good style.<span>Better luck.</span></h1>
-          <p>Entdecke kostenlose Streetwear, PR-Aktionen und Giveaways. Von kleinen Labels bis zu großen Brands – alles an einem Ort.</p>
-          <div class="hero-actions"><button id="addButton" type="button" class="primary-btn">＋ Aktion speichern</button><button id="pasteLinkButton" type="button" class="subtle-btn">⌁ Instagram-Link einfügen</button><button type="button" class="subtle-btn" data-tab="inbox">Mehrere Links sammeln ↗</button><button type="button" class="subtle-btn" data-tab="brands">Brands entdecken ↗</button><button type="button" class="subtle-btn" data-tab="assistant">Teilnahme-Assistent ✓</button><button type="button" class="subtle-btn" data-tab="auto">⚡ Auto-Hunter öffnen</button></div>
-          <div class="hero-trust">90 % FASHION <span>·</span> 10 % TECH <span>·</span> WELTWEIT</div>
-        </div>
-        <div class="hero-poster" aria-hidden="true"><div class="poster-label">THE HUNT<br>IS ON.</div><div class="poster-object">✳</div><div class="poster-footer">NO FAKE DROPS. JUST POSSIBILITIES. / 001</div></div>
-      </div>
-      <div class="stats" aria-label="Dein Überblick">
-        <div class="stat"><span>Gefundene Hinweise</span><strong id="totalCount">–</strong><small>Keine bestätigten Gratisprodukte</small></div>
-        <div class="stat"><span>Gemerkte Aktionen</span><strong id="savedCount">–</strong><small>Für später gespeichert</small></div>
-        <div class="stat"><span>Teilnahmen</span><strong id="appliedCount">–</strong><small>Von dir eingetragen</small></div>
-        <div class="stat"><span>Gewinne</span><strong id="acceptedCount">–</strong><small>Von dir eingetragen</small></div>
-      </div>
-      <section class="watchlist-preview" aria-labelledby="watchlistTitle">
-        <div class="section-header"><div><span class="mini-label">DEINE REFERENZEN</span><h2 id="watchlistTitle">Brand watchlist <span class="soft-accent">✳</span></h2></div><button type="button" class="text-btn" data-tab="brands">Alle Brands ansehen ↗</button></div>
-        <p class="helper">Gespeicherte Referenzprofile – keine bestätigten aktiven Gewinnspiele. Instagram-Posts werden derzeit nicht automatisch ausgelesen.</p>
-        <div class="brand-strip" id="brandStrip"></div>
+      <section class="story-area" aria-label="Deine Streetwear-Brands">
+        <button type="button" class="story-entry story-new" id="pasteLinkButton">
+          <span class="story-ring"><span class="story-plus">+</span></span><span class="story-name">Neu</span>
+        </button>
+        <div id="brandStrip" class="brand-strip" aria-label="Gespeicherte Marken"></div>
+        <button type="button" class="story-entry story-shortcut" data-discovery="drops" aria-label="Drops entdecken">
+          <span class="story-ring"><span class="story-shortcut-icon">↗</span></span><span class="story-name">Drops</span>
+        </button>
+        <button type="button" class="story-entry story-shortcut" data-discovery="black-friday" aria-label="Black-Friday-Hinweise">
+          <span class="story-ring"><span class="story-shortcut-icon">%</span></span><span class="story-name">Black Friday</span>
+        </button>
+        <button type="button" class="story-entry story-shortcut" data-discovery="deals" aria-label="Drops zwischen 1 und 10 Euro">
+          <span class="story-ring"><span class="story-shortcut-icon">€</span></span><span class="story-name">1–10 €</span>
+        </button>
       </section>
       <section class="feed" aria-labelledby="feedTitle">
-        <div class="section-header"><div><span class="mini-label">DEINE ENTDECKUNGEN</span><h2 id="feedTitle">The discovery feed<span class="soft-accent">.</span></h2></div><span class="sync" id="syncLabel">Lade öffentliche Feeds …</span></div>
-        <p id="sourceHealth" class="helper" aria-live="polite">Quellen werden geprüft …</p>
-        <p id="feedResultCount" class="feed-result-count" aria-live="polite">Angebote werden geladen …</p>
-        <div class="scout-legend"><span>✓ Quellen- und Regelprüfung ist keine Produktgarantie</span><span>✧ RSS- und Instagram-Links bleiben ungeprüft</span><span>⚠ Kosten, Versand &amp; Qualität vor Teilnahme prüfen</span></div>
-        <div class="toolbar">
-          <div class="filters" id="filters" aria-label="Angebote filtern">
-            <button class="filter-chip active" type="button" data-category="focus" aria-pressed="true">Für dich · 90/10</button>
-            <button class="filter-chip" type="button" data-category="Mode" aria-pressed="false">Streetwear</button>
-            <button class="filter-chip" type="button" data-category="Technik" aria-pressed="false">Technik</button>
-            <button class="filter-chip" type="button" data-category="all" aria-pressed="false">Alles</button>
-            <button id="verifiedOnlyButton" class="filter-chip focus-filter" type="button" aria-pressed="false">✓ Geprüfte Regeln</button>
-            <button id="endingSoonButton" class="filter-chip focus-filter" type="button" aria-pressed="false">⏳ Endet bald</button>
+        <h1 class="sr-only" id="feedTitle">Streetwear entdecken</h1>
+        <label class="instagram-search" for="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 6 6"/></svg>
+          <input id="search" type="search" autocomplete="off" placeholder="Streetwear, Drops, PR …" aria-label="Beiträge und Angebote suchen">
+        </label>
+        <div class="discover-filters" role="group" aria-label="Entdecken filtern">
+          <button class="discover-filter active" type="button" data-discovery="for-you" aria-pressed="true">Für dich</button>
+          <button class="discover-filter" type="button" data-discovery="reels" aria-pressed="false">Reels</button>
+          <button class="discover-filter" type="button" data-discovery="pr" aria-pressed="false">PR</button>
+          <button class="discover-filter" type="button" data-discovery="giveaways" aria-pressed="false">Gewinnspiele</button>
+          <button class="discover-filter" type="button" data-discovery="drops" aria-pressed="false">Drops</button>
+          <button class="discover-filter" type="button" data-discovery="deals" aria-pressed="false">1–10 €</button>
+          <button class="discover-filter" type="button" data-discovery="black-friday" aria-pressed="false">Black Friday</button>
+        </div>
+        <details class="discover-advanced">
+          <summary>Weitere Filter <span>⌄</span></summary>
+          <div class="filters" id="filters" aria-label="Angebote nach Thema filtern">
+            <button class="filter-chip active" type="button" data-category="focus" aria-pressed="true">Mode + Technik</button>
+            <button class="filter-chip" type="button" data-category="Mode" aria-pressed="false">Nur Mode</button>
+            <button class="filter-chip" type="button" data-category="Technik" aria-pressed="false">Nur Technik</button>
+            <button class="filter-chip" type="button" data-category="all" aria-pressed="false">Alle</button>
           </div>
-          <div class="search-group"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Brands, Hoodies, Sneaker …" aria-label="Angebote suchen"></label><button type="button" id="refreshButton" class="refresh" aria-label="Katalog aktualisieren" title="Katalog aktualisieren">↻</button></div>
+          <button id="verifiedOnlyButton" class="filter-chip focus-filter" type="button" aria-pressed="false">✓ Regelprüfung</button>
+          <button id="endingSoonButton" class="filter-chip focus-filter" type="button" aria-pressed="false">Endet bald</button>
+          <button id="refreshButton" type="button" class="refresh" aria-label="Öffentlichen Katalog aktualisieren" title="Aktualisieren">↻</button>
+        </details>
+        <div class="discover-meta">
+          <span id="feedResultCount" role="status" aria-live="polite">Beiträge werden geladen …</span>
+          <span id="syncLabel">Öffentliche Quellen werden geprüft …</span>
         </div>
         <div id="brandFilterMessage" class="brand-filter-message" hidden></div>
-        <div class="cards" id="discoverCards" aria-live="polite"></div>
+        <div class="cards discover-grid" id="discoverCards" aria-live="polite"></div>
+        <p id="sourceHealth" class="discover-source-note" aria-live="polite">Keine erfundenen Reels oder Deals. Öffentliche Feeds werden geladen.</p>
+        <div class="discover-end-actions">
+          <button class="subtle-btn" type="button" data-tab="dm">Video-DM vorbereiten</button>
+          <button class="subtle-btn" type="button" data-tab="inbox">Reel-Link hinzufügen</button>
+          <button class="subtle-btn" type="button" data-tab="products">Free Products</button>
+        </div>
       </section>
+    </section>
+    <section class="view" id="profilePanel" data-panel="profile" hidden>
+      <div class="profile-header"><div class="profile-mark" aria-hidden="true">P</div><div><h1>Dein Bereich</h1><p>Privat auf diesem Gerät · kein Instagram-Login</p></div></div>
+      <div class="stats" aria-label="Dein Überblick">
+        <div class="stat"><span>Gefundene Hinweise</span><strong id="totalCount">–</strong><small>Keine garantierten Produkte</small></div>
+        <div class="stat"><span>Gemerkte Aktionen</span><strong id="savedCount">–</strong><small>Für später</small></div>
+        <div class="stat"><span>Teilnahmen</span><strong id="appliedCount">–</strong><small>Selbst dokumentiert</small></div>
+        <div class="stat"><span>Gewinne</span><strong id="acceptedCount">–</strong><small>Selbst dokumentiert</small></div>
+      </div>
+      <div class="profile-links">
+        <button type="button" data-tab="dm">Video-DM-Assistent <span>›</span></button>
+        <button type="button" data-tab="brands">Brand Radar <span>›</span></button>
+        <button type="button" data-tab="auto">Auto-Hunter <span>›</span></button>
+        <button type="button" data-tab="saved">Merkliste <span>›</span></button>
+        <button type="button" data-tab="assistant">Teilnahmen <span>›</span></button>
+        <button type="button" data-tab="activity">Aktivitäten <span>›</span></button>
+        <button type="button" data-tab="inbox">Link-Inbox · Backups <span>›</span></button>
+        <button type="button" data-tab="info">Integrationen <span>›</span></button>
+        <button type="button" data-tab="alerts">Benachrichtigungen <span>›</span></button>
+      </div>
+      <p class="profile-footnote">PR-Hunter prüft öffentliche Quellen. Instagram-Reels werden nur aus deinen eigenen Links angezeigt; automatische DMs oder Teilnahmen sind nicht verbunden.</p>
     </section>
     <section class="view" id="dmPanel" data-panel="dm" hidden>
       <div class="section-banner dm-banner">
@@ -326,6 +384,22 @@
   <label>Notiz (optional)<textarea name="note" maxlength="500" rows="3" placeholder="z. B. Teilnahmebedingungen erfüllt"></textarea></label>
   <button type="submit" class="primary-btn">Im Verlauf speichern</button>
 </form></dialog>
+<dialog id="discoveryDialog" class="discovery-dialog" aria-labelledby="discoveryTitle">
+  <div class="discovery-dialog-shell">
+    <div class="discovery-dialog-top">
+      <div><span id="discoveryKind" class="discovery-kind">Originalinhalt</span><h2 id="discoveryTitle">Original ansehen</h2><p id="discoveryBrand"></p></div>
+      <button type="button" class="discovery-dialog-close" data-close="discoveryDialog" aria-label="Ansicht schließen">×</button>
+    </div>
+    <div id="discoveryPreview" class="discovery-preview"></div>
+    <p id="discoveryDisclaimer" class="discovery-disclaimer">Öffentliche Inhalte nur, sofern der Anbieter die Einbettung zulässt.</p>
+    <div class="discovery-dialog-actions">
+      <a id="discoveryOriginal" href="#" target="_blank" rel="noopener noreferrer" class="primary-btn">Original öffnen ↗</a>
+      <button type="button" id="discoveryDmButton" data-tab="dm" class="subtle-btn">Video-DM</button>
+      <button type="button" id="discoveryBookmark" class="subtle-btn">Merken</button>
+      <button type="button" id="discoveryChecklist" class="subtle-btn">Teilnahme prüfen</button>
+    </div>
+  </div>
+</dialog>
 <dialog id="participationDialog" class="participation-dialog">
   <div class="participation-inner">
     <div class="dialog-top"><div><span class="mini-label">PRIVATE TEILNAHME-CHECKLISTE</span><h2 id="participationTitle">Teilnahme vorbereiten</h2></div><button type="button" class="close-btn" data-close="participationDialog" aria-label="Schließen">×</button></div>
