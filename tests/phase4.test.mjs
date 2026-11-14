@@ -149,7 +149,8 @@ test('Phase 4 frontend has link inbox, private accounts, restore confirmation an
     'backupStatus','accountLabelSuggestions'
   ]) assert.ok(html.includes('id="'+id+'"'),id);
   assert.ok(app.includes("const STORE = 'pr-hunter-state-v1'"));
-  assert.ok(app.includes('parseBackup(await file.text())'));
+  assert.ok(app.includes('parseBackup(data)')); // Phase 6 accepts decrypted .prh or legacy .json
+  assert.ok(app.includes('isEncryptedBackup(text)'));
   assert.ok(app.includes('window.confirm('));
   assert.ok(app.includes("const file = new Blob([contents]"));
   assert.ok(sw.includes('./phase4-core.mjs'));
