@@ -6,7 +6,7 @@
 
 ## Discovery priority
 
-**Clothing and technology come first by default.** PR-Hunter prioritizes streetwear, sneakers, hoodies, tracksuits, fashion, headphones, smartphones, gaming hardware, tablets, and other consumer electronics. Other relevant categories are still visible, and the iPad dashboard lets you switch to "Alle Kategorien" or choose one category.
+**Clothing and technology are the default filtered view.** PR-Hunter prioritizes streetwear, sneakers, hoodies, tracksuits, fashion, headphones, smartphones, gaming hardware, tablets, and other consumer electronics. Other categories can be shown by selecting "Alle Kategorien" in the iPad dashboard.
 
 Prioritization does **not** mean those brands are currently offering products: real public opportunities only appear when legitimate sources are configured.
 
@@ -31,16 +31,16 @@ Open http://localhost:4173 on your computer. Run `npm test` for scanner tests.
 
 ## Live discovery sources
 
-The default `config/sources.json` now includes four publisher-provided public RSS feeds:
+The default `config/sources.json` now uses three public RSS feeds tested in GitHub Actions:
 
 - **freitest.de** – product-testing listings
 - **Testpiloten.de** – product-testing news
 - **Pfennigfuchs** – product-testing and technology
-- **Gewinnspielefinder** – giveaway/product-testing listings
 
-These sites publish RSS/Atom endpoints for subscription. PR-Hunter reads them **at most every six hours**, uses short excerpts and links back to the publisher. Availability, participation conditions, deadlines and whether a product can be kept **must be verified at the actual action**. No offer is claimed to be guaranteed. Some feeds may occasionally fail, block automated requests or contain no matching entries; the dashboard shows scan health and will never invent offers.
 
-The workflow runs on changes to source configuration or scanner code, as well as a six-hour schedule, and writes the resulting public catalog into `docs/opportunities.json`. GitHub Pages then serves the updated catalog. The first automated run can take a little while.
+The fourth source, Gewinnspielefinder, returned HTTP 403 during live testing and was removed instead of bypassing site restrictions. These three sites publish RSS/Atom endpoints for subscription. PR-Hunter reads them **at most every six hours**, uses short excerpts and links back to the publisher. Availability, participation conditions, deadlines and whether a product can be kept **must be verified at the actual action**. No offer is claimed to be guaranteed. Some feeds may occasionally fail, block automated requests or contain no matching entries; the dashboard shows scan health and will never invent offers.
+
+The workflow runs on changes to source configuration or scanner code, as well as a six-hour schedule, and writes the resulting public catalog into `docs/opportunities.json`. GitHub Pages then serves the updated catalog. Every successful scan replaces the previous public catalog so false positives and outdated entries are not retained indefinitely. Scheduled runs may be delayed; the dashboard displays scan timestamps and source health.
 
 **Important:** The official MediaMarkt Testpiloten page is linked inside the app for manual checking, not secretly scraped or automatically enrolled. Some programs require an account, reviews, or returning the product.
 

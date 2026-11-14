@@ -39,7 +39,7 @@
         <div class="hero-art" aria-hidden="true"><div class="orbit orbit-1"></div><div class="orbit orbit-2"></div><span class="gift">🎁</span><span class="spark spark-1">✦</span><span class="spark spark-2">✧</span></div>
       </section>
       <section class="stats" aria-label="Deine Statistik">
-        <div class="stat"><span>Gefundene Angebote</span><strong id="totalCount">0</strong><small>Öffentlicher Feed + eigene</small></div>
+        <div class="stat"><span>Gefundene Hinweise</span><strong id="totalCount">0</strong><small>Quellen + eigene, nicht geprüft</small></div>
         <div class="stat"><span>Auf Merkliste</span><strong id="savedCount">0</strong><small>Für später gespeichert</small></div>
         <div class="stat"><span>Anfragen</span><strong id="appliedCount">0</strong><small>Als kontaktiert markiert</small></div>
         <div class="stat"><span>Zusagen</span><strong id="acceptedCount">0</strong><small>Selbst eingetragen</small></div>
@@ -50,13 +50,14 @@
           <h3>So funktioniert PR-Hunter</h3>
           <p>Der automatische Scout liest ausschließlich von dir konfigurierte, öffentlich zugängliche und zur automatischen Nutzung freigegebene RSS/Atom-Feeds. Ohne Quellen ist die Liste anfangs leer.</p>
           <p>Hier kannst du Angebote sammeln und deinen eigenen Fortschritt verfolgen. <strong>Es werden keine Instagram-DMs, Bewerbungen oder Kontaktanfragen automatisch versendet.</strong> Der Button „Text kopieren“ erstellt nur einen persönlichen Entwurf.</p>
+          <p>Die Standardansicht zeigt nur Mode und Technik. Mit „Alle Kategorien“ kannst du weitere Angebote einblenden. Jeder Treffer ist ein Hinweis, keine bestätigte Gratis-Lieferung; prüfe Kosten, Mindestalter und Fristen bei der Quelle.</p>
           <p>Deine Merkliste und dein Status bleiben lokal in Safari. Im öffentlichen Repository dürfen keine privaten Daten gespeichert werden.</p>
           <p><a href="https://github.com/quattrologic/PR-Hunter#enable-automated-discovery" target="_blank" rel="noopener noreferrer">Feeds einrichten auf GitHub ↗</a></p>
         </div>
         <div id="listArea">
           <div class="focus-note"><span aria-hidden="true">✦</span> DEIN FOKUS: <strong>STREETWEAR · SNEAKER · TECHNIK · GAMING</strong></div>
           <p id="sourceHealth" class="source-health" role="status" aria-live="polite">Automatische Quellen werden vorbereitet …</p>
-          <div class="portal-links" aria-label="Offizielle Testprogramme"><span>TECHNIK TESTEN:</span><a href="https://www.mediamarkt.de/de/campaign/testpiloten" target="_blank" rel="noopener noreferrer">MediaMarkt Testpiloten ↗</a><a href="https://freitest.de/aktuelle-produkttests/" target="_blank" rel="noopener noreferrer">Produkttest-Übersicht ↗</a></div>
+          <div class="portal-links" aria-label="Offizielle Testprogramme"><span>TECHNIK TESTEN:</span><a href="https://www.mediamarkt.de/de/campaign/testpiloten" target="_blank" rel="noopener noreferrer">MediaMarkt Testpiloten ↗</a><a href="https://www.saturn.de/de/campaign/testpiloten" target="_blank" rel="noopener noreferrer">Saturn Testpiloten ↗</a><a href="https://www.alternate.de/lotteryOverview" target="_blank" rel="noopener noreferrer">ALTERNATE Testaktionen ↗</a></div>
           <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Marke, Aktion oder Produkt suchen…" aria-label="Angebote durchsuchen"></label>
             <select id="category" aria-label="Kategorie"><option value="focus" selected>Mode &amp; Technik zuerst</option><option value="all">Alle Kategorien</option><option>Mode</option><option>Technik</option><option>Beauty</option><option>Lifestyle</option><option>Sonstiges</option></select>
             <button class="ghost-btn" id="refreshButton" title="Angebote aktualisieren" aria-label="Angebote aktualisieren">↻</button></div>

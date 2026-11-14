@@ -52,3 +52,29 @@ test('recognizes giveaway and product test types without claiming guaranteed gif
   assert.equal(testOffer.offerType, 'Produkttest');
   assert.equal(testOffer.category, 'Technik');
 });
+
+test('filters generic advice, non-product freebies and paid offers', () => {
+  const titles = [
+    'Produkte testen 2026: Die 10 besten Programme für Produkttester',
+    'kostenloses Girokonto eröffnen und 200 Euro kassieren',
+    'Kalender 2027 gratis bestellen',
+    'Torte als Freebie Cashback',
+    'Nur heute: 30% Rabatt auf Hoodies'
+  ];
+  for (const [i,title] of titles.entries())
+    assert.equal(normalizeOpportunity({title,url:'https://example.org/offer'+i}),null,title);
+});
+test('does not classify an unrelated iPad mentioned in the summary as tech', () => {
+  const item=normalizeOpportunity({
+    title:'Nikolaus kostenlos 2026: Freebie Aktion',
+    description:'Mehr Aktionen: iPad und Kopfhörer Gewinnspiel',
+    url:'https://example.org/freebie'
+  });
+  assert.equal(item.category,'Sonstiges');
+});
+test('recognizes a concrete headphone giveaway as technology', () => {
+  const item=normalizeOpportunity({title:'SoundPEATS Bluetooth Kopfhörern + Gewinnspiel',url:'https://example.org/headphones'});
+  assert.ok(item);
+  assert.equal(item.category,'Technik');
+  assert.equal(item.offerType,'Gewinnspiel');
+});
