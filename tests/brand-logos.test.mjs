@@ -48,10 +48,10 @@ test('iPad top story header loads logos with error fallbacks, no user secrets',a
   assert.ok(app.includes('img.dataset.logoRetried'));
   assert.ok(css.includes('.story-logo-image.is-loaded'));
   assert.ok(css.includes('.has-loaded-logo>.story-logo-fallback'));
-  assert.ok(html.includes('app.js?v=24'));
-  assert.ok(html.includes('instagram-white.css?v=24'));
+  assert.ok(html.includes('app.js?v=25'));
+  assert.ok(html.includes('instagram-white.css?v=25'));
   assert.ok(worker.includes("'./brand-logos.mjs'"));
-  assert.ok(worker.includes("CACHE_PREFIX + 'v24'"));
+  assert.ok(worker.includes("CACHE_PREFIX + 'v25'"));
   assert.ok(readme.includes('sourced brand marks in top strip'));
   assert.ok(!app.includes('META_USER_ACCESS_TOKEN'));
 });

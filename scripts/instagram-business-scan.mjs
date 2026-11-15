@@ -24,7 +24,7 @@ export function buildDiscoveryUrl(igUserId,handle,version=GRAPH_VERSION){
   if(!/^v\d{2}\.\d$/.test(version))throw Error('Invalid Graph API version');
   const url=new URL('/'+version+'/'+igUserId,GRAPH_ORIGIN);
   url.searchParams.set('fields','business_discovery.username('+name+
-    '){username,media.limit('+MAX_PER_ACCOUNT+
+    '){username,followers_count,media.limit('+MAX_PER_ACCOUNT+
     '){id,media_type,permalink,thumbnail_url,caption,timestamp}}');
   return url.href;
 }
@@ -56,7 +56,7 @@ export async function scanOfficialBrandReels({
       if(!brand || brand!==handle){unsupported++;continue;}
       for(const media of business.media.data){
         const reel=normalizeBrandReel({
-          brand,permalink:media?.permalink,mediaType:media?.media_type,
+          brand,followersCount:business.followers_count,permalink:media?.permalink,mediaType:media?.media_type,
           caption:media?.caption,thumbnailUrl:media?.thumbnail_url,
           publishedAt:media?.timestamp
         },timestamp.getTime());

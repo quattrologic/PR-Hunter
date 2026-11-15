@@ -30,7 +30,7 @@ import {
 } from './free-products.mjs';
 import {
   normalizeDmDrafts, addDmDraft, updateDmStatus, dmStats,
-  normalizeDmHandle, normalizeReelUrl, dmBrandProfile, dmDraftText, editDmDraft, filterDmDrafts
+  normalizeDmHandle, normalizeReelUrl, dmBrandProfile, dmDraftText, editDmDraft, filterDmDrafts, prepareDmHandoff, resolveDmHandoff, confirmDmSent, setDmShipping
 } from './dm-assistant.mjs';
 import {
   OFFER_STATUSES, OFFER_STATUS_LABELS, normalizeBrandOffers, createBrandOffer,
@@ -48,7 +48,7 @@ import {
   dmScoutCandidates, dmScoutProspects, dmScoutText, instagramDmLink
 } from './dm-scout.mjs';
 import {
-  normalizeScoutPrefs, setScoutView, dismissScoutReel, dismissScoutBrand,
+  inspectScoutCaption, normalizeScoutPrefs, setScoutView, dismissScoutReel, dismissScoutBrand,
   buildSmartScout, smartBrandSuggestions, SCOUT_VIEWS
 } from './smart-scout.mjs';
 import {knownBrandLogo} from './brand-logos.mjs';
@@ -93,8 +93,8 @@ const asDate = value => {
 };
 const iconText = category => category === 'Mode' ? 'STREETWEAR' : category === 'Technik' ? 'TECH DROP' : 'DISCOVERY';
 const save = () => {
-  try { localStorage.setItem(STORE, JSON.stringify(state)); }
-  catch { toast('Speichern nicht möglich. Bitte Safari-Speicher prüfen.'); }
+  try { localStorage.setItem(STORE, JSON.stringify(state)); return true; }
+  catch { toast('Speichern nicht möglich. Bitte Safari-Speicher prüfen.'); return false; }
 };
 let toastHandle;
 function toast(message) {
@@ -316,7 +316,7 @@ function instagramFrame(src,brand){
   return iframe;
 }
 function syncInstagramAutoPreviews(){
-  const current=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview, #similarReelCards .instagram-auto-preview'));
+  const current=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview, #similarReelCards .instagram-auto-preview, #homeDmScoutCards .instagram-auto-preview'));
   const midpoint=window.innerHeight/2;
   const eligible=Array.from(nearbyInstagramTiles)
     .filter(node=>node.isConnected && !node.closest('[hidden]'))
@@ -347,7 +347,7 @@ function mountInstagramAutoPreviews(){
   instagramPreviewObserver=null;
   nearbyInstagramTiles.clear();
   if(ui.tab!=='discover')return;
-  const tiles=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview, #similarReelCards .instagram-auto-preview'));
+  const tiles=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview, #similarReelCards .instagram-auto-preview, #homeDmScoutCards .instagram-auto-preview'));
   if(!tiles.length)return;
   if(typeof IntersectionObserver!=='function'){
     // Older browsers still show automatic previews for the first few cards.
@@ -757,15 +757,20 @@ function renderHomeDmScout(){
     officialReels:official,savedReels:state.savedReels,
     drafts:state.dmDrafts,publicOffers:all()
   });
-  ui.dmScoutItems=found;
+  // Only caption invitations and explicit user-saved posts enter the main PR feed.
+  const prefs=normalizeScoutPrefs(state.scoutPrefs);
+  const followers=brand=>official.find(r=>r.brand===brand)?.followersCount;
+  const feed=found.filter(x=>!prefs.hiddenReels.includes(x.reelUrl)&&!prefs.hiddenBrands.includes(x.brand)&&!inspectScoutCaption(x.caption).explicitEnded&&(x.signal==='invitation'||['saved','draft'].includes(x.source)))
+    .sort((a,b)=>Number(Number.isSafeInteger(followers(b.brand))&&followers(b.brand)<50000)-Number(Number.isSafeInteger(followers(a.brand))&&followers(a.brand)<50000));
+  ui.dmScoutItems=feed;
   const confirmed=found.filter(x=>x.signal==='invitation').length;
   const sources=official.length?'Offizielle Marken-Beiträge überprüft':
     'Live-Instagram-Suche nicht verbunden · deine gespeicherten Beiträge';
   $('#homeDmScoutStatus').textContent=found.length
     ? found.length+' Original-Links · '+confirmed+' mögliche DM-Einladungen · '+sources
     : 'Noch keine Original-Links · automatischer Meta-Scan nicht verbunden';
-  $('#homeDmScoutCards').innerHTML=found.length?
-    found.slice(0,6).map((lead,index)=>{
+  $('#homeDmScoutCards').innerHTML=feed.length?
+    feed.slice(0,12).map((lead,index)=>{
       const verifiedText=lead.signal==='invitation';
       const status=verifiedText?'Möglicher PR-Aufruf im Beitragstext':
         lead.signal==='send-request'?'Video-Versand erwähnt':
@@ -773,20 +778,19 @@ function renderHomeDmScout(){
       const caption=lead.caption?lead.caption.slice(0,88):
         'Originalbeitrag öffnen und Bedingungen selbst prüfen';
       const brand=lead.brand;
-      return '<article class="home-dm-card">'+
-        '<div class="home-dm-card-brand"><span class="home-dm-card-handle">@'+esc(brand)+'</span>'+
-        '<span class="home-dm-card-meta">'+esc(lead.category)+'</span></div>'+
-        '<span class="home-dm-card-signal'+(verifiedText?' likely':'')+'">'+esc(status)+'</span>'+
-        '<p>'+esc(caption)+'</p>'+
-        '<div class="home-dm-card-actions">'+
-        '<button type="button" data-action="home-dm-start" data-dm-scout-index="'+index+'">Nachricht vorbereiten ↗</button>'+
-        '<a href="'+esc(lead.reelUrl)+'" target="_blank" rel="noopener noreferrer">Originalpost ↗</a>'+
-        '</div></article>';
+      const logo=knownBrandLogo(brand);
+      return '<article class="home-dm-card pr-video-card">'+
+        '<div class="home-dm-card-brand">'+(logo?'<img class="pr-brand-mark" src="'+esc(logo.primary)+'" alt="" loading="lazy">':'')+
+        '<span class="home-dm-card-handle">@'+esc(brand)+'</span></div>'+
+        '<div class="pr-video-surface"><div class="instagram-auto-preview" data-embed-src="'+esc(publicEmbedUrl(lead.reelUrl))+'" data-brand="'+esc(brand)+'"><span class="instagram-auto-placeholder">Instagram-Vorschau</span></div>'+
+        '<button type="button" class="pr-video-tap" data-action="home-dm-start" data-dm-scout-index="'+index+'" aria-label="Video und Nachricht für @'+esc(brand)+' öffnen"><span>Video &amp; DM ansehen ↗</span></button></div>'+
+        '<span class="home-dm-card-signal">'+esc(status)+'</span></article>';
     }).join('') :
     '<div class="home-dm-empty"><strong>Keine bestätigten Video-DM-Funde</strong>'+
     '<p>Füge oben einen echten Markenpost ein. Neue öffentliche Reels werden automatisch geprüft, sobald die offizielle Meta-Anbindung eingerichtet ist.</p>'+
     '</div>';
   const prospects=dmScoutProspects(watchedBrands(),6);
+  mountInstagramAutoPreviews();
   $('#homeDmProspects').innerHTML=prospects.map(brand=>{
     const url=dmBrandProfile(brand.handle);
     return '<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" '+
@@ -816,15 +820,25 @@ function openDmEditor(id){
   if(!draft)return;
   activeDmId=id;
   $('#dmEditorTitle').textContent='Nachricht an @'+draft.brand;
-  $('#dmEditorText').value=dmDraftText(draft);
+  $('#dmEditorText').value=draft.status==='prepared'?dmDraftText(draft):(draft.sentMessage||dmDraftText(draft));
+  $('#dmEditorText').readOnly=draft.status!=='prepared';
+  $('#dmEditorVideoTap').hidden=draft.status!=='prepared';
+  $('#dmEditorCopy').hidden=draft.status!=='prepared';
+  const brandInfo=ui.instagramReport.reels.find(r=>r.brand===draft.brand);
+  const followerText=Number.isSafeInteger(brandInfo?.followersCount)?brandInfo.followersCount.toLocaleString('de-DE')+' Follower (letzter Abruf)':'Followerzahl nicht verfügbar';
+  $('#dmEditorFacts').textContent='@'+draft.brand+' · '+followerText+' · Versand: '+(draft.shippingEUR===null?'noch unbekannt':draft.shippingEUR.toFixed(2)+' € (von dir eingetragen)');
   $('#dmEditorOriginal').href=draft.reelUrl;
   $('#dmEditorChat').href=instagramDmLink(draft.brand);
-  $('#dmEditorStatus').textContent='Änderungen werden auf diesem Gerät gespeichert.';
+  const lead=ui.dmScoutItems.find(x=>x.brand===draft.brand&&x.reelUrl===draft.reelUrl);
+  $('#dmEditorOffer').textContent=lead?.caption||'Von dir gespeicherter Beitrag · PR-Angebot und Bedingungen noch prüfen.';
+  $('#dmEditorStatus').textContent=draft.status==='prepared'?'Änderungen werden auf diesem Gerät gespeichert.':'Gesendeter Text · von dir bestätigt';
   const embed=publicEmbedUrl(draft.reelUrl);
   $('#dmEditorPreview').replaceChildren(...(embed?[instagramFrame(embed,draft.brand)]:[]));
   if(!$('#dmEditor').open)$('#dmEditor').showModal();
 }
 function persistDmEditor(){
+  const current=state.dmDrafts.find(d=>d.id===activeDmId);
+  if(current?.status!=='prepared')return current;
   const text=$('#dmEditorText').value;
   if(!text.trim()){
     $('#dmEditorStatus').textContent='Bitte einen Nachrichtentext eingeben.';
@@ -852,6 +866,52 @@ $('#dmEditorCopy').addEventListener('click',async()=>{
     $('#dmEditorStatus').textContent='Bitte den markierten Text manuell kopieren, dann den Chat öffnen.';
   }
 });
+let returnedFromInstagram=false;
+let returnDraftId=null;
+function askDmReturn(){
+  if(document.visibilityState==='hidden'||$('#dmReturnDialog').open)return;
+  const draft=state.dmDrafts.find(d=>d.status==='prepared'&&d.pendingMessage&&d.pendingAt);
+  if(!draft)return;
+  returnDraftId=draft.id;
+  $('#dmReturnBrand').textContent='An @'+draft.brand;
+  $('#dmReturnText').value=draft.pendingMessage;
+  $('#dmReturnDialog').showModal();
+}
+$('#dmEditorVideoTap').addEventListener('click',async()=>{
+  const draft=persistDmEditor();
+  if(!draft||draft.status!=='prepared')return;
+  const message=dmDraftText(draft,true);
+  try{await navigator.clipboard.writeText(message);}
+  catch{$('#dmEditorText').focus();$('#dmEditorText').select();$('#dmEditorStatus').textContent='Kopieren blockiert. Text manuell kopieren und das Original unten öffnen.';return;}
+  state.dmDrafts=prepareDmHandoff(state.dmDrafts,draft.id,message);
+  if(!save())return;
+  returnedFromInstagram=false;
+  window.location.assign(draft.reelUrl);
+});
+// Native app switching, back/forward cache, and a full reload are all covered.
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden')returnedFromInstagram=true;
+  else if(returnedFromInstagram){returnedFromInstagram=false;askDmReturn();}
+});
+window.addEventListener('pageshow',()=>askDmReturn());
+function finishDmReturn(sent){
+  if(sent&&!$('#dmReturnText').value.trim())return;
+  // User may correct the snapshot if they changed the text inside Instagram.
+  if(sent)state.dmDrafts=prepareDmHandoff(state.dmDrafts,returnDraftId,$('#dmReturnText').value);
+  state.dmDrafts=resolveDmHandoff(state.dmDrafts,returnDraftId,sent);
+  save();$('#dmReturnDialog').close();renderDmDrafts();
+  if(sent){if($('#dmEditor').open)$('#dmEditor').close();setTab('dm');toast('Anfrage und gesendeter Text gespeichert.');}
+}
+$('#dmReturnYes').addEventListener('click',()=>finishDmReturn(true));
+$('#dmReturnNo').addEventListener('click',()=>finishDmReturn(false));
+$('#dmReturnDialog').addEventListener('cancel',event=>{event.preventDefault();finishDmReturn(false);});
+$('#dmDraftList').addEventListener('change',event=>{
+  const input=event.target.closest('[data-dm-shipping]');
+  if(!input)return;
+  if(!input.validity.valid){input.reportValidity();return;}
+  state.dmDrafts=setDmShipping(state.dmDrafts,input.dataset.dmShipping,input.value===''?null:Number(input.value));
+  save();renderDmDrafts();
+});
 $('#dmDraftFilter').addEventListener('change',renderDmDrafts);
 
 function renderDmDrafts(){
@@ -860,11 +920,12 @@ function renderDmDrafts(){
   $('#dmPreparedCount').textContent=String(stats.prepared);
   $('#dmSentCount').textContent=String(filterDmDrafts(state.dmDrafts,'sent').length);
   $('#dmRepliedCount').textContent=String(stats.replied);
+  $('#dmTotalSentCount').textContent=String(stats.sent);
   const drafts=filterDmDrafts(state.dmDrafts,$('#dmDraftFilter').value);
   $('#dmDraftList').innerHTML=drafts.length ? drafts.map(draft=>{
     const name='@'+draft.brand;
     const profile=dmBrandProfile(draft.brand);
-    const message=dmDraftText(draft);
+    const message=draft.sentMessage||dmDraftText(draft);
     const status=draft.status==='sent'?'Laut dir gesendet':
       draft.status==='replied'?'Antwort laut dir erhalten':'Nur vorbereitet · nicht gesendet';
     return '<article class="dm-card"><div class="dm-card-top"><div><span class="free-kind">INSTAGRAM · PRIVATE NACHRICHT</span>'+
@@ -877,7 +938,7 @@ function renderDmDrafts(){
         '<a href="'+esc(draft.reelUrl)+'" target="_blank" rel="noopener noreferrer">↗ Video öffnen &amp; teilen</a>'+
         '<a href="'+esc(profile)+'" target="_blank" rel="noopener noreferrer">↗ Markenprofil</a>'+
       '</div>'+
-      '</details><div class="dm-card-progress">'+
+      '</details>'+(draft.status!=='prepared'?'<details class="dm-sent-record"><summary>Gesendeter Text &amp; Versand</summary><p class="dm-text-preview">'+esc(draft.sentMessage||'Frühere Anfrage: genauer Versandtext nicht dokumentiert.')+'</p><label>Versandkosten (€) · von dir bestätigt<input type="number" min="0" max="1000" step="0.01" inputmode="decimal" placeholder="Unbekannt" data-dm-shipping="'+esc(draft.id)+'" value="'+(draft.shippingEUR===null?'':draft.shippingEUR)+'"></label><p>'+(draft.shippingEUR===null?'Versand noch unbekannt':draft.shippingEUR>5?'Über deinem Versandlimit von 5 €':'Versand laut deiner Angabe')+'</p></details>':'')+'<div class="dm-card-progress">'+
         (draft.status==='prepared'
           ? '<button type="button" data-action="dm-sent" data-dm-id="'+esc(draft.id)+'">Ich habe es selbst gesendet ✓</button>'
           : draft.status==='sent'
@@ -1319,7 +1380,7 @@ document.addEventListener('click', event => {
       return;
     }
     if(action==='dm-sent' && window.confirm('Hast du das Originalvideo und die Nachricht wirklich über Instagram an @'+draft.brand+' gesendet?')){
-      state.dmDrafts=updateDmStatus(state.dmDrafts,id,'sent');
+      state.dmDrafts=confirmDmSent(state.dmDrafts,id);
       save();renderDmDrafts();toast('Nur deine eigene Sendebestätigung gespeichert.');
       return;
     }
@@ -1782,4 +1843,5 @@ window.addEventListener('online', () => { updateConnectionStatus(); refresh(); }
 window.addEventListener('offline',updateConnectionStatus);
 updateConnectionStatus();
 render();
+askDmReturn();
 refresh();

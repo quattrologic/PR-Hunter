@@ -162,7 +162,7 @@ test('white iPad view contains private offer UI, manual safeguards and offline c
   assert.ok(white.includes('.brand-offer-card'));
   assert.ok(white.includes('background:#fff'));
   assert.ok(worker.includes("'./brand-offers.mjs'"));
-  assert.ok(worker.includes("CACHE_PREFIX + 'v24'"));
+  assert.ok(worker.includes("CACHE_PREFIX + 'v25'"));
   assert.ok(readme.includes('Private DM offers / packages'));
   for(const file of ['brand-offers.mjs','phase4-core.mjs','app.js','sw.js']){
     const path=fileURLToPath(new URL('../docs/'+file,import.meta.url));

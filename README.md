@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 17 – editable Video-DM workspace, private request tracking and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 18 – editable Video-DM workspace, private request tracking and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -385,3 +385,14 @@ Home Scout and manual preparation open a single video/message workspace. The off
 The exact Scout message and subsequent edits persist locally, including through existing plain/encrypted backup normalization. Legacy drafts retain their original templates. Reopening an existing brand/post pair preserves the edited message and status. The compact request list filters Prepared, Sent (awaiting reply), and Replied separately. Sending and replies still require explicit user confirmation; replied requests can be converted to the existing offers/packages workflow.
 
 PWA assets/cache advance to v24. The local development server now serves `.mjs` with a JavaScript MIME type so native browser modules load correctly. No Meta authorization or new discovery source is enabled by this phase. Physical iPad and real Instagram playback/chat handoff remain device acceptance checks.
+
+
+## Phase 18 — Video-first PR requests and return confirmation
+
+The white, angular homepage now prioritizes large real Instagram previews with a tap target opening the video/message workspace. Only official caption signals combining DM/video sharing with a free-product hint, plus explicitly saved posts, enter this main feed. Manual posts remain unverified. Hidden brands/posts and explicitly ended captions are excluded. Brands with known fewer than 50,000 followers rank first; unknown sizes are never described as measured small accounts. Additional discovery and manual import are collapsed for a quieter homepage.
+
+The permissioned Business Discovery scanner requests `followers_count`; validated counts appear in the workspace with the original caption. Missing data remains unknown. Reference: https://developers.facebook.com/docs/graph-api/reference/shadow-ig-user
+
+Tapping the large video copies the message plus its link, saves a private pending snapshot, then opens the original Instagram post for manual sharing. Clipboard denial prevents navigation and offers manual copying. Returning via visibility change, back/forward cache or reload prompts “Hast du die Anfrage verschickt?”. Only Yes records the exact copied text (editable at confirmation if changed in Instagram), increments the request count and marks Sent. No/Cancel keeps it Prepared. Duplicate confirmation cannot increase the count. Sent snapshots are read-only in the editor and survive private backups; historic requests without snapshots explicitly report the missing text.
+
+Request cards expose the sent text, self-confirmed replies, and editable known shipping costs, with unknown costs kept separate from zero and a warning above €5. The existing product/package workflow remains available. Cache v25. Real Instagram playback, switching to the native app and physical iPad behavior still require device acceptance; the app cannot detect actual sends or replies.
