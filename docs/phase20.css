@@ -1,0 +1,30 @@
+/* Phase 20 Smart Inbox: bright, minimal iPad controls. No colored cards. */
+#alertsPanel .alerts-banner{background:#fff;border:1px solid #e7e7e7;border-radius:10px}
+#alertsPanel .alerts-banner .primary-btn{background:#161616;color:#fff;border-radius:7px}
+#alertsPanel .phase20-preferences{background:#fff;border:1px solid #e8e8e8;border-radius:11px;
+  display:grid;gap:11px;padding:20px;margin:18px 0 26px}
+#alertsPanel .phase20-preferences h2{font-size:18px;letter-spacing:-.35px;margin:0 0 5px}
+#alertsPanel .phase20-preferences .helper{margin:0;color:#777;line-height:1.5}
+#alertsPanel .phase20-preferences>label{display:flex;align-items:center;gap:11px;min-height:44px;
+  font-size:13px;font-weight:590;color:#242424;cursor:pointer;line-height:1.45}
+#alertsPanel .phase20-preferences input{width:19px;height:19px;accent-color:#171717;flex-shrink:0}
+#alertsPanel .phase20-status{font-size:11px;color:#717171;line-height:1.5;margin:0}
+#alertsPanel .phase20-device-settings{display:flex;gap:11px;align-items:center;flex-wrap:wrap;
+  margin-top:5px;padding-top:14px;border-top:1px solid #efefef}
+#alertsPanel .phase20-device-settings button{min-height:44px;padding:10px 14px;font-size:12px;
+  font-weight:730;background:#fff;color:#171717;border:1px solid #d7d7d7;border-radius:7px}
+#alertsPanel .phase20-device-settings button:disabled{opacity:.5;cursor:not-allowed}
+#alertsPanel .phase20-device-settings span{font-size:11px;line-height:1.5;color:#707070;flex:1 1 180px}
+#alertsPanel .alert-entry{background:#fff;border:1px solid #e7e7e7;border-radius:9px;box-shadow:none}
+#alertsPanel .alert-entry.gelesen{opacity:.72}
+#alertsPanel .alert-metadata{color:#777}
+#alertsPanel .alert-details strong{color:#161616}
+#alertsPanel .alert-actions a,#alertsPanel .alert-actions button{min-height:44px;display:inline-flex;
+  align-items:center;justify-content:center;border:1px solid #dedede;border-radius:7px;
+  background:#fff;color:#222;text-decoration:none;padding:10px 13px;font-size:11px;font-weight:710}
+#alertsPanel .phase20-disclaimer{margin:22px 0;font-size:11px;line-height:1.65;color:#767676}
+@media(max-width:680px){
+  #alertsPanel .phase20-preferences{padding:15px}
+  #alertsPanel .phase20-preferences>label{font-size:12px}
+  #alertsPanel .alert-actions{flex-wrap:wrap}
+}
