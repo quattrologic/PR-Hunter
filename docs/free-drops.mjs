@@ -33,11 +33,14 @@ export function classifyFreeDrop(item, now = Date.now()) {
   const rawDeadline = item.deadline;
   const deadline = rawDeadline ? Date.parse(rawDeadline) : NaN;
   if (rawDeadline && (!Number.isFinite(deadline) || deadline < now)) return null;
-  const curated = item.sourceType === 'curated' && item.noPurchase === true &&
-    item.keepPrize === true && Boolean(safeHttps(item.termsUrl));
   const text = String(item.title || '') + ' ' + String(item.offerType || '');
   const giveaway = /gewinnspiel|giveaway|verlos|gewinnen|win\s+a\b/i.test(text);
   const priced = verifiedDealPrice(item, now);
+  const curated = item.sourceType === 'curated' &&
+    item.keepPrize === true && Boolean(safeHttps(item.termsUrl)) &&
+    (item.noPurchase === true ||
+     (item.noPurchase === false && item.offerKind === 'verified-deal' &&
+      priced !== null && priced >= 1 && priced <= 10));
   const deal = priced !== null && priced >= 1 && priced <= 10;
   const drop = /\bdrop\b|release|launch|restock/i.test(text) && priced !== null && priced <= 10;
   const blackFriday = isBlackFridayLead(item);
@@ -53,7 +56,10 @@ export function classifyFreeDrop(item, now = Date.now()) {
   if (germany === 'unknown') warnings.push('Lieferung/Teilnahme aus Deutschland unbestätigt');
   if (shipping === null) warnings.push('Versandkosten unbekannt');
   if (shipping !== null && shipping > 5) warnings.push('Versand über deinem 5-€-Limit');
-  if (item.noPurchase !== true) warnings.push('Kauf- bzw. Teilnahmegebührenfreiheit unbestätigt');
+  if (item.noPurchase === false && priced !== null)
+    warnings.push('Kauf erforderlich: '+priced.toFixed(2)+' € – kein Gratisartikel');
+  else if (item.noPurchase !== true)
+    warnings.push('Kauf- bzw. Teilnahmegebührenfreiheit unbestätigt');
   if (item.keepPrize !== true) warnings.push('Dauerhaftes Behalten unbestätigt');
   if (!Number.isFinite(deadline)) warnings.push('Keine bestätigte Teilnahmeschlussfrist');
   if (curated && (!Number.isFinite(Date.parse(item.checkedOn)) ||
