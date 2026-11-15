@@ -47,7 +47,10 @@ import {
 import {
   dmScoutCandidates, dmScoutProspects, dmScoutText, instagramDmLink
 } from './dm-scout.mjs';
-import {rankSimilarBrands,rankSimilarVideos} from './similar-reels.mjs';
+import {
+  normalizeScoutPrefs, setScoutView, dismissScoutReel, dismissScoutBrand,
+  buildSmartScout, smartBrandSuggestions, SCOUT_VIEWS
+} from './smart-scout.mjs';
 import {knownBrandLogo} from './brand-logos.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
@@ -60,7 +63,7 @@ const ui = {
   instagramReport:normalizeInstagramReelsReport({status:'not-configured'}), dmScoutItems:[],
   similarReport:{status:'not-configured',discovered:[]},similarItems:[]
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[] };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[], scoutPrefs:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -80,6 +83,7 @@ state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
 state.programProgress = normalizeProgramProgress(state.programProgress);
 state.dmDrafts = normalizeDmDrafts(state.dmDrafts);
 state.savedReels = normalizeSavedReels(state.savedReels);
+state.scoutPrefs = normalizeScoutPrefs(state.scoutPrefs);
 state.brandOffers = normalizeBrandOffers(state.brandOffers);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
@@ -669,61 +673,82 @@ function renderBrandOffers(){
 }
 
 function renderSimilarVideoDiscovery(){
-  const handles=[
-    ...watchedBrands().map(x=>x.handle),
-    ...state.brands.map(x=>x.handle).filter(Boolean)
-  ];
+  const handles=watchedBrands().map(x=>x.handle);
   const seed={savedBrands:handles,savedReels:state.savedReels,drafts:state.dmDrafts};
   const official=ui.instagramReport.status==='active'||ui.instagramReport.status==='partial'
     ?ui.instagramReport.reels:[];
   const hashtags=ui.similarReport.status==='active'||ui.similarReport.status==='partial'
     ?ui.similarReport.discovered:[];
-  const videos=rankSimilarVideos({...seed,reels:official,discoveries:hashtags});
+  const result=buildSmartScout({
+    ...seed,reels:official,discoveries:hashtags,prefs:state.scoutPrefs
+  });
+  const videos=result.items;
   ui.similarItems=videos;
   const autoActive=ui.instagramReport.status==='active'||
     ui.instagramReport.status==='partial'||
     ui.similarReport.status==='active'||ui.similarReport.status==='partial';
   $('#similarVideoStatus').textContent=autoActive
-    ?videos.length+' echte neue Reels · zuletzt geprüfte offizielle Quellen'
-    :'Meta-Zugang fehlt noch · 0 automatisch gefundene Videos';
+    ?result.counts.all+' echte aktuelle Reels · offizielle Quellen'
+    :'Instagram-Suche nicht verbunden · 0 automatisch gefundene Videos';
+  document.querySelectorAll('[data-scout-view]').forEach(button=>{
+    const view=button.dataset.scoutView;
+    const active=state.scoutPrefs.view===view;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+    const label={all:'Alle',dm:'Video-DM',free:'Gratis',new:'Neue Marken'}[view];
+    if(label)button.textContent=label+' · '+String(result.counts[view]||0);
+  });
   const host=$('#similarReelCards');
   if(videos.length){
     host.innerHTML=videos.slice(0,6).map((item,index)=>{
       const brand=item.brand?'@'+item.brand:'#'+item.hashtag;
       const embed=publicEmbedUrl(item.url);
       if(!embed)return '';
-      const img=trustedMetaThumbnail(item.thumbnailUrl);
-      const poster=img?
-        '<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(img)+'" alt="Vorschaubild des Original-Reels">':
+      const image=trustedMetaThumbnail(item.thumbnailUrl);
+      const poster=image?
+        '<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(image)+'" alt="Vorschaubild des Original-Reels">':
         '<span class="similar-video-play" aria-hidden="true">▶</span>';
-      const signal=item.signal==='invitation'?'Möglicher PR-Aufruf':
-        item.signal==='send-request'?'Video-Weiterleitung erwähnt':
-        item.signal==='free-mention'?'Gratis-Stichwort gefunden':'Streetwear-Reel';
+      const signal=item.kind==='dm'?'Video-DM-Hinweis':
+        item.kind==='free'?'Gratis-Stichwort':'Streetwear-Reel';
+      const reason=item.reasons.filter(x=>x!=='Bedingungen prüfen').slice(0,2).join(' · ');
+      const info=item.warnings.length?'Bedingungen prüfen – keine bestätigte Gratisaktion':
+        'Aktion, Versand und Teilnahme noch ungeprüft';
       const action=item.brand?
-        '<button type="button" data-action="similar-prepare" data-similar-index="'+index+'">DM vorbereiten ↗</button>':
+        '<button type="button" data-action="similar-prepare" data-similar-index="'+index+'">DM vorbereiten</button>':
         '<button type="button" data-action="similar-add" data-similar-index="'+index+'">Marke zuordnen</button>';
       return '<article class="similar-video-card">'+
         '<div class="instagram-auto-preview" data-embed-src="'+esc(embed)+'" data-brand="'+esc(brand)+'">'+
         '<div class="instagram-auto-placeholder">'+poster+
-        '<span class="instagram-auto-loading">Instagram-Vorschau wird geladen …</span></div></div>'+
+        '<span class="instagram-auto-loading">Original-Vorschau lädt …</span></div></div>'+
         '<div class="similar-video-info"><strong>'+esc(brand)+'</strong>'+
-        '<span>'+esc(signal)+'</span><p>'+esc(item.caption.slice(0,95)||'Originalpost und Bedingungen prüfen')+'</p>'+
+        '<span>'+esc(signal)+(reason?' · '+esc(reason):'')+'</span>'+
+        '<p>'+esc(item.caption.slice(0,90)||'Originalpost selbst prüfen')+'</p>'+
+        '<small class="smart-scout-note">'+esc(info)+'</small>'+
         '<div class="similar-video-actions">'+action+
-        '<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer">Original ↗</a></div></div>'+
-        '</article>';
+        '<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer">Original ↗</a>'+
+        '<button type="button" class="smart-scout-dismiss" data-action="scout-hide-reel" data-similar-index="'+index+'" aria-label="Diesen Treffer ausblenden">Ausblenden</button>'+
+        '</div></div></article>';
     }).join('');
   }else{
+    const hasOther=result.counts.all>0;
     host.innerHTML='<div class="similar-video-empty">'+
-      '<strong>Noch keine neuen Instagram-Videos automatisch gefunden.</strong>'+
-      '<p>Deine gespeicherten Marken bestimmen bereits die Empfehlungen. Der öffentliche Video-Abruf startet, sobald Meta den Zugang freigibt. Wir zeigen bis dahin keine erfundenen Treffer.</p>'+
+      '<strong>'+(hasOther?'Keine Treffer für diesen Filter.':
+        'Noch keine neuen Instagram-Videos automatisch gefunden.')+'</strong>'+
+      '<p>'+(hasOther?'Wähle „Alle“, um weitere echte Reels zu sehen.':
+        'Deine gespeicherten Marken steuern schon die Empfehlungen. Für neue Instagram-Reels muss der Meta-Zugang freigegeben werden.')+'</p>'+
       '</div>';
   }
-  const prospects=rankSimilarBrands(seed,7);
-  $('#similarBrandChoices').innerHTML=prospects.map(brand=>{
+  const prospects=smartBrandSuggestions({...seed,prefs:state.scoutPrefs},7);
+  $('#similarBrandChoices').innerHTML=prospects.length?prospects.map(brand=>{
     const link=dmBrandProfile(brand.handle);
-    return '<a href="'+esc(link)+'" target="_blank" rel="noopener noreferrer"'+
-      ' title="Ähnlicher Streetwear-Stil; aktuelle PR-Aktion nicht bestätigt">@'+esc(brand.handle)+' ↗</a>';
-  }).join('');
+    return '<span class="smart-brand-choice">'+
+      '<a href="'+esc(link)+'" target="_blank" rel="noopener noreferrer"'+
+      ' title="Ähnlicher Streetwear-Stil; aktuelle PR-Aktion ungeprüft">@'+esc(brand.handle)+' ↗</a>'+
+      '<button type="button" data-action="scout-save-brand" data-scout-brand="'+esc(brand.handle)+'" aria-label="Marke '+esc(brand.handle)+' als Referenz speichern">Merken</button>'+
+      '<button type="button" data-action="scout-hide-brand" data-scout-brand="'+esc(brand.handle)+'" aria-label="Marke '+esc(brand.handle)+' aus Vorschlägen entfernen">×</button>'+
+      '</span>';
+  }).join(''):
+    '<span class="smart-scout-note">Keine weiteren passenden Marken in der geprüften Liste.</span>';
 }
 function renderHomeDmScout(){
   const official=ui.instagramReport.status==='active' || ui.instagramReport.status==='partial'
@@ -1097,6 +1122,12 @@ document.addEventListener('click', event => {
     } else setTab(nav.dataset.tab);
     return;
   }
+  const smartFilter=event.target.closest('[data-scout-view]');
+  if(smartFilter && SCOUT_VIEWS.includes(smartFilter.dataset.scoutView)){
+    state.scoutPrefs=setScoutView(state.scoutPrefs,smartFilter.dataset.scoutView);
+    save();renderSimilarVideoDiscovery();mountInstagramAutoPreviews();
+    return;
+  }
   const discoveryFilter=event.target.closest('[data-discovery]');
   if(discoveryFilter && DISCOVERY_FILTERS.includes(discoveryFilter.dataset.discovery)){
     ui.discoveryMode=discoveryFilter.dataset.discovery;
@@ -1125,6 +1156,36 @@ document.addEventListener('click', event => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   const action = button.dataset.action;
+  if(action==='scout-hide-reel'){
+    const idx=Number(button.dataset.similarIndex);
+    const lead=Number.isInteger(idx)&&idx>=0?ui.similarItems[idx]:null;
+    if(!lead)return;
+    state.scoutPrefs=dismissScoutReel(state.scoutPrefs,lead.url);
+    save();renderSimilarVideoDiscovery();mountInstagramAutoPreviews();
+    toast('Reel ausgeblendet – weitere Treffer werden neu sortiert.');
+    return;
+  }
+  if(action==='scout-hide-brand'||action==='scout-save-brand'){
+    const handle=button.dataset.scoutBrand;
+    const url=dmBrandProfile(handle);
+    if(!url)return;
+    if(action==='scout-hide-brand'){
+      state.scoutPrefs=dismissScoutBrand(state.scoutPrefs,handle);
+      save();renderSimilarVideoDiscovery();mountInstagramAutoPreviews();
+      toast('Marke aus Empfehlungen ausgeblendet.');
+      return;
+    }
+    if(watchedBrands().some(x=>x.handle.toLowerCase()===handle.toLowerCase())){
+      toast('Marke bereits in deiner Referenzliste.');return;
+    }
+    const brand=normalizeBrand(handle,url);
+    if(!brand)return;
+    state.brands=[brand,...state.brands].slice(0,100);
+    save();renderBrands();renderHomeDmScout();renderSimilarVideoDiscovery();
+    mountInstagramAutoPreviews();
+    toast('Marke als Referenz gespeichert. Automatischer Instagram-Abruf braucht weiterhin Meta-Zugriff.');
+    return;
+  }
   if(action==='similar-prepare'||action==='similar-add'){
     const idx=Number(button.dataset.similarIndex);
     const lead=Number.isInteger(idx)&&idx>=0?ui.similarItems[idx]:null;

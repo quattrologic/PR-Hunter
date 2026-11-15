@@ -555,3 +555,25 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,su
 @media(max-width:570px){.similar-video-grid{grid-template-columns:1fr}
   .similar-video-card .instagram-auto-preview{height:420px}
   .similar-video-actions button,.similar-video-actions a{font-size:11px}}
+
+/* Phase 16 – smart Video-DM Scout controls, learning preferences and compact cards. */
+.smart-scout-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 4px}
+.smart-scout-filters>button{font-size:11px;font-weight:720;background:#f4f4f4;border:1px solid #e7e7e7;
+  border-radius:8px;color:#444;padding:10px 12px;min-height:42px;touch-action:manipulation;cursor:pointer}
+.smart-scout-filters>button.active,
+.smart-scout-filters>button[aria-pressed=true]{background:#131313;color:#fff;border-color:#131313}
+.similar-video-info .smart-scout-note{display:block;color:#969696;font-size:10px;line-height:1.4;margin:0}
+.similar-video-actions button.smart-scout-dismiss{background:#f9f9f9;color:#757575;
+  border:1px solid #e9e9e9;font-size:10px;flex:0 0 auto;padding:8px 9px}
+.smart-brand-choice{display:inline-flex;flex:0 0 auto;gap:0;align-items:stretch;
+  overflow:hidden;border-radius:7px;border:1px solid #e7e7e7;background:#fafafa}
+.smart-brand-choice a{border:0;border-radius:0;white-space:nowrap;min-height:42px;
+  display:flex;align-items:center;font-size:11px;padding:10px 11px;color:#1b1b1b;text-decoration:none}
+.smart-brand-choice button{background:#fff;border:0;border-left:1px solid #e7e7e7;
+  min-height:42px;min-width:35px;padding:8px;font-size:11px;font-weight:750;color:#333;touch-action:manipulation}
+.smart-brand-choice button:last-child{color:#777;font-size:17px;padding:6px}
+@media(max-width:560px){
+ .smart-scout-filters{gap:5px}
+ .smart-scout-filters>button{padding:8px 9px;font-size:10px}
+ .smart-brand-choice a{max-width:170px;overflow:hidden;text-overflow:ellipsis}
+}

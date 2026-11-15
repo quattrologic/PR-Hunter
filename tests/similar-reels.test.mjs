@@ -147,8 +147,8 @@ test('homepage UI uses saved local interests, real auto Reels and three-frame vi
   ]);
   for(const id of ['similarReelCards','similarBrandChoices','similarVideoStatus','similarVideoTitle'])
     assert.ok(html.includes('id="'+id+'"'),id);
-  assert.ok(app.includes("rankSimilarVideos({...seed,reels:official,discoveries:hashtags})"));
-  assert.ok(app.includes('rankSimilarBrands(seed,7)'));
+  assert.ok(app.includes("buildSmartScout("));
+  assert.ok(app.includes('smartBrandSuggestions({...seed,prefs:state.scoutPrefs},7)'));
   assert.ok(app.includes('renderSimilarVideoDiscovery();'));
   assert.ok(app.includes("'./similar-reels.json'"));
   assert.ok(app.includes('#similarReelCards .instagram-auto-preview'));
@@ -157,8 +157,8 @@ test('homepage UI uses saved local interests, real auto Reels and three-frame vi
   assert.ok(!app.includes('renderFakeSimilarReels'));
   assert.ok(css.includes('.similar-video-discovery'));
   assert.ok(css.includes('.similar-video-grid'));
-  assert.ok(html.includes('app.js?v=22'));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v22'"));
+  assert.ok(html.includes('app.js?v=23'));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v23'"));
   assert.ok(sw.includes("'./similar-reels.mjs'"));
   assert.ok(sw.includes("'similar-reels.json'"));
   assert.ok(wf.includes('npm run similar-video-scan'));

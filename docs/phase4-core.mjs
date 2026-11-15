@@ -8,6 +8,7 @@ import { normalizeFreeProductPrefs, normalizeProgramProgress } from './free-prod
 import { normalizeDmDrafts } from './dm-assistant.mjs';
 import { normalizeBrandOffers } from './brand-offers.mjs';
 import { normalizeSavedReels } from './instagram-brand-core.mjs';
+import { normalizeScoutPrefs } from './smart-scout.mjs';
 
 const MAX_BATCH = 40;
 const MAX_BACKUP_BYTES = 2_000_000;
@@ -194,6 +195,7 @@ export function parseBackup(text) {
     programProgress:normalizeProgramProgress(raw.programProgress),
     dmDrafts:normalizeDmDrafts(raw.dmDrafts),
     brandOffers:normalizeBrandOffers(raw.brandOffers),
-    savedReels:normalizeSavedReels(raw.savedReels)
+    savedReels:normalizeSavedReels(raw.savedReels),
+    scoutPrefs:normalizeScoutPrefs(raw.scoutPrefs)
   };
 }
