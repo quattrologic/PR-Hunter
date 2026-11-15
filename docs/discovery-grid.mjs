@@ -83,7 +83,10 @@ export function discoveryCards(offers,reelDrafts,options={}){
       brand:String(offer.brand||offer.source||'Originalquelle').slice(0,90),
       url:key,kind:classifyDisplayKind(offer),verifiedPrice:verifiedDealPrice(offer,now),
       sourceType:String(offer.sourceType||'manual'),fromDraft:Boolean(draft),
-      status:draft?.status||null,category:offer.category||'Mode'
+      status:draft?.status||null,category:offer.category||'Mode',
+      thumbnailUrl:offer.sourceType==='instagram-professional' ? (offer.thumbnailUrl||null):null,
+      publishedAt:offer.publishedAt||null,
+      caption:offer.sourceType==='instagram-professional' ? String(offer.caption||'').slice(0,250):null
     });
   };
   // Saved Reels are real user-supplied links. No invented views/likes/thumbnail.
@@ -95,12 +98,30 @@ export function discoveryCards(offers,reelDrafts,options={}){
       source:'Video-DM · selbst gespeichert',sourceType:'manual'
     },draft);
   }
+  for(const reel of (Array.isArray(options.savedReels)?options.savedReels:[])){
+    if(!reelUrl(reel?.url) || !String(reel.url).includes('/reel/'))continue;
+    add({
+      id:'saved:'+reel.url,url:reel.url,title:'Reel von @'+reel.brand,
+      brand:'@'+reel.brand,category:'Mode',source:'Eigener Reel-Link',
+      sourceType:'manual-reel'
+    });
+  }
+  for(const reel of (Array.isArray(options.brandReels)?options.brandReels:[])){
+    if(!reelUrl(reel?.url) || !String(reel.url).includes('/reel/'))continue;
+    add({
+      id:'ig:'+reel.url,url:reel.url,
+      title:'Reel von @'+reel.brand,
+      brand:'@'+reel.brand,category:'Mode',source:'Offizielle Meta Business Discovery',
+      sourceType:'instagram-professional',
+      thumbnailUrl:reel.thumbnailUrl,caption:reel.caption,publishedAt:reel.publishedAt
+    });
+  }
   for(const offer of (Array.isArray(offers)?offers:[]))add(offer);
   return cards.slice(0,1000);
 }
 export function filterEmptyMessage(mode){
   if(mode==='deals')return 'Noch keine nachweislich verfügbaren Streetwear-Drops für 1–10 € gefunden.';
-  if(mode==='reels')return 'Noch keine Instagram-Reels gespeichert. Füge einen echten Reel-Link im Video-DM-Assistenten hinzu.';
+  if(mode==='reels')return 'Noch keine echten Brand-Reels verfügbar. Du kannst einen Reel-Link oben hinzufügen.';
   if(mode==='black-friday')return 'Aktuell keine Black-Friday-Hinweise im öffentlichen Katalog.';
   if(mode==='drops')return 'Derzeit keine bestätigten Drops in den verfügbaren Quellen.';
   if(mode==='pr')return 'Noch keine passenden PR-Reels oder öffentlichen Kooperationen in deiner Liste.';

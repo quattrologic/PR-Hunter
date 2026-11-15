@@ -1,10 +1,10 @@
 // Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
 const CACHE_PREFIX = 'pr-hunter-ultimate-';
-const CACHE = CACHE_PREFIX + 'v16';
+const CACHE = CACHE_PREFIX + 'v17';
 const SHELL = [
   './', './index.html', './ultimate.css', './instagram-white.css', './app.js', './ultimate-core.mjs',
   './participation.mjs', './phase4-core.mjs', './integrations.mjs',
-  './phase6-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './manifest.webmanifest', './icon.svg'
+  './phase6-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './manifest.webmanifest', './icon.svg'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -32,7 +32,7 @@ self.addEventListener('fetch', event => {
     }));
     return;
   }
-  if (['opportunities.json','auto-hunter.json','free-products-report.json'].some(file => url.pathname.endsWith('/'+file))) {
+  if (['opportunities.json','auto-hunter.json','free-products-report.json','instagram-reels.json'].some(file => url.pathname.endsWith('/'+file))) {
     event.respondWith(caches.open(CACHE).then(async cache => {
       try {
         const response = await fetch(req);
