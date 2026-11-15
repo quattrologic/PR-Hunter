@@ -1,3 +1,4 @@
+import { freeDropDiscovery } from '../docs/free-drops.mjs';
 // Public Free-Product-Hunter snapshot. Inputs are GitHub's public catalog and
 // previously reviewed first-party program links. No portal logins or submissions.
 import { readFile, writeFile } from 'node:fs/promises';
@@ -9,6 +10,7 @@ export function createFreeProductsSnapshot(catalog, now=new Date()) {
   if(!Number.isFinite(when.getTime()))throw Error('Invalid snapshot time');
   const items=Array.isArray(catalog?.opportunities)?catalog.opportunities:[];
   const leads=classifyPublicLeads(items,{},when.getTime());
+  const drops=freeDropDiscovery(items,{},when.getTime());
   return {
     version:1,
     scope:'public-discovery-and-reviewed-program-directory',
@@ -17,6 +19,17 @@ export function createFreeProductsSnapshot(catalog, now=new Date()) {
     programDirectoryReviewNotLive:true,
     automatedApplications:false,
     programCount:OFFICIAL_PROGRAMS.length,
+    freeDropHunter:{
+      generatedFrom:'public-catalog',
+      counts:drops.counts,
+      items:drops.items.map(item=>({
+        id:item.id,title:item.title,url:item.url,kind:item.kind,
+        category:item.category,sourceReviewed:item.curated,
+        germany:item.germany,shippingEUR:item.shippingEUR,
+        priceEUR:item.priceEUR,deadline:item.deadline,
+        warnings:item.warnings
+      }))
+    },
     programs:OFFICIAL_PROGRAMS.map(program=>({
       id:program.id,name:program.name,category:program.category,type:program.type,
       url:program.url,checkedOn:program.checkedOn,
