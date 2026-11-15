@@ -1,6 +1,6 @@
 // Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
 const CACHE_PREFIX = 'pr-hunter-ultimate-';
-const CACHE = CACHE_PREFIX + 'v15';
+const CACHE = CACHE_PREFIX + 'v16';
 const SHELL = [
   './', './index.html', './ultimate.css', './instagram-white.css', './app.js', './ultimate-core.mjs',
   './participation.mjs', './phase4-core.mjs', './integrations.mjs',
@@ -45,5 +45,16 @@ self.addEventListener('fetch', event => {
     }));
     return;
   }
-  event.respondWith(caches.match(req).then(cached => cached || fetch(req)));
+  // Prefer fresh UI assets while online: stale cache-first CSS/JS previously
+  // left iPad users with old cards and apparently non-responsive filters.
+  event.respondWith(caches.open(CACHE).then(async cache => {
+    try {
+      const response=await fetch(req);
+      if(!response.ok)throw Error('HTTP '+response.status);
+      await cache.put(req,response.clone());
+      return response;
+    } catch {
+      return (await cache.match(req)) || Response.error();
+    }
+  }));
 });
