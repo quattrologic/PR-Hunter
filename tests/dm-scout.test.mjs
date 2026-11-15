@@ -111,9 +111,9 @@ test('homepage Video-DM feature and safe one-click clipboard flow are wired',asy
   assert.ok(!app.includes("new URLSearchParams({text:"));
   assert.ok(style.includes('.home-dm-scout'));
   assert.ok(style.includes('.home-dm-quick'));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v21'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v22'"));
   assert.ok(sw.includes("'./dm-scout.mjs'"));
-  assert.ok(html.includes('app.js?v=21'));
+  assert.ok(html.includes('app.js?v=22'));
   assert.ok(readme.includes('Video-DM Scout as primary iPad homepage feature'));
   const b=JSON.parse(config);
   assert.ok(b.brands.includes('brkdwn.studios'));

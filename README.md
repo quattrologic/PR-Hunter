@@ -350,3 +350,18 @@ The first panel of the Discover homepage is now **Video-DM Scout**, before the b
 - No mass DMs, auto-send, scraping personal Instagram accounts, bypassing platform limitations, fake free products or false delivery claims. The user's local saved DMs, Reel links and backups remain unchanged. Cache v21.
 
 Sources: https://developers.facebook.com/documentation/business-messaging/instagram-messaging/changelog/ and https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api
+
+
+## Phase 15: Personalized similar-brand Instagram video discovery
+
+The iPad start page now includes **Ähnliche Videos für dich** inside the Video-DM Scout, along with a live status and a contextual list of smaller/new streetwear profiles. It uses the **user's locally saved brands, saved Reel links and prepared drafts** as inputs to a deterministic tag-similarity score. This data stays on the iPad: the GitHub Actions backend scans a public 12-profile shortlist and the client ranks the resulting real URLs locally. Indie/oversized/puffer/hoodie/graphic/drops carry extra weight; clothing gets 90% preference over technology when the inventory allows. It excludes links already saved by the user and deduplicates by original Instagram permalink.
+
+**When permissions are configured:** every six hours the existing GitHub Action fetches new public professional-brand Reels using Meta Business Discovery. The configured list now includes sourced additional accounts \`@lowlightsstudios\` (source: https://lowlightsclothing.de/about-us/), \`@prohibitedclo\` (source: https://www.prohibited.shop/pages/about; account named by PROHIBITED on LinkedIn), \`@reternity\` and \`@vicinity_de\`. These are style prospects, **not verified giveaways**, and "small" is an editorial preference, not a verified follower-size field.
+
+**Optional cross-brand hashtag video expansion** queries exactly six configured hashtags through Meta's approved \`ig_hashtag_search\` and \`/{ig-hashtag-id}/recent_media\` APIs, stores actual video permalinks, timestamps and captions in \`docs/similar-reels.json\`, and keeps up to 7 days of previously verified IDs. These APIs require *separate Instagram Public Content Access/App Review*. A strict 6-unique-hashtag whitelist respects Meta's 30 unique hashtags/7 days cap. Hashtag results **do not expose a reliable brand username**; cards are labeled by hashtag and only permit original post viewing or user-assisted brand association, **not one-click DM to an invented account**.
+
+All brand and hashtag recommendations are only displayed as **real Videos** after the approved API provides validated \`/reel/\` links. Missing credentials, failed permissions, empty feeds and private posts are shown transparently as **0 automatic videos**; public brand suggestions can still be opened immediately. Instagram's personal For You/Reels recommendation inventory is not accessible via this API. Text in video overlays is not scanned; caption keywords are tentative signals and never imply eligibility or promised PR packages. No scraping, DMs, likes or comments are automated.
+
+The iPad presentation uses auto-loading official embedded Instagram iframes limited to 3 in-view at a time, with direct original URLs as a fallback. PWA cache v22. No Instagram secrets appear in public frontend files.
+
+Meta official capabilities: https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api
