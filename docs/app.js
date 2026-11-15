@@ -52,6 +52,11 @@ import {
   buildSmartScout, smartBrandSuggestions, SCOUT_VIEWS
 } from './smart-scout.mjs';
 import {knownBrandLogo} from './brand-logos.mjs';
+import {
+  normalizePhase20State, normalizePhase20Prefs, buildPhase20Notices,
+  recordConfirmedReply, phase20Unread, markPhase20Read, clearPhase20Read,
+  shouldRefreshPhase20, AUTO_REFRESH_MS
+} from './phase20-core.mjs';
 import { FREE_DROP_VIEWS, normalizeFreeDropPrefs, freeDropDiscovery } from './free-drops.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
@@ -64,7 +69,7 @@ const ui = {
   instagramReport:normalizeInstagramReelsReport({status:'not-configured'}), dmScoutItems:[],
   similarReport:{status:'not-configured',discovered:[]},similarItems:[]
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, freeDropPrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[], scoutPrefs:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, phase20:{}, display:{}, autoPrefs:{}, freePrefs:{}, freeDropPrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[], scoutPrefs:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -78,6 +83,7 @@ if (!state.checklists || typeof state.checklists !== 'object' || Array.isArray(s
 state.accounts = accountLabels(state.accounts);
 state.integration = normalizeIntegrationSetup(state.integration);
 state.alerts = normalizeAlertsState(state.alerts);
+state.phase20 = normalizePhase20State(state.phase20);
 state.display = normalizeDisplayPrefs(state.display);
 state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
 state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
@@ -1131,8 +1137,46 @@ function setTab(tab) {
   render();
   window.scrollTo({ top:0, behavior:'auto' });
 }
+let refreshInFlight=false;
+let lastRefreshAt=0;
+function renderAutoRefreshStatus(){
+  const status=$('#alertAutoRefreshStatus');
+  if(!status)return;
+  const enabled=state.phase20.prefs.autoRefresh;
+  status.textContent=enabled
+    ?'Automatischer Abgleich etwa alle 10 Minuten, solange die App sichtbar und online ist. Letzter Abgleich: '+(lastRefreshAt?new Date(lastRefreshAt).toLocaleTimeString('de-DE'):'noch keiner')+'.'
+    :'Automatischer Abgleich ausgeschaltet. Manuelle Aktualisierung weiterhin möglich.';
+}
+function maybeAutoRefresh(){
+  if(shouldRefreshPhase20({
+    enabled:state.phase20.prefs.autoRefresh,
+    visible:document.visibilityState==='visible',
+    online:navigator.onLine!==false,
+    lastAt:lastRefreshAt,now:Date.now(),inFlight:refreshInFlight
+  }))refresh();
+}
+function showForegroundDeviceNotices(notices){
+  if(!state.phase20.prefs.deviceNotices||document.visibilityState!=='visible'||
+    typeof window.Notification!=='function'||window.Notification.permission!=='granted'||
+    !('serviceWorker' in navigator))return;
+  const entries=Array.isArray(notices)?notices.slice(0,3):[];
+  if(!entries.length)return;
+  navigator.serviceWorker.ready.then(registration=>{
+    if(typeof registration.showNotification!=='function')return;
+    for(const note of entries)
+      registration.showNotification('PR-Hunter',{
+        body:String(note.title||'Neue öffentliche Fundstelle').slice(0,130),
+        tag:note.id,
+        icon:'./icon.svg'
+      }).catch(()=>{});
+  }).catch(()=>{});
+}
 async function refresh() {
+  if(refreshInFlight||navigator.onLine===false)return;
+  refreshInFlight=true;
+  let catalogLoaded=false;
   $('#syncLabel').textContent = 'Katalog wird geladen …';
+  try {
   try {
     const response = await fetch('./opportunities.json', {cache:'no-store'});
     if (!response.ok) throw Error('HTTP ' + response.status);
@@ -1140,6 +1184,7 @@ async function refresh() {
     ui.catalog = Array.isArray(payload.opportunities) ? payload.opportunities.filter(item =>
       item && typeof item.id === 'string' && safeExternalUrl(item.url)
     ) : [];
+    catalogLoaded=true;
     ui.generatedAt = payload.generatedAt || null;
     ui.sourceStatus = Array.isArray(payload.sources) ? payload.sources : [];
     const beforeAlerts = state.alerts;
@@ -1174,7 +1219,31 @@ async function refresh() {
   }catch{
     ui.similarReport={status:'unavailable',discovered:[]};
   }
+  const official=ui.instagramReport.status==='active'||ui.instagramReport.status==='partial'
+    ?ui.instagramReport.reels:[];
+  const hashtag=ui.similarReport.status==='active'||ui.similarReport.status==='partial'
+    ?ui.similarReport.discovered:[];
+  const smart=buildPhase20Notices(state.phase20,{
+    reels:[...official,...hashtag],
+    drops:freeDropDiscovery(ui.catalog,{},Date.now()).items,
+    reelsAuthorized:ui.instagramReport.status==='active'||ui.instagramReport.status==='partial'||
+      ui.similarReport.status==='active'||ui.similarReport.status==='partial',
+    dropsLoaded:catalogLoaded
+  });
+  state.phase20=smart.state;
+  // A new reviewed drop belongs in the specific Smart Inbox category, not
+  // a second generic "new offer" notice on the same device.
+  const highlighted=new Set(smart.notices.filter(n=>n.kind==='drop').map(n=>n.offerId));
+  if(highlighted.size)
+    state.alerts.inbox=state.alerts.inbox.filter(n=>!(n.kind==='new'&&highlighted.has(n.offerId)));
+  save();
   render();
+  showForegroundDeviceNotices(smart.notices);
+  } finally {
+    lastRefreshAt=Date.now();
+    refreshInFlight=false;
+    renderAutoRefreshStatus();
+  }
 }
 function openDialog(id) {
   const dialog = $('#' + id);
@@ -1446,7 +1515,10 @@ document.addEventListener('click', event => {
     }
     if(action==='dm-replied' && window.confirm('Hat die Marke in Instagram tatsächlich geantwortet?')){
       state.dmDrafts=updateDmStatus(state.dmDrafts,id,'replied');
-      save();renderDmDrafts();toast('Deine Antwortbestätigung gespeichert – nicht automatisch aus Instagram ausgelesen.');
+      const reported=recordConfirmedReply(state.phase20,draft);
+      state.phase20=reported.state;
+      save();renderDmDrafts();renderAlerts();
+      toast('Deine Antwortbestätigung gespeichert – nicht automatisch aus Instagram ausgelesen.');
       return;
     }
     if(action==='dm-remove' && window.confirm('Diese DM-Vorlage lokal entfernen?')){
@@ -1664,6 +1736,7 @@ $('#restoreBackup').addEventListener('change', async e => {
     if (!window.confirm('Bestehende lokale Daten durch die Sicherung ersetzen? Dein aktueller Stand wird überschrieben.')) return;
     state = parsed;
     state.alerts = normalizeAlertsState(state.alerts);
+    state.phase20 = normalizePhase20State(state.phase20);
     $('#backupPassword').value='';
     save();render();setTab('inbox');
     $('#backupStatus').textContent = 'Sicherung geladen. Bitte Einträge kontrollieren.';
@@ -1907,6 +1980,10 @@ function updateConnectionStatus() {
 }
 window.addEventListener('online', () => { updateConnectionStatus(); refresh(); });
 window.addEventListener('offline',updateConnectionStatus);
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible')maybeAutoRefresh();
+});
+setInterval(maybeAutoRefresh,60*1000);
 updateConnectionStatus();
 render();
 askDmReturn();
