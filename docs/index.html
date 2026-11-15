@@ -10,9 +10,9 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <link rel="stylesheet" href="./instagram-white.css?v=20">
+  <link rel="stylesheet" href="./instagram-white.css?v=21">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=20"></script>
+  <script type="module" src="./app.js?v=21"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -63,6 +63,48 @@
     </header>
     <div id="connectionStatus" class="connection-status" role="status" hidden>Offline – gespeicherte Inhalte bleiben verfügbar, neue Funde benötigen Internet.</div>
     <section class="view" id="discoverPanel" data-panel="discover">
+      <section class="home-dm-scout" aria-labelledby="homeDmTitle">
+        <div class="home-dm-top">
+          <div class="home-dm-heading">
+            <span class="home-dm-eyebrow">DEIN HAUPTFEATURE · STREETWEAR FIRST</span>
+            <h1 id="homeDmTitle">Video-DM <span>Scout</span></h1>
+            <p>Echte Markenposts finden. Persönliche Nachricht vorbereiten. In Instagram selbst senden.</p>
+          </div>
+          <button type="button" class="home-dm-all" data-tab="dm" aria-label="Alle vorbereiteten Video-DMs öffnen">Meine DMs ↗</button>
+        </div>
+        <form class="home-dm-quick" id="homeDmQuickForm">
+          <label for="homeDmReel">Reel oder Beitrag</label>
+          <input id="homeDmReel" name="reelUrl" type="url" required inputmode="url" autocomplete="off" placeholder="Instagram-Link einfügen">
+          <label for="homeDmBrand">Marke</label>
+          <input id="homeDmBrand" name="brand" type="text" required maxlength="31" autocomplete="off" placeholder="@marke">
+          <button type="submit">DM vorbereiten ↗</button>
+        </form>
+        <div class="home-dm-list-top">
+          <strong>Video-DM-Fundstellen</strong>
+          <span id="homeDmScoutStatus" role="status" aria-live="polite">Öffentliche Markenposts werden geprüft …</span>
+        </div>
+        <div class="home-dm-list" id="homeDmScoutCards" aria-live="polite"></div>
+        <div class="home-dm-prospects">
+          <div class="home-dm-prospects-head">
+            <strong>Kleine Streetwear-Labels prüfen</strong>
+            <span>Aktuelle Aktionen nicht bestätigt</span>
+          </div>
+          <div class="home-dm-prospects-list" id="homeDmProspects"></div>
+        </div>
+        <p class="home-dm-foot">Der Scout erkennt Hinweise aus deinen gespeicherten Links und aus offiziell abrufbaren öffentlichen Posts, sobald Meta freigeschaltet ist. Der Chat öffnet sich per Instagram-Link. Nachrichten müssen dort noch eingefügt und selbst gesendet werden.</p>
+      </section>
+      <dialog id="homeDmCopyDialog" class="home-dm-copy-dialog" aria-labelledby="homeDmCopyTitle">
+        <div class="home-dm-copy-content">
+          <h2 id="homeDmCopyTitle">Nachricht für Instagram</h2>
+          <p>Automatisches Einfügen wird von Instagram nicht unterstützt. Kopiere den Text und öffne dann den Markenchat.</p>
+          <textarea id="homeDmCopyText" readonly rows="6" aria-label="Vorbereitete DM-Nachricht"></textarea>
+          <div class="home-dm-copy-actions">
+            <button type="button" data-action="home-dm-copy-only">Text kopieren</button>
+            <a id="homeDmOpenChat" target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/">Chat öffnen ↗</a>
+            <button type="button" data-close="homeDmCopyDialog">Schließen</button>
+          </div>
+        </div>
+      </dialog>
       <section class="story-area" aria-label="Deine Streetwear-Brands">
         <button type="button" class="story-entry story-new" id="pasteLinkButton">
           <span class="story-ring"><span class="story-plus">+</span></span><span class="story-name">Neu</span>
