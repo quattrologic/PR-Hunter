@@ -1,11 +1,89 @@
 {
   "version": 1,
   "scope": "public-discovery-and-reviewed-program-directory",
-  "generatedAt": "2026-11-15T14:02:24.026Z",
-  "catalogGeneratedAt": "2026-11-15T14:02:23.735Z",
+  "generatedAt": "2026-11-15T14:20:56.231Z",
+  "catalogGeneratedAt": "2026-11-15T14:20:55.920Z",
   "programDirectoryReviewNotLive": true,
   "automatedApplications": false,
   "programCount": 7,
+  "freeDropHunter": {
+    "generatedFrom": "public-catalog",
+    "counts": {
+      "all": 4,
+      "giveaways": 4,
+      "deals": 0,
+      "germanyConfirmed": 2,
+      "unknownShipping": 4
+    },
+    "items": [
+      {
+        "id": "b84868d8d143c6095298",
+        "title": "BERGMENSCH XXL-Gewinnspiel: Outfits & Sherpa Half-Zips",
+        "url": "https://bergmensch.de/pages/gewinnspiel-xxl",
+        "kind": "giveaway",
+        "category": "Mode",
+        "sourceReviewed": true,
+        "germany": "confirmed",
+        "shippingEUR": null,
+        "priceEUR": null,
+        "deadline": "2026-11-15T22:59:00.000Z",
+        "warnings": [
+          "Versandkosten unbekannt"
+        ]
+      },
+      {
+        "id": "84820974136e7f432cd1",
+        "title": "6PM Black Week: 500 € Store-Guthaben gewinnen",
+        "url": "https://www.6pmseason.com/",
+        "kind": "giveaway",
+        "category": "Mode",
+        "sourceReviewed": true,
+        "germany": "confirmed",
+        "shippingEUR": null,
+        "priceEUR": null,
+        "deadline": "2026-11-29T22:59:00.000Z",
+        "warnings": [
+          "Versandkosten unbekannt"
+        ]
+      },
+      {
+        "id": "0c7f90f3c68ebeeb9b5f",
+        "title": "Beyond Pixels: 2 Street Fighter Hoodies gewinnen",
+        "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
+        "kind": "giveaway",
+        "category": "Mode",
+        "sourceReviewed": true,
+        "germany": "unknown",
+        "shippingEUR": null,
+        "priceEUR": null,
+        "deadline": "2026-11-17T22:59:00.000Z",
+        "warnings": [
+          "Lieferung/Teilnahme aus Deutschland unbestätigt",
+          "Versandkosten unbekannt"
+        ]
+      },
+      {
+        "id": "718ce4579e7be4d05303",
+        "title": "SoundPEATS CC3 Pro im Test: Das Dual-Treiber Kraftpaket unter den Open-Ear Sport Bluetooth Kopfhörern + Gewinnspiel",
+        "url": "https://freitest.de/produkttests/technik/soundpeats-cc3-pro-open-ear-sport-bluetooth-kopfhoerer-test/",
+        "kind": "giveaway",
+        "category": "Technik",
+        "sourceReviewed": false,
+        "germany": "unknown",
+        "shippingEUR": null,
+        "priceEUR": null,
+        "deadline": null,
+        "warnings": [
+          "Fundhinweis – Teilnahme und Angebotsbedingungen ungeprüft",
+          "Lieferung/Teilnahme aus Deutschland unbestätigt",
+          "Versandkosten unbekannt",
+          "Kauf- bzw. Teilnahmegebührenfreiheit unbestätigt",
+          "Dauerhaftes Behalten unbestätigt",
+          "Keine bestätigte Teilnahmeschlussfrist"
+        ]
+      }
+    ]
+  },
   "programs": [
     {
       "id": "seame-creator",
