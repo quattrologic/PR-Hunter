@@ -94,7 +94,7 @@ mkdirSync('test-results',{recursive:true});
   assert.equal(persisted.shippingEUR,6.99);
   assert.equal(persisted.status,'sent');
   // Phase 20: genuine self-reported reply only, local preferences and Smart Inbox.
-  await page.locator('[data-tab="alerts"]').click();
+  await page.locator('.alert-trigger[data-tab="alerts"]').click();
   await page.locator('#alertList .alert-entry').filter({hasText:'Antwort von @lucidclub selbst bestätigt'}).waitFor();
   assert.equal(await page.locator('#alertReelsPref').isChecked(),true);
   assert.equal(await page.locator('#alertAutoRefreshPref').isChecked(),true);
@@ -102,7 +102,7 @@ mkdirSync('test-results',{recursive:true});
   await page.locator('#alertReelsPref').uncheck();
   await page.screenshot({path:'test-results/phase20-smart-inbox-'+engine.name()+'.png',fullPage:false});
   await page.reload();
-  await page.locator('[data-tab="alerts"]').click();
+  await page.locator('.alert-trigger[data-tab="alerts"]').click();
   assert.equal(await page.locator('#alertAutoRefreshPref').isChecked(),false);
   assert.equal(await page.locator('#alertReelsPref').isChecked(),false);
   await page.locator('#markAllAlertsRead').click();
