@@ -111,6 +111,6 @@ test('phase 20 controls and background-push limitations are explicit',async()=>{
   assert.ok(app.includes('recordConfirmedReply('));
   assert.ok(app.includes('shouldRefreshPhase20('));
   assert.ok(app.includes("document.visibilityState==='visible'"));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v27'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v28'"));
   assert.ok(sw.includes("'./phase20-core.mjs'"));
 });

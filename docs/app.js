@@ -1,3 +1,4 @@
+import {initDropHunterSync,refreshDropHunterSync} from './drop-hunter-sync.mjs';
 import {
   SEED_BRANDS, ACTIVITY_TYPES, safeExternalUrl, normalizeBrand,
   makeActivity, rankFeed, activitySummary, isExpired
@@ -1161,7 +1162,7 @@ function render() {
   renderDmDrafts();
   renderBrandOffers();
 }
-const topTitles = { discover:'DISCOVER', profile:'PROFIL', products:'FREE PRODUCTS', dm:'VIDEO DM', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
+const topTitles = { discover:'DISCOVER', profile:'PROFIL', products:'FREE PRODUCTS', dm:'VIDEO DM', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS', dropHunter:'DROP HUNTER' };
 function setTab(tab) {
   if (!topTitles[tab]) return;
   ui.tab = tab;
@@ -1174,6 +1175,7 @@ function setTab(tab) {
   });
   $('#topTitle').textContent = topTitles[tab];
   render();
+  if(tab==='dropHunter')refreshDropHunterSync();
   window.scrollTo({ top:0, behavior:'auto' });
 }
 let refreshInFlight=false;
@@ -2081,5 +2083,6 @@ document.addEventListener('visibilitychange',()=>{
 setInterval(maybeAutoRefresh,60*1000);
 updateConnectionStatus();
 render();
+initDropHunterSync();
 askDmReturn();
 refresh();
