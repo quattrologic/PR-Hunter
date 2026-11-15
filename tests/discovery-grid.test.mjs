@@ -138,7 +138,7 @@ test('new Instagram-style iPad screen remains navigable, offline, accessible and
   assert.ok(css.includes('.discover-dialog'));
   assert.ok(worker.includes("'./instagram-white.css'"));
   assert.ok(worker.includes("'./discovery-grid.mjs'"));
-  assert.ok(worker.includes("CACHE_PREFIX + 'v23'"));
+  assert.ok(worker.includes("CACHE_PREFIX + 'v25'"));
   assert.equal(JSON.parse(manifest).theme_color,'#ffffff');
   assert.ok(readme.includes('white Discover UI'));
   for(const file of ['discovery-grid.mjs','app.js','sw.js']){

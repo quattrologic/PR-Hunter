@@ -105,9 +105,9 @@ test('detail view, offline assets and iPad layout use automatic previews',async(
   assert.ok(app.includes('preview.replaceChildren(instagramFrame(embed,item.brand));'));
   assert.ok(!app.includes("load.addEventListener('click'"));
   assert.ok(!app.includes("if(action==='inline-reel-preview')"));
-  assert.ok(html.includes('app.js?v=23'));
-  assert.ok(html.includes('instagram-white.css?v=23'));
-  assert.ok(worker.includes("CACHE_PREFIX + 'v23'"));
+  assert.ok(html.includes('app.js?v=25'));
+  assert.ok(html.includes('instagram-white.css?v=25'));
+  assert.ok(worker.includes("CACHE_PREFIX + 'v25'"));
   assert.ok(css.includes('.instagram-auto-preview>iframe'));
   assert.ok(css.includes('.instagram-auto-footer a'));
   assert.ok(readme.includes('automatic saved Instagram preview'));

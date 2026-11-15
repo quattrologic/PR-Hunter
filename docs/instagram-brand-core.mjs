@@ -27,6 +27,7 @@ export function normalizeBrandReel(raw,now=Date.now()){
   const caption=String(raw.caption||'').trim().slice(0,250);
   return {
     brand:handle,
+    followersCount:Number.isSafeInteger(raw.followersCount)&&raw.followersCount>=0?raw.followersCount:null,
     url:canonical,
     caption,
     publishedAt:new Date(posted).toISOString(),

@@ -50,6 +50,12 @@ export function normalizeDmDrafts(raw){
     seen.add(id);
     items.push({
       id,brand,reelUrl,
+      message:normalizeDmMessage(original.message),
+      sentMessage:normalizeDmMessage(original.sentMessage,2400),
+      sentAt:validDate(original.sentAt),
+      pendingMessage:normalizeDmMessage(original.pendingMessage,2400),
+      pendingAt:validDate(original.pendingAt),
+      shippingEUR:typeof original.shippingEUR==='number' && Number.isFinite(original.shippingEUR) && original.shippingEUR>=0 && original.shippingEUR<=1000?Math.round(original.shippingEUR*100)/100:null,
       language:original.language==='de'?'de':'en',
       kind:['shirt','tracksuit'].includes(original.kind)?original.kind:'generic',
       status:STATUSES.has(original.status)?original.status:'prepared',
@@ -74,11 +80,11 @@ export function addDmDraft(current,input,now=new Date()){
   if(existing.length>=MAX_ITEMS)return {drafts:existing,added:false,reason:'Maximal 120 gespeicherte DM-Vorlagen.'};
   const stamp=now instanceof Date && Number.isFinite(now.getTime())?now.toISOString():new Date().toISOString();
   const item={
-    id,brand,reelUrl,language:input.language==='de'?'de':'en',
+    id,brand,reelUrl,message:normalizeDmMessage(input.message),language:input.language==='de'?'de':'en',
     kind:['shirt','tracksuit'].includes(input.kind)?input.kind:'generic',
     status:'prepared',createdAt:stamp,updatedAt:stamp
   };
-  return {drafts:[item,...existing],added:true,reason:null};
+  return {drafts:normalizeDmDrafts([item,...existing]),added:true,reason:null};
 }
 export function updateDmStatus(current,id,status,now=new Date()){
   if(!STATUSES.has(status))return normalizeDmDrafts(current);
@@ -93,4 +99,43 @@ export function dmStats(current){
     replied:list.filter(x=>x.status==='replied').length,
     total:list.length
   };
+}
+
+// Bound private edited text; old drafts still resolve to their original template.
+export function normalizeDmMessage(value,limit=2000){
+  return typeof value==='string'?value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,'').slice(0,limit).trim():'';
+}
+export function dmDraftText(draft,includeLink=false){
+  const body=normalizeDmMessage(draft?.message)||dmCopyText(draft);
+  const link=normalizeReelUrl(draft?.reelUrl);
+  return body && includeLink && link && !body.includes(link)?body+'\n\n'+link:body;
+}
+export function editDmDraft(current,id,message,now=new Date()){
+  const text=normalizeDmMessage(message);
+  return normalizeDmDrafts(current).map(draft=>draft.id===id && text
+    ? {...draft,message:text,updatedAt:validDate(now.toISOString())}:draft);
+}
+export function filterDmDrafts(current,status='all'){
+  return normalizeDmDrafts(current).filter(d=>!STATUSES.has(status)||d.status===status)
+    .sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));
+}
+
+// Snapshot the exact copied text. Only an explicit confirmation records a send.
+export function prepareDmHandoff(current,id,message,now=new Date()){
+  const text=normalizeDmMessage(message,2400);
+  return normalizeDmDrafts(current).map(d=>({...d,pendingMessage:d.id===id&&d.status==='prepared'?text:'',pendingAt:d.id===id&&d.status==='prepared'&&text?now.toISOString():''}));
+}
+export function resolveDmHandoff(current,id,sent,now=new Date()){
+  return normalizeDmDrafts(current).map(d=>d.id!==id?d:{...d,
+    ...(sent && d.status==='prepared' && d.pendingMessage?{status:'sent',sentMessage:d.pendingMessage,sentAt:now.toISOString(),updatedAt:now.toISOString()}:{}),
+    pendingMessage:'',pendingAt:''});
+}
+export function confirmDmSent(current,id,now=new Date()){
+  const draft=normalizeDmDrafts(current).find(d=>d.id===id);
+  if(!draft||draft.status!=='prepared')return normalizeDmDrafts(current);
+  return resolveDmHandoff(prepareDmHandoff(current,id,dmDraftText(draft,true),now),id,true,now);
+}
+export function setDmShipping(current,id,value){
+  const cost=value===null?null:typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=1000?Math.round(value*100)/100:undefined;
+  return normalizeDmDrafts(current).map(d=>d.id===id&&cost!==undefined?{...d,shippingEUR:cost}:d);
 }

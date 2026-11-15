@@ -138,7 +138,7 @@ test('Instagram input labels are above their fields and match the iPad form',asy
   assert.ok(html.includes('<label for="brandReelLink">Instagram-Link</label>'));
   assert.ok(html.includes('<label for="brandReelHandle">Markenprofil</label>'));
   assert.ok(html.includes('placeholder="@suvene.de"'));
-  assert.ok(html.includes('app.js?v=23'));
+  assert.ok(html.includes('app.js?v=25'));
   assert.ok(css.includes('#brandReelImportForm .reel-import-field label'));
   assert.ok(css.includes('align-items:end'));
   assert.ok(app.includes("item.kind === 'post' ? 'BEITRAG'"));
@@ -165,7 +165,7 @@ test('iPad UI, backup and scheduled official Meta connector are wired without pu
   assert.ok(app.includes('iframe'));
   assert.ok(sw.includes("'./instagram-brand-core.mjs'"));
   assert.ok(sw.includes("'instagram-reels.json'"));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v23'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v25'"));
   assert.ok(css.includes('.tile-real-image'));
   assert.ok(css.includes('.instagram-auto-preview'));
   assert.ok(workflow.includes('npm run instagram-scan'));
