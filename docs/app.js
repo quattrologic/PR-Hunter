@@ -354,7 +354,7 @@ function renderDiscoveryTile(item,index) {
       '<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer" aria-label="Original bei Instagram öffnen">Instagram ↗</a>'+
       '</div></article>';
   }
-  const label=item.verifiedPrice!==null ?
+  const label=typeof item.verifiedPrice==='number' ?
     item.verifiedPrice.toLocaleString('de-DE',{style:'currency',currency:'EUR'}) : title;
   return '<article class="discover-tile"><button type="button" class="discover-tile-open" data-action="open-discovery" data-tile-index="' + index +
     '" aria-label="' + esc(kind+' von '+brand+': '+title) + '">' +
