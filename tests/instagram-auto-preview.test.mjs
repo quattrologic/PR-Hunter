@@ -110,5 +110,5 @@ test('detail view, offline assets and iPad layout use automatic previews',async(
   assert.ok(worker.includes("CACHE_PREFIX + 'v20'"));
   assert.ok(css.includes('.instagram-auto-preview>iframe'));
   assert.ok(css.includes('.instagram-auto-footer a'));
-  assert.ok(readme.includes('automatically load'));
+  assert.ok(readme.includes('automatic saved Instagram preview'));
 });
