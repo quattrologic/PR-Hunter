@@ -3,6 +3,7 @@ import { normalizeFreeDropPrefs } from './free-drops.mjs';
 // Does not access Instagram, enumerate followers, log in, or post comments.
 import { safeExternalUrl, normalizeBrand, validAccountLabel } from './ultimate-core.mjs';
 import { normalizeAlertsState } from './phase6-core.mjs';
+import { normalizePhase20State } from './phase20-core.mjs';
 import { normalizeDisplayPrefs } from './phase7-core.mjs';
 import { normalizeAutoPrefs } from './auto-hunter-core.mjs';
 import { normalizeFreeProductPrefs, normalizeProgramProgress } from './free-products.mjs';
@@ -190,6 +191,7 @@ export function parseBackup(text) {
         [...new Set(raw.integration.checked.filter(x=>['professional','app','backend','permissions'].includes(x)))] : []
     },
     alerts:normalizeAlertsState(raw.alerts),
+    phase20:normalizePhase20State(raw.phase20),
     display:normalizeDisplayPrefs(raw.display),
     autoPrefs:normalizeAutoPrefs(raw.autoPrefs),
     freePrefs:normalizeFreeProductPrefs(raw.freePrefs),
