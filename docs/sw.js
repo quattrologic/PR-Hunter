@@ -1,10 +1,10 @@
 // Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
 const CACHE_PREFIX = 'pr-hunter-ultimate-';
-const CACHE = CACHE_PREFIX + 'v26';
+const CACHE = CACHE_PREFIX + 'v27';
 const SHELL = [
-  './', './index.html', './ultimate.css', './instagram-white.css', './free-drops.css', './app.js', './ultimate-core.mjs',
+  './', './index.html', './ultimate.css', './instagram-white.css', './free-drops.css', './phase20.css', './app.js', './ultimate-core.mjs',
   './participation.mjs', './phase4-core.mjs', './integrations.mjs',
-  './phase6-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './free-drops.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './brand-logos.mjs', './dm-scout.mjs', './similar-reels.mjs', './smart-scout.mjs', './manifest.webmanifest', './icon.svg'
+  './phase6-core.mjs', './phase20-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './free-drops.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './brand-logos.mjs', './dm-scout.mjs', './similar-reels.mjs', './smart-scout.mjs', './manifest.webmanifest', './icon.svg'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -56,5 +56,16 @@ self.addEventListener('fetch', event => {
     } catch {
       return (await cache.match(req)) || Response.error();
     }
+  }));
+});
+
+/* System notifications are opt-in and generated only while the PWA is open.
+   Clicking them focuses the existing app; no push subscription or backend. */
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(async clients=>{
+    const existing=clients.find(client=>client.url.startsWith(self.registration.scope));
+    if(existing)return existing.focus();
+    return self.clients.openWindow(self.registration.scope);
   }));
 });
