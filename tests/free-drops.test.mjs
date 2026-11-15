@@ -69,3 +69,29 @@ test('unknown preferences fail closed',()=>{
  assert.deepEqual(normalizeFreeDropPrefs({view:'hack',germanyOnly:'true'}),{
  view:'all',germanyOnly:false,maxShippingEUR:5});
 });
+
+test('phase19 iPad UI, PWA shell and backups include Free Drops',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../docs/index.html',import.meta.url),'utf8');
+ const app=await readFile(new URL('../docs/app.js',import.meta.url),'utf8');
+ const sw=await readFile(new URL('../docs/sw.js',import.meta.url),'utf8');
+ const backup=await readFile(new URL('../docs/phase4-core.mjs',import.meta.url),'utf8');
+ assert.ok(html.includes('id="freeDropsCards"'));
+ assert.ok(html.includes('id="freeDropsGermanyOnly"'));
+ assert.ok(html.includes('data-free-drop-view="deals"'));
+ assert.ok(html.includes('free-drops.css?v=26'));
+ assert.ok(app.includes("freeDropDiscovery(ui.catalog,prefs)"));
+ assert.ok(app.includes("data-action=\"free-drop-review\""));
+ assert.ok(sw.includes("CACHE_PREFIX + 'v26'"));
+ assert.ok(sw.includes("'./free-drops.mjs'"));
+ assert.ok(backup.includes('freeDropPrefs:normalizeFreeDropPrefs(raw.freeDropPrefs)'));
+});
+test('verified paid drop is reviewed but never described as a free gift',()=>{
+ const drop={...base,title:'Hoodie Drop',noPurchase:false,offerKind:'verified-deal',
+  dealPriceEUR:5,priceCheckedAt:'2026-11-14T10:00:00Z',
+  priceSourceUrl:'https://example.org/giveaway'};
+ const result=classifyFreeDrop(drop,today);
+ assert.equal(result.curated,true);
+ assert.equal(result.priceEUR,5);
+ assert.ok(result.warnings.some(x=>x.includes('kein Gratisartikel')));
+});
