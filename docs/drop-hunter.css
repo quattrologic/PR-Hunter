@@ -1,0 +1,25 @@
+/* Drop Hunter PC sync – PR-Hunter white minimal design. */
+#dropHunterPanel .dh-hero{background:#f8f8f8;border:1px solid #ededed;border-radius:10px;padding:21px;margin:0 0 17px}
+#dropHunterPanel .dh-hero h1{font-size:clamp(32px,5vw,48px);letter-spacing:-.055em;margin:5px 0}
+#dropHunterPanel .dh-hero p{font-size:12px;color:#6e6f72;max-width:650px;line-height:1.6}
+#dropHunterPanel .dh-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:13px 0 23px}
+#dropHunterPanel .dh-metrics>div{padding:15px 12px;border:1px solid #ececec;border-radius:9px}
+#dropHunterPanel .dh-metrics small{font-size:10px;color:#797979}
+#dropHunterPanel .dh-metrics strong{display:block;font-size:24px;letter-spacing:-.04em}
+#dropHunterPanel .dh-pair{border:1px solid #ededed;border-radius:10px;padding:17px;display:grid;gap:11px;margin-bottom:22px;background:#fff}
+#dropHunterPanel .dh-pair label{font-size:12px;font-weight:680;display:grid;gap:6px}
+#dropHunterPanel .dh-pair input{border-radius:9px;border:1px solid #dedede;background:#f8f8f8;padding:11px;width:100%;min-height:44px;color:#141414}
+#dropHunterPanel .dh-pair button{background:#151515;color:white;border:0;border-radius:9px;min-height:44px;padding:10px 15px;font-weight:760}
+#dropHunterPanel .dh-pair .dh-actions{display:flex;gap:8px;flex-wrap:wrap}
+#dropHunterPanel .dh-pair .dh-actions button:last-child{background:#eee;color:#111}
+#dropHunterPanel #dhSyncStatus{font-size:11px;color:#777;line-height:1.6;overflow-wrap:anywhere}
+#dropHunterPanel #dhSyncStatus[data-status="ok"]{color:#247950}
+#dropHunterPanel h2{font-size:19px;margin:19px 0 12px}
+#dropHunterPanel .dh-row{border:1px solid #ededed;border-radius:9px;padding:13px 14px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+#dropHunterPanel .dh-row strong{font-size:12px;display:block}
+#dropHunterPanel .dh-row small{font-size:10px;color:#848484;display:block;margin-top:5px}
+#dropHunterPanel .dh-row b{white-space:nowrap;font-size:13px}
+#dropHunterPanel .dh-row a{border-radius:8px;background:#111;color:white;padding:7px 11px;font-size:11px;font-weight:700}
+#dropHunterPanel .dh-empty{font-size:12px;color:#8d8d8d;background:#fafafa;border:1px dashed #e6e6e6;border-radius:9px;padding:20px}
+#dropHunterPanel .dh-privacy{font-size:10px;line-height:1.6;color:#898989;margin:18px 0}
+@media(max-width:520px){#dropHunterPanel .dh-metrics{gap:5px}#dropHunterPanel .dh-metrics>div{padding:10px 7px}#dropHunterPanel .dh-metrics strong{font-size:19px}}
