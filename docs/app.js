@@ -263,21 +263,21 @@ function tileTheme(key){
 function renderDiscoveryTile(item,index) {
   const brand=clean(item.brand).replace(/^@/,'') || 'Originalquelle';
   const title=clean(item.title);
-  const kind=item.kind === 'reel' ? 'REEL' :
+  const kind=item.kind === 'reel' ? 'REEL' : item.kind === 'post' ? 'BEITRAG' :
     item.kind==='giveaway' ? 'GEWINNSPIEL' :
     item.kind==='drop' ? 'DROP' : item.kind==='pr' ? 'PR' : 'FUNDHINWEIS';
   const brandInitials=brand.replace(/[^a-z0-9]+/ig,' ').trim().split(/\s+/).slice(0,2)
     .map(word=>word.slice(0,1)).join('').toUpperCase() || 'PR';
-  const photo=item.kind==='reel' ? trustedMetaThumbnail(item.thumbnailUrl) : null;
+  const photo=(item.kind==='reel'||item.kind==='post') ? trustedMetaThumbnail(item.thumbnailUrl) : null;
   const label=item.verifiedPrice!==null ?
     item.verifiedPrice.toLocaleString('de-DE',{style:'currency',currency:'EUR'}) :
-    (item.kind==='reel'? 'Reel von '+brand:title);
+    ((item.kind==='reel'||item.kind==='post') ? 'Instagram von '+brand:title);
   const image=photo?'<img class="tile-real-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+
     esc(photo)+'" alt="Reel-Vorschaubild von '+esc(brand)+'">':'';
-  const suffix=(item.kind==='reel'&&!photo)?
+  const suffix=((item.kind==='reel'||item.kind==='post')&&!photo)?
     '<button type="button" class="tile-inline-preview" data-action="inline-reel-preview" data-tile-index="'+index+
-    '" aria-label="Echte Instagram-Vorschau von '+esc(brand)+' laden">▶ Video laden</button>':'';
-  return '<article class="discover-tile'+(item.kind==='reel'?' reel-tile':'')+'">' +
+    '" aria-label="Echte Instagram-Vorschau von '+esc(brand)+' laden" >▶ Vorschau laden</button>':'';
+  return '<article class="discover-tile'+((item.kind==='reel'||item.kind==='post')?' reel-tile':'')+'">' +
     '<button type="button" class="discover-tile-open" data-action="open-discovery" data-tile-index="' + index +
     '" aria-label="' + esc(kind+' von '+brand+': '+title) + '">' +
     '<span class="tile-art '+esc(tileTheme(brand+title))+(photo?' has-real-photo':'')+'">' +
@@ -297,17 +297,17 @@ function openDiscovery(item){
   const link=safeExternalUrl(item.url);
   if(!link)return;
   $('#discoveryTitle').textContent=item.title;
-  $('#discoveryKind').textContent=item.kind==='reel'?'Instagram Reel':'Öffentliche Fundstelle';
+  $('#discoveryKind').textContent=item.kind==='reel'?'Instagram Reel':item.kind==='post'?'Instagram-Beitrag':'Öffentliche Fundstelle';
   $('#discoveryBrand').textContent=item.brand;
   const caption=$('#discoveryCaption');
   caption.textContent=item.caption||'';
   caption.hidden=!item.caption;
   const original=$('#discoveryOriginal');
   original.href=link;
-  original.textContent=item.kind==='reel'?'Original-Reel öffnen ↗':'Original-Angebot öffnen ↗';
+  original.textContent=item.kind==='reel'?'Original-Reel öffnen ↗':item.kind==='post'?'Instagram-Beitrag öffnen ↗':'Original-Angebot öffnen ↗';
   const preview=$('#discoveryPreview');
   preview.textContent='';
-  const embed=item.kind==='reel'?publicEmbedUrl(link):null;
+  const embed=(item.kind==='reel'||item.kind==='post')?publicEmbedUrl(link):null;
   const message=document.createElement('p');
   message.className='preview-placeholder';
   if(embed){
@@ -911,7 +911,7 @@ document.addEventListener('click', event => {
   if(action==='inline-reel-preview'){
     const index=Number(button.dataset.tileIndex);
     const item=Number.isInteger(index)?ui.galleryItems[index]:null;
-    const embed=item?.kind==='reel'?publicEmbedUrl(item.url):null;
+    const embed=(item?.kind==='reel'||item?.kind==='post')?publicEmbedUrl(item.url):null;
     const tile=button.closest('.discover-tile');
     if(!embed||!tile)return;
     const frame=document.createElement('iframe');
@@ -1309,7 +1309,7 @@ $('#brandReelImportForm').addEventListener('submit',event=>{
   save();event.currentTarget.reset();
   ui.discoveryMode='reels';ui.visibleFeed=FEED_PAGE_SIZE;
   renderFeed();
-  toast('Echtes Reel privat gespeichert. Für die Vorschau „Video laden“ antippen.');
+  toast('Instagram-Link gespeichert. Tippe auf „Vorschau laden“, um den Originalbeitrag anzusehen.');
 });
 $('#dmForm').addEventListener('submit',event=>{
   event.preventDefault();

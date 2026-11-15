@@ -51,7 +51,10 @@ test('manual Reel import is private, deduplicated, and independent from DM confi
   assert.equal(imported.added,true);
   assert.deepEqual(imported.reels[0],{brand:'suvene.de',url:link,source:'user-saved'});
   assert.equal(addSavedReel(imported.reels,'@suvene.de',link+'?igsh=xyz').added,false);
-  assert.equal(addSavedReel([],'@suvene.de','https://www.instagram.com/p/Other12345/').added,false);
+  assert.equal(addSavedReel([],'@suvene.de','https://www.instagram.com/p/Other12345/').added,true);
+  assert.equal(addSavedReel([],'@suvene.de','https://www.instagram.com/tv/Other12345/').added,true);
+  assert.equal(addSavedReel([],'@suvene.de','https://instagram.com@evil.example/p/Other12345/').added,false);
+  assert.equal(addSavedReel([],'@suvene.de','https://www.instagram.com/p/Other12345/extra').added,false);
   assert.equal(addSavedReel([],'fake/brand',link).added,false);
   assert.deepEqual(normalizeSavedReels([{brand:'suvene.de',url:link,secret:'not-stored'}]),imported.reels);
   const restored=parseBackup(backupDocument({savedReels:imported.reels,dmDrafts:[]}));
@@ -117,6 +120,30 @@ test('Meta API failure never invents a brand feed',async()=>{
   assert.equal(result.reels.length,0);
   assert.equal(result.brandsUnsupported,1);
 });
+test('iPad post import accepts the screenshot link type, distinct post label and private backup',()=>{
+  const link='https://www.instagram.com/p/DQmock12345/?igsh=tracking';
+  const imported=addSavedReel([],'@suvene.de',link);
+  assert.equal(imported.added,true);
+  assert.equal(imported.reels[0].url,'https://www.instagram.com/p/DQmock12345/');
+  const tiles=discoveryCards([],[],{mode:'reels',savedReels:imported.reels});
+  assert.equal(tiles.length,1);
+  assert.equal(tiles[0].kind,'post');
+  const restored=parseBackup(backupDocument({savedReels:imported.reels}));
+  assert.equal(restored.savedReels[0].url,imported.reels[0].url);
+});
+test('Instagram input labels are above their fields and match the iPad form',async()=>{
+  const html=await readFile(new URL('../docs/index.html',import.meta.url),'utf8');
+  const css=await readFile(new URL('../docs/instagram-white.css',import.meta.url),'utf8');
+  const app=await readFile(new URL('../docs/app.js',import.meta.url),'utf8');
+  assert.ok(html.includes('<label for="brandReelLink">Instagram-Link</label>'));
+  assert.ok(html.includes('<label for="brandReelHandle">Markenprofil</label>'));
+  assert.ok(html.includes('placeholder="@suvene.de"'));
+  assert.ok(html.includes('app.js?v=18'));
+  assert.ok(css.includes('#brandReelImportForm .reel-import-field label'));
+  assert.ok(css.includes('align-items:end'));
+  assert.ok(app.includes("item.kind === 'post' ? 'BEITRAG'"));
+  assert.ok(app.includes("Vorschau laden"));
+});
 test('iPad UI, backup and scheduled official Meta connector are wired without public secrets',async()=>{
   const [html,app,sw,css,workflow,pkg,backend]=await Promise.all([
     readFile(new URL('../docs/index.html',import.meta.url),'utf8'),
@@ -137,7 +164,7 @@ test('iPad UI, backup and scheduled official Meta connector are wired without pu
   assert.ok(app.includes('iframe'));
   assert.ok(sw.includes("'./instagram-brand-core.mjs'"));
   assert.ok(sw.includes("'instagram-reels.json'"));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v17'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v18'"));
   assert.ok(css.includes('.tile-real-image'));
   assert.ok(css.includes('.tile-inline-preview'));
   assert.ok(workflow.includes('npm run instagram-scan'));

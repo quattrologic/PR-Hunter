@@ -67,7 +67,7 @@ export function normalizeSavedReels(raw){
   for(const value of Array.isArray(raw)?raw:[]){
     const brand=normalizeDmHandle(value?.brand);
     const url=reelUrl(value?.url);
-    if(!brand||!url||!url.includes('/reel/')||seen.has(url))continue;
+    if(!brand||!url||seen.has(url))continue;
     seen.add(url);
     result.push({brand,url,source:'user-saved'});
     if(result.length>=100)break;
@@ -78,10 +78,10 @@ export function addSavedReel(existing,brand,url){
   const list=normalizeSavedReels(existing);
   const handle=normalizeDmHandle(brand);
   const canonical=reelUrl(url);
-  if(!handle||!canonical||!canonical.includes('/reel/'))
-    return {added:false,reels:list,reason:'Gültiges öffentliches Reel und @Markenname nötig.'};
+  if(!handle||!canonical)
+    return {added:false,reels:list,reason:'Gültiger Instagram-Reel- oder Beitragslink und @Markenname nötig.'};
   if(list.some(x=>x.url===canonical))
-    return {added:false,reels:list,reason:'Dieses Reel ist bereits gespeichert.'};
-  if(list.length>=100)return {added:false,reels:list,reason:'Maximal 100 private Reel-Links.'};
+    return {added:false,reels:list,reason:'Dieser Instagram-Beitrag ist bereits gespeichert.'};
+  if(list.length>=100)return {added:false,reels:list,reason:'Maximal 100 private Instagram-Links.'};
   return {added:true,reels:[{brand:handle,url:canonical,source:'user-saved'},...list],reason:null};
 }
