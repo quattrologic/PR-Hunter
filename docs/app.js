@@ -44,6 +44,7 @@ import {
   trustedMetaThumbnail, normalizeInstagramReelsReport, reelFeedStatusText,
   normalizeSavedReels, addSavedReel
 } from './instagram-brand-core.mjs';
+import {knownBrandLogo} from './brand-logos.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -151,10 +152,39 @@ function updateStats() {
   };
   Object.entries(stats).forEach(([id,value]) => { const el = $('#' + id); if (el) el.textContent = String(value); });
 }
-function brandAvatar(brand) {
-  const initials = brand.name.split(/\s+/).slice(0,2).map(x => x.slice(0,1)).join('').toUpperCase();
-  return '<span class="brand-avatar" aria-hidden="true">' + esc(initials) + '</span>';
+function brandLogoInner(brand){
+  const initials=brand.name.split(/\s+/).slice(0,2).map(x=>x.slice(0,1)).join('')
+    .toUpperCase().slice(0,2);
+  const logo=knownBrandLogo(brand.handle);
+  // Label text is always present for offline/non-image use.
+  const mark='<span class="story-logo-fallback">'+esc(initials)+'</span>';
+  if(!logo)return mark;
+  return mark+'<img class="story-logo-image" loading="eager" decoding="async" referrerpolicy="no-referrer"'+
+    ' src="'+esc(logo.primary)+'"'+(logo.fallback?' data-logo-fallback="'+esc(logo.fallback)+'"':'')+
+    ' alt="">';
 }
+function brandAvatar(brand){
+  return '<span class="brand-avatar brand-logo-avatar" aria-hidden="true">'+brandLogoInner(brand)+'</span>';
+}
+// Image error/load are captured even for brand rows added after startup.
+// On a failed source try only the brand's actual official website favicon, then show initials.
+document.addEventListener('load',event=>{
+  const img=event.target;
+  if(!(img instanceof HTMLImageElement)||!img.classList.contains('story-logo-image'))return;
+  img.classList.add('is-loaded');
+  img.parentElement?.classList.add('has-loaded-logo');
+},true);
+document.addEventListener('error',event=>{
+  const img=event.target;
+  if(!(img instanceof HTMLImageElement)||!img.classList.contains('story-logo-image'))return;
+  img.classList.remove('is-loaded');
+  img.parentElement?.classList.remove('has-loaded-logo');
+  const next=img.dataset.logoFallback;
+  if(next && img.dataset.logoRetried!=='1'){
+    img.dataset.logoRetried='1';
+    img.src=next;
+  }else img.remove();
+},true);
 function renderAccounts() {
   const container = $('#accountLabels');
   const suggestions = $('#accountLabelSuggestions');
@@ -174,8 +204,8 @@ function renderBrands() {
   $('#brandStrip').innerHTML = brands.map(brand =>
     '<button class="story-entry story-brand" type="button" data-action="story-brand" data-brand-id="' + esc(brand.id) +
     '" aria-label="Marke ' + esc(brand.name) + ' anzeigen">' +
-    '<span class="story-ring"><span class="story-ring-inner">' +
-    esc(brand.name.split(/\s+/).slice(0,2).map(word=>word.slice(0,1)).join('').toUpperCase().slice(0,2)) +
+    '<span class="story-ring"><span class="story-ring-inner">'+
+    brandLogoInner(brand)+
     '</span></span><span class="story-name">' + esc(brand.handle) + '</span></button>'
   ).join('');
   $('#brandCards').innerHTML = brands.map(brand => {

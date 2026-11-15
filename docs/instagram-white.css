@@ -424,3 +424,16 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,su
   #discoverPanel .instagram-auto-footer button,#discoverPanel .instagram-auto-footer a{flex:1 1 40%}
 }
 @media(max-width:380px){#discoverPanel .instagram-auto-preview{height:320px}}
+
+/* Brand marks in the top Instagram-style story strip; only brand-owned, sourced
+   website logo artwork is used. On network/image failure, retain the initials. */
+.story-ring-inner,.brand-logo-avatar{position:relative;overflow:hidden;isolation:isolate}
+.story-logo-fallback{display:grid;place-items:center;width:100%;height:100%;
+  line-height:1;font-size:inherit;font-weight:inherit;letter-spacing:inherit}
+.story-logo-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  object-position:center;background:#fff;display:none;padding:5px}
+.story-logo-image.is-loaded{display:block}
+.has-loaded-logo>.story-logo-fallback{visibility:hidden}
+.story-ring-inner.has-loaded-logo{background:#fff}
+.brand-logo-avatar .story-logo-image{padding:3px}
+.story-ring-inner:has(>.story-logo-image.is-loaded){border:0}
