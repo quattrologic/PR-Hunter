@@ -128,7 +128,7 @@
         <div class="stat"><span>Gewinne</span><strong id="acceptedCount">–</strong><small>Selbst dokumentiert</small></div>
       </div>
       <div class="profile-links">
-        <button type="button" data-tab="dm">Video-DM-Assistent <span>›</span></button>
+        <button type="button" data-tab="dm">Video-DM &amp; Angebote <span>›</span></button>
         <button type="button" data-tab="brands">Brand Radar <span>›</span></button>
         <button type="button" data-tab="auto">Auto-Hunter <span>›</span></button>
         <button type="button" data-tab="saved">Merkliste <span>›</span></button>
@@ -146,6 +146,30 @@
         <h1>Video-DM-Assistent<span class="soft-accent">.</span></h1>
         <p>Für Aktionen wie „Send us this video“. PR-Hunter bereitet die passende private Nachricht vor – ohne dich als Creator oder Markenbotschafter auszugeben. Du leitest das Video in Instagram selbst per Teilen-Pfeil an die Marke weiter.</p>
       </div>
+      <section class="brand-offer-panel" aria-labelledby="brandOffersTitle">
+        <div class="brand-offer-heading">
+          <div><span class="mini-label">DEIN PRIVATER VERLAUF</span><h2 id="brandOffersTitle">Angebote &amp; Pakete</h2>
+          <p>Eine Marke hat dir kostenlose Teile angeboten? Halte die Antwort und die Versandklärung hier fest.</p></div>
+          <div class="brand-offer-totals" aria-label="Deine Angebote">
+            <span><strong id="brandOfferAwaiting">0</strong> Offen</span>
+            <span><strong id="brandOfferConfirmed">0</strong> Zugesagt</span>
+            <span><strong id="brandOfferReceived">0</strong> Erhalten</span>
+          </div>
+        </div>
+        <form id="brandOfferForm" class="brand-offer-form">
+          <label>Marke<input id="brandOfferBrand" name="brand" required maxlength="31" autocomplete="off" placeholder="@marke"></label>
+          <label>Angebotenes Teil<input id="brandOfferItem" name="item" required maxlength="100" autocomplete="off" placeholder="z. B. Hoodie oder Schuhe"></label>
+          <label>Status
+            <select id="brandOfferInitialStatus" name="status">
+              <option value="offered">Angebot erhalten</option>
+              <option value="shipping-asked">Details / Versand bereits angefragt</option>
+            </select>
+          </label>
+          <button class="primary-btn" type="submit">Angebot merken</button>
+        </form>
+        <p class="brand-offer-privacy">Nur lokal gespeichert. Keine Adresse, Telefonnummer, Zahlungsdaten oder privaten Chat-Screenshots eingeben.</p>
+        <div id="brandOfferList" class="brand-offer-list" aria-live="polite"></div>
+      </section>
       <div class="dm-how">
         <div><strong>1</strong><span>Reel-Link aus Instagram kopieren</span></div>
         <div><strong>2</strong><span>Nachricht in PR-Hunter vorbereiten</span></div>

@@ -33,6 +33,10 @@ import {
   dmBrandProfile, dmCopyText
 } from './dm-assistant.mjs';
 import {
+  OFFER_STATUSES, OFFER_STATUS_LABELS, normalizeBrandOffers, createBrandOffer,
+  updateBrandOffer, offerWarnings, offerStats, offerReplyTemplate
+} from './brand-offers.mjs';
+import {
   DISCOVERY_FILTERS, reelUrl, publicEmbedUrl, discoveryCards,
   filterEmptyMessage
 } from './discovery-grid.mjs';
@@ -45,7 +49,7 @@ const ui = {
   brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE,
   discoveryMode:'for-you', galleryItems:[], activeGalleryItem:null
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[] };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[] };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -64,6 +68,7 @@ state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
 state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
 state.programProgress = normalizeProgramProgress(state.programProgress);
 state.dmDrafts = normalizeDmDrafts(state.dmDrafts);
+state.brandOffers = normalizeBrandOffers(state.brandOffers);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
 const asDate = value => {
@@ -508,6 +513,40 @@ function renderDisplay() {
 }
 
 
+function renderBrandOffers(){
+  state.brandOffers=normalizeBrandOffers(state.brandOffers);
+  const stats=offerStats(state.brandOffers);
+  $('#brandOfferAwaiting').textContent=String(stats.awaiting);
+  $('#brandOfferConfirmed').textContent=String(stats.confirmed);
+  $('#brandOfferReceived').textContent=String(stats.received);
+  $('#brandOfferList').innerHTML=state.brandOffers.length ? state.brandOffers.map(offer=>{
+    const profile=dmBrandProfile(offer.brand);
+    const issues=offerWarnings(offer);
+    const statusOptions=OFFER_STATUSES.map(value=>
+      '<option value="'+esc(value)+'"'+(offer.status===value?' selected':'')+'>'+
+      esc(OFFER_STATUS_LABELS[value])+'</option>').join('');
+    const checked=key=>offer[key]?' checked':'';
+    const shipping=offer.shippingEUR===null?'':String(offer.shippingEUR);
+    return '<article class="brand-offer-card"><div class="brand-offer-card-head">' +
+      '<div><span class="brand-offer-overline">DM-ANGEBOT · SELBST ERFASST</span><h3>@'+esc(offer.brand)+
+      '</h3><p>'+esc(offer.item)+'</p></div>' +
+      '<span class="brand-offer-state">'+esc(OFFER_STATUS_LABELS[offer.status])+'</span></div>' +
+      '<div class="brand-offer-checklist">'+
+      '<label><input type="checkbox" data-offer-field="productFreeConfirmed" data-offer-id="'+esc(offer.id)+'"'+checked('productFreeConfirmed')+'>Produkt kostenlos bestätigt</label>'+
+      '<label><input type="checkbox" data-offer-field="germanyConfirmed" data-offer-id="'+esc(offer.id)+'"'+checked('germanyConfirmed')+'>Deutschlandversand bestätigt</label>'+
+      '<label><input type="checkbox" data-offer-field="shippingConfirmed" data-offer-id="'+esc(offer.id)+'"'+checked('shippingConfirmed')+'>Versandkosten bestätigt</label>'+
+      '<label class="brand-shipping-price">Versand in €<input type="number" step="0.01" min="0" max="1000" inputmode="decimal" placeholder="Noch offen" data-offer-cost="'+esc(offer.id)+'" value="'+esc(shipping)+'"'+(offer.shippingConfirmed?'':' disabled')+'></label>'+
+      '</div>' +
+      (issues.length ? '<p class="brand-offer-warning">⚠ '+esc(issues.join(' · '))+'</p>' :
+        '<p class="brand-offer-verified">Angaben von dir bestätigt – keine Prüfung durch Instagram oder den Versanddienst.</p>')+
+      '<div class="brand-offer-actions">'+
+      '<button type="button" data-action="offer-copy" data-offer-id="'+esc(offer.id)+'">Antwort kopieren</button>'+
+      '<a href="'+esc(profile)+'" target="_blank" rel="noopener noreferrer">Instagram öffnen ↗</a>'+
+      '<label>Status<select data-offer-status="'+esc(offer.id)+'">'+statusOptions+'</select></label>'+
+      '<button type="button" data-action="offer-remove" data-offer-id="'+esc(offer.id)+'" aria-label="Angebot von @'+esc(offer.brand)+' entfernen">Entfernen</button></div></article>';
+  }).join('') : '<div class="brand-offer-empty">Noch keine Markenangebote eingetragen. Wenn dir eine Marke antwortet, kannst du sie hier aufnehmen.</div>';
+}
+
 function renderDmDrafts(){
   state.dmDrafts=normalizeDmDrafts(state.dmDrafts);
   const stats=dmStats(state.dmDrafts);
@@ -535,6 +574,7 @@ function renderDmDrafts(){
           : draft.status==='sent'
             ? '<button type="button" data-action="dm-replied" data-dm-id="'+esc(draft.id)+'">Marke hat geantwortet ✓</button>'
             : '')+
+        (draft.status==='replied' ? '<button type="button" data-action="offer-from-dm" data-dm-id="'+esc(draft.id)+'">Angebot notieren</button>' : '')+
         '<button type="button" data-action="dm-remove" data-dm-id="'+esc(draft.id)+'">Entfernen</button>'+
       '</div></article>';
   }).join('') :
@@ -647,6 +687,7 @@ function render() {
   renderAutoHunter();
   renderFreeProducts();
   renderDmDrafts();
+  renderBrandOffers();
 }
 const topTitles = { discover:'DISCOVER', profile:'PROFIL', products:'FREE PRODUCTS', dm:'VIDEO DM', brands:'BRAND RADAR', auto:'AUTO-HUNTER', assistant:'PARTICIPATION', activity:'ACTIVITY LOG', inbox:'SOCIAL INBOX', saved:'SAVED', alerts:'NOTIFICATIONS', info:'INTEGRATIONS' };
 function setTab(tab) {
@@ -834,6 +875,33 @@ document.addEventListener('click', event => {
   }
   if (action === 'add') return openDialog('addDialog');
   if (action === 'add-activity') return openActivityDialog();
+  if(action==='offer-from-dm'){
+    const draft=state.dmDrafts.find(x=>x.id===button.dataset.dmId);
+    if(!draft)return;
+    $('#brandOfferBrand').value='@'+draft.brand;
+    $('#brandOfferItem').value='';
+    $('#brandOfferInitialStatus').value='offered';
+    $('#brandOfferItem').focus();
+    return;
+  }
+  if(action==='offer-copy' || action==='offer-remove'){
+    const id=button.dataset.offerId;
+    const offer=state.brandOffers.find(x=>x.id===id);
+    if(!offer)return;
+    if(action==='offer-copy'){
+      const text=offerReplyTemplate(offer,'en');
+      if(!text)return;
+      navigator.clipboard.writeText(text)
+        .then(()=>toast('Nachricht kopiert – du sendest sie selbst über Instagram.'))
+        .catch(()=>toast('Kopieren nicht möglich.'));
+      return;
+    }
+    if(window.confirm('Dieses lokal gespeicherte Angebot von @'+offer.brand+' entfernen?')){
+      state.brandOffers=state.brandOffers.filter(x=>x.id!==id);
+      save();renderBrandOffers();
+    }
+    return;
+  }
   if (action.startsWith('dm-')) {
     const id=button.dataset.dmId;
     const draft=state.dmDrafts.find(x=>x.id===id);
@@ -1122,6 +1190,52 @@ $('#logActivityButton').addEventListener('click', () => openActivityDialog());
 $('#refreshButton').addEventListener('click', refresh);
 $('#autoRefreshButton').addEventListener('click', refresh);
 $('#freeProductsRefresh').addEventListener('click',refresh);
+$('#brandOfferForm').addEventListener('submit',event=>{
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const id='offer-'+(typeof crypto.randomUUID==='function' ?
+    crypto.randomUUID() : Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10));
+  const result=createBrandOffer(state.brandOffers,{
+    brand:String(data.get('brand')||''),
+    item:String(data.get('item')||''),
+    status:String(data.get('status')||'offered')
+  },id);
+  if(!result.added){toast(result.reason);return;}
+  state.brandOffers=result.offers;
+  save();renderBrandOffers();event.currentTarget.reset();
+  toast('Angebot privat notiert – keine automatische Instagram-Verbindung.');
+});
+$('#brandOfferList').addEventListener('change',event=>{
+  const checkbox=event.target.closest('[data-offer-field]');
+  if(checkbox){
+    const key=checkbox.dataset.offerField, id=checkbox.dataset.offerId;
+    if(!['productFreeConfirmed','germanyConfirmed','shippingConfirmed'].includes(key))return;
+    state.brandOffers=updateBrandOffer(state.brandOffers,id,{[key]:checkbox.checked});
+    save();renderBrandOffers();return;
+  }
+  const shipping=event.target.closest('[data-offer-cost]');
+  if(shipping){
+    const id=shipping.dataset.offerCost;
+    const cost=shipping.value.trim()===''?null:Number(shipping.value);
+    if(cost!==null && (!Number.isFinite(cost) || cost<0 || cost>1000)){
+      toast('Bitte einen gültigen Versandbetrag zwischen 0 und 1000 € angeben.');
+      renderBrandOffers();return;
+    }
+    state.brandOffers=updateBrandOffer(state.brandOffers,id,{shippingEUR:cost});
+    save();renderBrandOffers();return;
+  }
+  const select=event.target.closest('[data-offer-status]');
+  if(!select)return;
+  const id=select.dataset.offerStatus;
+  const next=select.value;
+  if(!OFFER_STATUSES.includes(next))return;
+  if(['confirmed','shipped','received'].includes(next) &&
+     !window.confirm('Hast du diesen Status selbst tatsächlich bestätigt? PR-Hunter liest keine Instagram-DMs und keine Sendungsverfolgung automatisch aus.')){
+    renderBrandOffers();return;
+  }
+  state.brandOffers=updateBrandOffer(state.brandOffers,id,{status:next});
+  save();renderBrandOffers();
+});
 $('#dmForm').addEventListener('submit',event=>{
   event.preventDefault();
   const data=new FormData(event.currentTarget);
