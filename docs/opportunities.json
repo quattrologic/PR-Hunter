@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T22:23:35.948Z",
+  "generatedAt": "2026-11-15T06:30:21.434Z",
   "sourcesChecked": 4,
   "sourcesSucceeded": 4,
   "sources": [
@@ -20,7 +20,7 @@
       "name": "Pfennigfuchs · Technik-Tests",
       "status": "ok",
       "entries": 18,
-      "matching": 7
+      "matching": 8
     },
     {
       "name": "Beyond Pixels · Gewinnspiele",
@@ -113,6 +113,61 @@
       "offerType": "Gewinnspiel"
     },
     {
+      "id": "d671677977704776de3e",
+      "title": "Gratisartikel rund um Liebe zur Natur & Umweltschutz – BUND.net",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "Wenn du dich für Themen rund um Umweltschutz und die Erhaltung einer gesunden Natur interessierst, kannst du jetzt einige interessante und kostenlose Artikel beim Portal BUND.net bestellen. Es werden dort viele Publikationen gratis und mit kostenlosem Versand angeboten, durch die man zukünftig besti",
+      "url": "https://pfennigfuchs.com/2026/gratisartikel-natur-umweltschutz/",
+      "category": "Sonstiges",
+      "published": "2026-11-15T04:27:41.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "02ef6bc7965d897c1f9e",
+      "title": "kostenlose Hundefutter-Proben ▷ 2x Trockenfutter, 2x Snack gratis bestellen",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "Wenn du einen Hund hast, der sich nach einer neuen Futtersorte sehnt, bist du hier goldrichtig. Spannend dürfte dieser Freebie-Hinweis auch sein, wenn du dich bald über einen neuen Mitbewohner freuen kannst. Kostenlose Hundefutterproben sind eine feine Sache. Viele Anbieter nutzen diese Marketingart",
+      "url": "https://pfennigfuchs.com/2026/kostenlose-hunderfutterprobe/",
+      "category": "Lifestyle",
+      "published": "2026-11-15T04:25:48.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "fa9692cf1c9e5c46d063",
+      "title": "Sieh an! Gratisartikel » November 2026 « kostenlose Produkt-Beigaben!",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "gratis Produkte mitbestellen • Geschenke beim Sieh an! Versand *Im November 2026 sollte sich die ein oder andere spannende Bestellzugabe bei Sieh an! für dich finden lassen!* Heute ist ein guter Tag fürs Shoppen! Sollte bei dir mal wieder eine schöne Bestellung anstehen, weil die Garderobe aufgefris",
+      "url": "https://pfennigfuchs.com/2026/sieh-an-gratisartikel/",
+      "category": "Sonstiges",
+      "published": "2026-11-15T04:24:50.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "793e7805eedf389cbccb",
+      "title": "Witt Gratisartikel November 2026 « kostenlose Bestellzugaben Sammlung",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "Geschenke & kostenlose Zugaben bei Witt *Es ist ein neuer Gratisartikel für November 2026 zu haben!* Hast du Lust auf frischen Schwung für den hoffentlich nicht allzu tristen Alltag? Möchtest du eine Online-Bestellung tätigen und bei dem Einkauf solch einen tollen Bonus herausholen, dass du dir ob d",
+      "url": "https://pfennigfuchs.com/2026/witt-weiden-gratisartikel/",
+      "category": "Sonstiges",
+      "published": "2026-11-15T04:23:46.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "d0f98d1d305c9dbc7b17",
+      "title": "Gratisartikel rund um Weihnachten 🎅 Übersicht 2026",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "Willst du trotz deiner Großzügigkeit auch an Weihnachten nicht auf Gratisartikel verzichten? Hast du Lust darauf, dich von Unternehmen und Institutionen beschenken zu lassen? Dann sorgt diese Gratisartikel-Sammlung hoffentlich für gute Laune. Hier wollen wir uns nämlich mit kostenlosen Deals beschäf",
+      "url": "https://pfennigfuchs.com/2026/gratisartikel-weihnachten/",
+      "category": "Sonstiges",
+      "published": "2026-11-15T04:21:35.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
       "id": "466e70bf22370da0e91d",
       "title": "Nikolaus kostenlos 2026 » lokale Freebie-Gratisaktionen",
       "brand": "Pfennigfuchs · Technik-Tests",
@@ -144,50 +199,6 @@
       "category": "Sonstiges",
       "published": "2026-11-14T02:42:00.000Z",
       "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "fa9692cf1c9e5c46d063",
-      "title": "Sieh an! Gratisartikel » November 2026 « kostenlose Produkt-Beigaben!",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "gratis Produkte mitbestellen • Geschenke beim Sieh an! Versand *Im November 2026 sollte sich die ein oder andere spannende Bestellzugabe bei Sieh an! für dich finden lassen!* Heute ist ein guter Tag fürs Shoppen! Sollte bei dir mal wieder eine schöne Bestellung anstehen, weil die Garderobe aufgefris",
-      "url": "https://pfennigfuchs.com/2026/sieh-an-gratisartikel/",
-      "category": "Sonstiges",
-      "published": "2026-11-14T02:32:50.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "adccfff79875550f2be9",
-      "title": "Damen-Rasierer als Freebies 2026 : Produkttester oder Gewinner gesucht ❤️",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "Kannst du einen neuen Damen-Rasierer mindestens ganz gut gebrauchen? Hättest du gar nichts dagegen, wenn du das gute Stück nicht kaufen musst, sondern als Freebie frei Haus geliefert bekommst? Dann bist du bei dieser Deal-Sammlung an der richtigen Stelle. Wir sammeln hier Gratisaktionen rund um Dame",
-      "url": "https://pfennigfuchs.com/2026/damen-rasierer-freebies/",
-      "category": "Beauty",
-      "published": "2026-11-13T14:00:31.000Z",
-      "offerType": "Produkttest"
-    },
-    {
-      "id": "0ebb4c28e590a85e613f",
-      "title": "kostenlose Produktproben gratis bestellen: Essen & Lebensmittel ᐅ 2026",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es gibt eine neue Gratisprobe!* Wer Lust auf neue Geschmäcker hat oder sich gar Foodie nennt, darf sich hier beziehungsweise am Ende dieses Beitrags hoffentlich über einen schönen Gratisartikel freuen. Bei verschiedenen Anbietern lassen sich durch unkomplizierte Bestellungen nämlich immer mal wiede",
-      "url": "https://pfennigfuchs.com/2026/gratisbestellung/",
-      "category": "Lifestyle",
-      "published": "2026-11-13T13:36:31.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "5a8c4d31f85ad986270c",
-      "title": "L’Oréal Freebies 2026 ☼ kostenlos testen & Gewinnspiele",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Mit einer Prise Glück kannst du dich bald über L’Oréal Freebies freuen!* L’Oréal veranstaltet immer wieder Gewinnspiele und Produkttests, bei denen Beautyprodukte kostenlos getestet werden können. Solche Möglichkeiten sollen hier gesammelt werden. Hier findest du aktuelleTestaktionen, Gewinnspiele ",
-      "url": "https://pfennigfuchs.com/2026/produkte-testen-loreal/",
-      "category": "Sonstiges",
-      "published": "2026-11-13T08:48:58.000Z",
-      "offerType": "Produkttest"
     },
     {
       "id": "0f2d3bc57e2b1cd41b40",
