@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T11:19:22.977Z",
+  "generatedAt": "2026-11-15T14:02:23.735Z",
   "sourcesChecked": 4,
   "sourcesSucceeded": 4,
   "sources": [
@@ -113,6 +113,17 @@
       "offerType": "Gewinnspiel"
     },
     {
+      "id": "acd953cefd38f15733e7",
+      "title": "Produktproben kostenlos 2026 : Shampoo gratis testen",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "*Es gibt neue Gratisproben!* Stehst du kurz vor einer Reise oder bist du ein Fan von Produktproben aus dem Bereich Beauty und Pflege? Dann ist diese Gratistestaktion mit Sicherheit interessant für dich! Wie immer ist die Sache zeitlich beschränkt, aber besser nicht zu lange abwarten. [...] >>> zum v",
+      "url": "https://pfennigfuchs.com/2026/produktproben-kostenlos-shampoo/",
+      "category": "Sonstiges",
+      "published": "2026-11-15T13:13:09.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
       "id": "dcca4d35a604fa4695e8",
       "title": "Coca-Cola Freebie-Sammlung 2026 *WOW-Übersicht*",
       "brand": "Pfennigfuchs · Technik-Tests",
@@ -187,17 +198,6 @@
       "url": "https://pfennigfuchs.com/2026/nikolaus-gratis-kostenlos/",
       "category": "Sonstiges",
       "published": "2026-11-14T11:04:23.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "d39d3c1ced0c02f9e8dd",
-      "title": "Nahrungsergänzungsmittel: Produktmuster kostenlos bestellen",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es gibt wieder attraktive Gratisdinge!* Aus der großen und weiten Welt der Nahrungsergänzungsmittel gibt es immer mal wieder Zuwachs. Da der Markt für Verbraucher schnell unübersichtlich werden kann, setzen viele Unternehmen auf Produktmuster. Das heißt, dass es kostenlose Produktproben gibt, durch",
-      "url": "https://pfennigfuchs.com/2026/nahrungsergaenzungsmittel-produktmuster/",
-      "category": "Sonstiges",
-      "published": "2026-11-14T03:28:01.000Z",
       "offerType": "PR-Aufruf"
     },
     {
