@@ -35,7 +35,7 @@ jobs:
             if curl --fail --silent http://localhost:4173/ > /dev/null; then break; fi
             sleep 1
           done
-          curl --fail --head http://localhost:4173/dm-assistant.mjs
+          curl --fail --silent --dump-header - --output /dev/null http://localhost:4173/dm-assistant.mjs
       - name: Exercise mobile and iPad DM workspace
         run: node tests/dm-browser.cjs
       - uses: actions/upload-artifact@v4
