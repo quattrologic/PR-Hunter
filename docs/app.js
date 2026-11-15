@@ -47,6 +47,7 @@ import {
 import {
   dmScoutCandidates, dmScoutProspects, dmScoutText, instagramDmLink
 } from './dm-scout.mjs';
+import {rankSimilarBrands,rankSimilarVideos} from './similar-reels.mjs';
 import {knownBrandLogo} from './brand-logos.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
@@ -56,7 +57,8 @@ const ui = {
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
   brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE,
   discoveryMode:'for-you', galleryItems:[], activeGalleryItem:null,
-  instagramReport:normalizeInstagramReelsReport({status:'not-configured'}), dmScoutItems:[]
+  instagramReport:normalizeInstagramReelsReport({status:'not-configured'}), dmScoutItems:[],
+  similarReport:{status:'not-configured',discovered:[]},similarItems:[]
 };
 const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[] };
 let state;
@@ -310,9 +312,7 @@ function instagramFrame(src,brand){
   return iframe;
 }
 function syncInstagramAutoPreviews(){
-  const host=$('#discoverCards');
-  if(!host)return;
-  const current=Array.from(host.querySelectorAll('.instagram-auto-preview'));
+  const current=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview, #similarReelCards .instagram-auto-preview'));
   const midpoint=window.innerHeight/2;
   const eligible=Array.from(nearbyInstagramTiles)
     .filter(node=>node.isConnected && !node.closest('[hidden]'))
@@ -343,7 +343,7 @@ function mountInstagramAutoPreviews(){
   instagramPreviewObserver=null;
   nearbyInstagramTiles.clear();
   if(ui.tab!=='discover')return;
-  const tiles=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview'));
+  const tiles=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview, #similarReelCards .instagram-auto-preview'));
   if(!tiles.length)return;
   if(typeof IntersectionObserver!=='function'){
     // Older browsers still show automatic previews for the first few cards.
@@ -668,6 +668,63 @@ function renderBrandOffers(){
   }).join('') : '<div class="brand-offer-empty">Noch keine Markenangebote eingetragen. Wenn dir eine Marke antwortet, kannst du sie hier aufnehmen.</div>';
 }
 
+function renderSimilarVideoDiscovery(){
+  const handles=[
+    ...watchedBrands().map(x=>x.handle),
+    ...state.brands.map(x=>x.handle).filter(Boolean)
+  ];
+  const seed={savedBrands:handles,savedReels:state.savedReels,drafts:state.dmDrafts};
+  const official=ui.instagramReport.status==='active'||ui.instagramReport.status==='partial'
+    ?ui.instagramReport.reels:[];
+  const hashtags=ui.similarReport.status==='active'||ui.similarReport.status==='partial'
+    ?ui.similarReport.discovered:[];
+  const videos=rankSimilarVideos({...seed,reels:official,discoveries:hashtags});
+  ui.similarItems=videos;
+  const autoActive=ui.instagramReport.status==='active'||
+    ui.instagramReport.status==='partial'||
+    ui.similarReport.status==='active'||ui.similarReport.status==='partial';
+  $('#similarVideoStatus').textContent=autoActive
+    ?videos.length+' echte neue Reels · zuletzt geprüfte offizielle Quellen'
+    :'Meta-Zugang fehlt noch · 0 automatisch gefundene Videos';
+  const host=$('#similarReelCards');
+  if(videos.length){
+    host.innerHTML=videos.slice(0,6).map((item,index)=>{
+      const brand=item.brand?'@'+item.brand:'#'+item.hashtag;
+      const embed=publicEmbedUrl(item.url);
+      if(!embed)return '';
+      const img=trustedMetaThumbnail(item.thumbnailUrl);
+      const poster=img?
+        '<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(img)+'" alt="Vorschaubild des Original-Reels">':
+        '<span class="similar-video-play" aria-hidden="true">▶</span>';
+      const signal=item.signal==='invitation'?'Möglicher PR-Aufruf':
+        item.signal==='send-request'?'Video-Weiterleitung erwähnt':
+        item.signal==='free-mention'?'Gratis-Stichwort gefunden':'Streetwear-Reel';
+      const action=item.brand?
+        '<button type="button" data-action="similar-prepare" data-similar-index="'+index+'">DM vorbereiten ↗</button>':
+        '<button type="button" data-action="similar-add" data-similar-index="'+index+'">Marke zuordnen</button>';
+      return '<article class="similar-video-card">'+
+        '<div class="instagram-auto-preview" data-embed-src="'+esc(embed)+'" data-brand="'+esc(brand)+'">'+
+        '<div class="instagram-auto-placeholder">'+poster+
+        '<span class="instagram-auto-loading">Instagram-Vorschau wird geladen …</span></div></div>'+
+        '<div class="similar-video-info"><strong>'+esc(brand)+'</strong>'+
+        '<span>'+esc(signal)+'</span><p>'+esc(item.caption.slice(0,95)||'Originalpost und Bedingungen prüfen')+'</p>'+
+        '<div class="similar-video-actions">'+action+
+        '<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer">Original ↗</a></div></div>'+
+        '</article>';
+    }).join('');
+  }else{
+    host.innerHTML='<div class="similar-video-empty">'+
+      '<strong>Noch keine neuen Instagram-Videos automatisch gefunden.</strong>'+
+      '<p>Deine gespeicherten Marken bestimmen bereits die Empfehlungen. Der öffentliche Video-Abruf startet, sobald Meta den Zugang freigibt. Wir zeigen bis dahin keine erfundenen Treffer.</p>'+
+      '</div>';
+  }
+  const prospects=rankSimilarBrands(seed,7);
+  $('#similarBrandChoices').innerHTML=prospects.map(brand=>{
+    const link=dmBrandProfile(brand.handle);
+    return '<a href="'+esc(link)+'" target="_blank" rel="noopener noreferrer"'+
+      ' title="Ähnlicher Streetwear-Stil; aktuelle PR-Aktion nicht bestätigt">@'+esc(brand.handle)+' ↗</a>';
+  }).join('');
+}
 function renderHomeDmScout(){
   const official=ui.instagramReport.status==='active' || ui.instagramReport.status==='partial'
     ? ui.instagramReport.reels : [];
@@ -867,6 +924,7 @@ function render() {
   updateStats();
   renderBrands();
   renderHomeDmScout();
+  renderSimilarVideoDiscovery();
   renderFeed();
   renderAssistantQueue();
   renderActivity();
@@ -923,6 +981,18 @@ async function refresh() {
     ui.instagramReport=normalizeInstagramReelsReport(await response.json());
   } catch {
     ui.instagramReport=normalizeInstagramReelsReport({status:'unavailable'});
+  }
+  try{
+    const response=await fetch('./similar-reels.json',{cache:'no-store'});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    const raw=await response.json();
+    const allowed=['not-configured','active','partial','unavailable'];
+    ui.similarReport={
+      status:allowed.includes(raw?.status)?raw.status:'unavailable',
+      discovered:Array.isArray(raw?.discovered)?raw.discovered.slice(0,100):[]
+    };
+  }catch{
+    ui.similarReport={status:'unavailable',discovered:[]};
   }
   render();
 }
@@ -1055,6 +1125,20 @@ document.addEventListener('click', event => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   const action = button.dataset.action;
+  if(action==='similar-prepare'||action==='similar-add'){
+    const idx=Number(button.dataset.similarIndex);
+    const lead=Number.isInteger(idx)&&idx>=0?ui.similarItems[idx]:null;
+    if(!lead)return;
+    if(action==='similar-prepare'&&lead.brand){
+      startHomeDm(lead.brand,lead.url,lead.signal);
+    }else{
+      $('#homeDmReel').value=lead.url;
+      $('#homeDmBrand').value='';
+      $('#homeDmBrand').focus();
+      toast('Markenprofil aus dem Original-Reel übernehmen, dann DM vorbereiten.');
+    }
+    return;
+  }
   if(action==='home-dm-start'){
     const index=Number(button.dataset.dmScoutIndex);
     if(Number.isInteger(index)&&index>=0&&index<ui.dmScoutItems.length){

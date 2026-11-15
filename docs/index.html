@@ -10,9 +10,9 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <link rel="stylesheet" href="./instagram-white.css?v=21">
+  <link rel="stylesheet" href="./instagram-white.css?v=22">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=21"></script>
+  <script type="module" src="./app.js?v=22"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -84,6 +84,17 @@
           <span id="homeDmScoutStatus" role="status" aria-live="polite">Öffentliche Markenposts werden geprüft …</span>
         </div>
         <div class="home-dm-list" id="homeDmScoutCards" aria-live="polite"></div>
+        <section class="similar-video-discovery" aria-labelledby="similarVideoTitle">
+          <div class="similar-video-heading">
+            <div><span class="home-dm-eyebrow">AUTOMATISCH · NACH DEINEM STREETWEAR-GESCHMACK</span>
+              <h2 id="similarVideoTitle">Ähnliche Videos für dich</h2></div>
+            <span id="similarVideoStatus" role="status" aria-live="polite">Öffentliche Instagram-Videos werden geprüft …</span>
+          </div>
+          <div class="similar-video-grid" id="similarReelCards" aria-live="polite"></div>
+          <div class="similar-brand-head"><strong>Diese Marken passen zu deinen gespeicherten</strong>
+            <span>Profile zum Prüfen · keine bestätigten Gratisaktionen</span></div>
+          <div class="similar-brand-list" id="similarBrandChoices"></div>
+        </section>
         <div class="home-dm-prospects">
           <div class="home-dm-prospects-head">
             <strong>Kleine Streetwear-Labels prüfen</strong>
