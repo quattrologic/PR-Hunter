@@ -34,7 +34,7 @@ import {
 } from './dm-assistant.mjs';
 import {
   OFFER_STATUSES, OFFER_STATUS_LABELS, normalizeBrandOffers, createBrandOffer,
-  updateBrandOffer, offerWarnings, offerStats, offerReplyTemplate
+  updateBrandOffer, offerWarnings as brandOfferWarnings, offerStats, offerReplyTemplate
 } from './brand-offers.mjs';
 import {
   DISCOVERY_FILTERS, reelUrl, publicEmbedUrl, discoveryCards,
@@ -521,7 +521,7 @@ function renderBrandOffers(){
   $('#brandOfferReceived').textContent=String(stats.received);
   $('#brandOfferList').innerHTML=state.brandOffers.length ? state.brandOffers.map(offer=>{
     const profile=dmBrandProfile(offer.brand);
-    const issues=offerWarnings(offer);
+    const issues=brandOfferWarnings(offer);
     const statusOptions=OFFER_STATUSES.map(value=>
       '<option value="'+esc(value)+'"'+(offer.status===value?' selected':'')+'>'+
       esc(OFFER_STATUS_LABELS[value])+'</option>').join('');
