@@ -1,10 +1,10 @@
 // Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
 const CACHE_PREFIX = 'pr-hunter-ultimate-';
-const CACHE = CACHE_PREFIX + 'v25';
+const CACHE = CACHE_PREFIX + 'v26';
 const SHELL = [
-  './', './index.html', './ultimate.css', './instagram-white.css', './app.js', './ultimate-core.mjs',
+  './', './index.html', './ultimate.css', './instagram-white.css', './free-drops.css', './app.js', './ultimate-core.mjs',
   './participation.mjs', './phase4-core.mjs', './integrations.mjs',
-  './phase6-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './brand-logos.mjs', './dm-scout.mjs', './similar-reels.mjs', './smart-scout.mjs', './manifest.webmanifest', './icon.svg'
+  './phase6-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './free-drops.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './brand-logos.mjs', './dm-scout.mjs', './similar-reels.mjs', './smart-scout.mjs', './manifest.webmanifest', './icon.svg'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

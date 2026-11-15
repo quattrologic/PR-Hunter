@@ -111,9 +111,9 @@ test('homepage Video-DM feature opens the editable draft before copying',async()
   assert.ok(!app.includes("new URLSearchParams({text:"));
   assert.ok(style.includes('.home-dm-scout'));
   assert.ok(style.includes('.home-dm-quick'));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v25'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v26'"));
   assert.ok(sw.includes("'./dm-scout.mjs'"));
-  assert.ok(html.includes('app.js?v=25'));
+  assert.ok(html.includes('app.js?v=26'));
   assert.ok(readme.includes('Video-DM Scout as primary iPad homepage feature'));
   const b=JSON.parse(config);
   assert.ok(b.brands.includes('brkdwn.studios'));

@@ -10,9 +10,10 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <link rel="stylesheet" href="./instagram-white.css?v=25">
+  <link rel="stylesheet" href="./instagram-white.css?v=26">
+  <link rel="stylesheet" href="./free-drops.css?v=26">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=25"></script>
+  <script type="module" src="./app.js?v=26"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -276,7 +277,7 @@
     </section>
     <section class="view" id="productsPanel" data-panel="products" hidden>
       <div class="section-banner free-products-banner">
-        <span class="mini-label">PHASE 9 · FREE-PRODUCT-HUNTER</span>
+        <span class="mini-label">PHASE 19 · FREE DROPS & GIVEAWAY HUNTER</span>
         <h1>Free Products<span class="soft-accent">.</span></h1>
         <p>Nicht nur Gewinnspiele: Entdecke Streetwear-Kooperationen, kostenlose Produkttests und echte Website-Aktionen. PR-Hunter sortiert automatisch; Bewerbungen und Auswahl bleiben beim Anbieter.</p>
         <div class="free-products-hero-actions">
@@ -287,6 +288,26 @@
       <div class="free-products-status">✓ Offizielle Programmseiten als Ausgangspunkte · Einzelkampagnen und Zusendung nicht garantiert
         <span id="freeProductsSourceUpdated">Katalog wird geladen …</span>
       </div>
+      <section class="free-drops-hunter" aria-labelledby="freeDropsHeading">
+        <div class="free-drops-heading">
+          <div><span class="mini-label">PHASE 19 · ECHTE QUELLEN</span>
+            <h2 id="freeDropsHeading">Free Drops <span>&amp; Giveaways</span></h2>
+            <p>Streetwear zuerst. Nur echte öffentliche Links, keine garantierten Gratisartikel.</p>
+          </div>
+          <span id="freeDropsCount" class="free-drops-count" role="status" aria-live="polite">0 Funde</span>
+        </div>
+        <div class="free-drops-tabs" role="group" aria-label="Free Drops filtern">
+          <button type="button" class="active" data-free-drop-view="all" aria-pressed="true">Alle</button>
+          <button type="button" data-free-drop-view="giveaways" aria-pressed="false">Gratis gewinnen</button>
+          <button type="button" data-free-drop-view="drops" aria-pressed="false">Drops</button>
+          <button type="button" data-free-drop-view="deals" aria-pressed="false">1–10 €</button>
+          <button type="button" data-free-drop-view="black-friday" aria-pressed="false">Black Week</button>
+        </div>
+        <label class="free-drops-country"><input id="freeDropsGermanyOnly" type="checkbox">
+          Nur Aktionen mit bestätigter Deutschland-Teilnahme</label>
+        <p class="free-drops-summary" id="freeDropsSummary" role="status">Öffentliche Quellen werden geladen …</p>
+        <div class="free-drops-grid" id="freeDropsCards" aria-live="polite"></div>
+      </section>
       <div class="free-products-stats">
         <div><span>Offizielle Programme</span><strong id="freeProgramCount">0</strong></div>
         <div><span>Beworben</span><strong id="freeAppliedCount">0</strong></div>
@@ -457,7 +478,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 10 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 19 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">

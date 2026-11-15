@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 18 – editable Video-DM workspace, private request tracking and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 19 – iPad Free Drops & Giveaway Hunter, verified €1–€10 retailer drops, private Video-DM workspace and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -396,3 +396,36 @@ The permissioned Business Discovery scanner requests `followers_count`; validate
 Tapping the large video copies the message plus its link, saves a private pending snapshot, then opens the original Instagram post for manual sharing. Clipboard denial prevents navigation and offers manual copying. Returning via visibility change, back/forward cache or reload prompts “Hast du die Anfrage verschickt?”. Only Yes records the exact copied text (editable at confirmation if changed in Instagram), increments the request count and marks Sent. No/Cancel keeps it Prepared. Duplicate confirmation cannot increase the count. Sent snapshots are read-only in the editor and survive private backups; historic requests without snapshots explicitly report the missing text.
 
 Request cards expose the sent text, self-confirmed replies, and editable known shipping costs, with unknown costs kept separate from zero and a warning above €5. The existing product/package workflow remains available. Cache v25. Real Instagram playback, switching to the native app and physical iPad behavior still require device acceptance; the app cannot detect actual sends or replies.
+
+## Phase 19 — Free Drops & Giveaway Hunter (iPad)
+
+The Free Products area now contains a clean, swipe-friendly Free Drops & Giveaways view.
+It uses **the real public opportunity catalog**, with tabs for all, giveaways,
+priced drops, documented €1–€10 deals, and Black Friday/Black Week hints.
+The Video-DM Assistant remains the main homepage feature.
+
+- Only HTTPS original links; expired opportunities and explicitly excluded
+  Germany delivery are hidden. Germany-confirmed campaigns rank ahead of
+  unknown countries; users can filter to confirmed Germany-only opportunities.
+- Each card distinguishes verified zero-euro shipping from *shipping unknown*,
+  warns above the existing €5 shipping limit and links to source/terms.
+  A giveaway is a **chance to win**, never a guarantee of free goods.
+- Previously reviewed free-to-enter contest listings remain supported; paid
+  drops can enter the curator **only when** `offerKind: "verified-deal"`,
+  `noPurchase: false`, a documented numeric `dealPriceEUR` of €1–€10,
+  `priceSourceUrl` on the original retailer hostname and `priceCheckedAt`
+  within seven days are all present. `deadline`, original link, official
+  terms, Germany eligibility and keep-product review are also required.
+  If there is no qualifying proof, the 1–10 € filter correctly stays empty.
+- The regular six-hour GitHub scanner includes Free Drops in the
+  `free-products-report.json` snapshot. No credentials, scraping,
+  automatic checkout or contest submissions. Prices and terms are not
+  continuously live-verified by the browser.
+- Filters are saved locally and preserved in both normal and encrypted
+  backups. PWA cache v26; Node tests cover expiry, price evidence, shipping
+  uncertainty, Germany-only sorting and catalog deduplication.
+
+**Source limitation:** This update does not claim an official Meta login or
+Instagram DM-reading capability, and it does not invent new Black-Friday
+promotions or inexpensive drops. Actual offers still require verification
+at the vendor. Physical iPad / Safari acceptance remains open.

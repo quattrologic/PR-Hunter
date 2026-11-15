@@ -1,3 +1,4 @@
+import { verifiedDealPrice } from '../docs/discovery-grid.mjs';
 import { createHash } from 'node:crypto';
 
 const validUrl = input => {
@@ -15,7 +16,13 @@ export function normalizeCurated(item, now = new Date()) {
   const expiry = Date.parse(item.deadline);
   const time = now instanceof Date ? now.getTime() : Number(now);
   if (!url || !termsUrl || !Number.isFinite(expiry) || !Number.isFinite(time) || time > expiry) return null;
-  if (item.noPurchase !== true || item.keepPrize !== true || item.shipsToGermany === false) return null;
+  // Paid 1–10 € drops are allowed only with a fresh, retailer-owned price
+  // record. The existing no-purchase giveaway rules remain unchanged.
+  const price = verifiedDealPrice(item,time);
+  const paidDrop = item.offerKind === 'verified-deal' && item.noPurchase === false &&
+    price !== null && price >= 1 && price <= 10;
+  if ((item.noPurchase !== true && !paidDrop) ||
+      item.keepPrize !== true || item.shipsToGermany === false) return null;
   if (!['Mode','Technik'].includes(item.category)) return null;
   if (!item.title || !item.brand || !item.checkedOn || !validDate(item.checkedOn)) return null;
   const published = validDate(item.published) ? new Date(item.published).toISOString() : null;
@@ -33,6 +40,12 @@ export function normalizeCurated(item, now = new Date()) {
     // Explicit eligibility fields remain in the machine-readable report.
     // Missing/uncertain costs or permission are never converted into consent.
     noPurchase:item.noPurchase === true,
+    ...(paidDrop ? {
+      offerKind:'verified-deal',
+      dealPriceEUR:price,
+      priceSourceUrl:validUrl(item.priceSourceUrl),
+      priceCheckedAt:new Date(item.priceCheckedAt).toISOString()
+    } : {}),
     keepPrize:item.keepPrize === true,
     shipsToGermany:item.shipsToGermany === true ? true : null,
     shippingCostEUR:typeof item.shippingCostEUR==='number' && Number.isFinite(item.shippingCostEUR)
