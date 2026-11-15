@@ -271,7 +271,7 @@ function renderDiscoveryTile(item,index) {
     '<span class="tile-category">' + esc(kind) + '</span>' +
     '<span class="tile-mark" aria-hidden="true">' + esc(brandInitials) + '</span>' +
     (item.kind==='reel' ? '<span class="tile-play" aria-hidden="true">▶</span>' : '') +
-    '<span class="tile-label">' + esc(label.slice(0,70)) + '</span></span>' +
+    '<span class="tile-label">' + esc((item.verifiedPrice!==null ? label : title).slice(0,45)) + '</span></span>' +
     '<span class="tile-footer"><span class="tile-avatar" aria-hidden="true">' + esc(brandInitials) +
     '</span><span class="tile-brand">' + esc(brand) + '</span><span class="tile-action-icon" aria-hidden="true">↗</span></span>' +
     '</button></article>';
@@ -365,6 +365,8 @@ function renderFeed() {
     '<div class="empty"><div class="symbol">⌕</div><strong>Noch keine passenden Einträge</strong><p>' +
       esc(filterEmptyMessage(ui.discoveryMode)) +
       '</p><button class="subtle-btn" type="button" data-tab="inbox">Original-Link hinzufügen</button></div>';
+  const activeFilter=document.querySelector('[data-discovery].active');
+  if(activeFilter)activeFilter.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
   const feedCount=$('#feedResultCount');
   if(feedCount)feedCount.textContent=page.total ?
     page.items.length+' von '+page.total+' Einträgen' : '0 Einträge';
@@ -825,7 +827,12 @@ async function copyText(item) {
 }
 document.addEventListener('click', event => {
   const nav = event.target.closest('[data-tab]');
-  if (nav) { setTab(nav.dataset.tab); return; }
+  if (nav) {
+    if(nav.dataset.tab==='discover' && ui.tab==='discover'){
+      window.scrollTo({top:0,behavior:'smooth'});
+    } else setTab(nav.dataset.tab);
+    return;
+  }
   const discoveryFilter=event.target.closest('[data-discovery]');
   if(discoveryFilter && DISCOVERY_FILTERS.includes(discoveryFilter.dataset.discovery)){
     ui.discoveryMode=discoveryFilter.dataset.discovery;
