@@ -138,7 +138,7 @@ test('Instagram input labels are above their fields and match the iPad form',asy
   assert.ok(html.includes('<label for="brandReelLink">Instagram-Link</label>'));
   assert.ok(html.includes('<label for="brandReelHandle">Markenprofil</label>'));
   assert.ok(html.includes('placeholder="@suvene.de"'));
-  assert.ok(html.includes('app.js?v=25'));
+  assert.ok(html.includes('app.js?v=26'));
   assert.ok(css.includes('#brandReelImportForm .reel-import-field label'));
   assert.ok(css.includes('align-items:end'));
   assert.ok(app.includes("item.kind === 'post' ? 'BEITRAG'"));
