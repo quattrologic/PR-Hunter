@@ -158,7 +158,7 @@ test('homepage UI uses saved local interests, real auto Reels and three-frame vi
   assert.ok(css.includes('.similar-video-discovery'));
   assert.ok(css.includes('.similar-video-grid'));
   assert.ok(html.includes('app.js?v=25'));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v25'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v26'"));
   assert.ok(sw.includes("'./similar-reels.mjs'"));
   assert.ok(sw.includes("'similar-reels.json'"));
   assert.ok(wf.includes('npm run similar-video-scan'));
