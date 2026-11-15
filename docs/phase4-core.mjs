@@ -1,3 +1,4 @@
+import { normalizeFreeDropPrefs } from './free-drops.mjs';
 // Phase 4: device-only Instagram link intake and local data backups.
 // Does not access Instagram, enumerate followers, log in, or post comments.
 import { safeExternalUrl, normalizeBrand, validAccountLabel } from './ultimate-core.mjs';
@@ -192,6 +193,7 @@ export function parseBackup(text) {
     display:normalizeDisplayPrefs(raw.display),
     autoPrefs:normalizeAutoPrefs(raw.autoPrefs),
     freePrefs:normalizeFreeProductPrefs(raw.freePrefs),
+    freeDropPrefs:normalizeFreeDropPrefs(raw.freeDropPrefs),
     programProgress:normalizeProgramProgress(raw.programProgress),
     dmDrafts:normalizeDmDrafts(raw.dmDrafts),
     brandOffers:normalizeBrandOffers(raw.brandOffers),
