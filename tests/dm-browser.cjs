@@ -28,6 +28,8 @@ mkdirSync('test-results',{recursive:true});
   await page.locator('#dmEditorPreview iframe').waitFor({state:'detached'});
   assert.equal(await page.locator('#dmEditorPreview iframe').count(),0);
   await page.reload();
+  await page.locator('.pr-video-card').first().waitFor();
+  await page.screenshot({path:'test-results/home-feed-'+engine.name()+'.png'});
   await page.locator('.home-dm-all').click();
   await page.locator('[data-action="dm-edit"]').click();
   assert.equal(await page.locator('#dmEditorText').inputValue(),'Hey! My edited draft.');

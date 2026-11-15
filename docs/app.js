@@ -883,8 +883,9 @@ $('#dmEditorVideoTap').addEventListener('click',async()=>{
   const message=dmDraftText(draft,true);
   try{await navigator.clipboard.writeText(message);}
   catch{$('#dmEditorText').focus();$('#dmEditorText').select();$('#dmEditorStatus').textContent='Kopieren blockiert. Text manuell kopieren und das Original unten öffnen.';return;}
+  const previous=state.dmDrafts;
   state.dmDrafts=prepareDmHandoff(state.dmDrafts,draft.id,message);
-  if(!save())return;
+  if(!save()){state.dmDrafts=previous;return;}
   returnedFromInstagram=false;
   window.location.assign(draft.reelUrl);
 });
@@ -895,11 +896,13 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('pageshow',()=>askDmReturn());
 function finishDmReturn(sent){
+  const previous=state.dmDrafts;
   if(sent&&!$('#dmReturnText').value.trim())return;
   // User may correct the snapshot if they changed the text inside Instagram.
   if(sent)state.dmDrafts=prepareDmHandoff(state.dmDrafts,returnDraftId,$('#dmReturnText').value);
   state.dmDrafts=resolveDmHandoff(state.dmDrafts,returnDraftId,sent);
-  save();$('#dmReturnDialog').close();renderDmDrafts();
+  if(!save()){state.dmDrafts=previous;return;}
+  $('#dmReturnDialog').close();renderDmDrafts();
   if(sent){if($('#dmEditor').open)$('#dmEditor').close();setTab('dm');toast('Anfrage und gesendeter Text gespeichert.');}
 }
 $('#dmReturnYes').addEventListener('click',()=>finishDmReturn(true));
