@@ -52,6 +52,7 @@ import {
   buildSmartScout, smartBrandSuggestions, SCOUT_VIEWS
 } from './smart-scout.mjs';
 import {knownBrandLogo} from './brand-logos.mjs';
+import { FREE_DROP_VIEWS, normalizeFreeDropPrefs, freeDropDiscovery } from './free-drops.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -63,7 +64,7 @@ const ui = {
   instagramReport:normalizeInstagramReelsReport({status:'not-configured'}), dmScoutItems:[],
   similarReport:{status:'not-configured',discovered:[]},similarItems:[]
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[], scoutPrefs:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, freeDropPrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[], scoutPrefs:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -80,6 +81,7 @@ state.alerts = normalizeAlertsState(state.alerts);
 state.display = normalizeDisplayPrefs(state.display);
 state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
 state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
+state.freeDropPrefs = normalizeFreeDropPrefs(state.freeDropPrefs);
 state.programProgress = normalizeProgramProgress(state.programProgress);
 state.dmDrafts = normalizeDmDrafts(state.dmDrafts);
 state.savedReels = normalizeSavedReels(state.savedReels);
@@ -954,6 +956,55 @@ function renderDmDrafts(){
     '<div class="empty"><strong>Keine Anfragen in dieser Ansicht.</strong><p>Füge einen echten Instagram-Reel-Link ein und wähle die Marke. Senden musst du die DM anschließend selbst in Instagram.</p></div>';
 }
 
+
+function renderFreeDropHunter() {
+  const prefs=normalizeFreeDropPrefs(state.freeDropPrefs);
+  const result=freeDropDiscovery(ui.catalog,prefs);
+  $('#freeDropsGermanyOnly').checked=prefs.germanyOnly;
+  document.querySelectorAll('[data-free-drop-view]').forEach(button=>{
+    const active=prefs.view===button.dataset.freeDropView;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  $('#freeDropsCount').textContent=result.items.length+' Funde';
+  $('#freeDropsSummary').textContent=result.counts.germanyConfirmed+
+    ' mit bestätigter Deutschland-Teilnahme · '+result.counts.unknownShipping+
+    ' mit unbekanntem Versand · max. 5 € Versand empfohlen · '+(ui.generatedAt?'Scan: '+asDate(ui.generatedAt):'Katalog noch nicht geladen');
+  const labels={giveaway:'Gewinnspiel',drop:'Belegter Drop',deal:'1–10 €-Angebot',promotion:'Black-Week-Hinweis'};
+  $('#freeDropsCards').innerHTML=result.items.length
+    ? result.items.slice(0,24).map(item=>{
+      const url=safeExternalUrl(item.url);
+      const rules=safeExternalUrl(item.termsUrl);
+      const date=item.deadline?asDate(item.deadline):'Frist unbekannt';
+      const shipping=item.shippingEUR===null?'Versand offen':item.shippingEUR.toFixed(2)+' € Versand';
+      const germany=item.germany==='confirmed'?'Deutschland bestätigt':'Deutschland offen';
+      const price=item.priceEUR===null?'Kein bestätigter Kaufpreis':item.priceEUR.toFixed(2)+' € Kaufpreis';
+      return '<article class="free-drop-card"><div class="free-drop-top">'+
+        '<span class="free-drop-type">'+esc(labels[item.kind]||'Fundhinweis')+'</span>'+
+        '<span class="free-drop-reviewed">'+(item.curated?'Redaktionell geprüft':'Ungeprüfter Treffer')+'</span></div>'+
+        '<h3>'+esc(item.title)+'</h3><span class="free-drop-brand">'+esc(item.brand)+'</span>'+
+        '<div class="free-drop-facts"><span>'+esc(date)+'</span><span>'+esc(shipping)+'</span>'+
+        '<span>'+esc(germany)+'</span>'+(item.priceEUR!==null?'<span>'+esc(price)+'</span>':'')+'</div>'+
+        (item.participation?'<p class="free-drop-action-hint">Teilnahme: '+esc(item.participation)+'</p>':'')+
+        (item.costStatus?'<p class="free-drop-action-hint">'+esc(item.costStatus)+'</p>':'')+
+        '<div class="free-drop-alerts">'+item.warnings.slice(0,4).map(x=>'<span>⚠ '+esc(x)+'</span>').join('')+'</div>'+
+        '<div class="free-drop-actions">'+
+        (url?'<a class="free-drop-primary" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Original öffnen ↗</a>':'')+
+        (rules?'<a href="'+esc(rules)+'" target="_blank" rel="noopener noreferrer">Bedingungen</a>':'')+
+        '<button type="button" data-action="free-drop-review" data-id="'+esc(item.id)+'">Teilnahme prüfen</button>'+
+        '</div></article>';
+    }).join('')
+    : '<div class="free-drop-empty"><strong>Aktuell keine Treffer für diesen Filter.</strong>'+
+      '<p>Es erscheinen nur echte öffentliche Aktionen aus dem verfügbaren Katalog. '+(prefs.view==='deals'
+        ? 'Für 1–10-€-Drops benötigen wir einen aktuellen, überprüfbaren Originalpreis direkt beim Anbieter.'
+        : 'Versandkosten und Teilnahmebedingungen bleiben sichtbar, auch wenn sie noch unbekannt sind.')+
+      '</p></div>';
+}
+$('#freeDropsGermanyOnly').addEventListener('change',event=>{
+  state.freeDropPrefs=normalizeFreeDropPrefs({...state.freeDropPrefs,germanyOnly:event.target.checked});
+  save();renderFreeDropHunter();
+});
+
 function renderFreeProducts() {
   const prefs=normalizeFreeProductPrefs(state.freePrefs);
   const progress=normalizeProgramProgress(state.programProgress);
@@ -1061,6 +1112,7 @@ function render() {
   renderAlerts();
   renderAutoHunter();
   renderFreeProducts();
+  renderFreeDropHunter();
   renderDmDrafts();
   renderBrandOffers();
 }
@@ -1224,6 +1276,11 @@ document.addEventListener('click', event => {
       window.scrollTo({top:0,behavior:'smooth'});
     } else setTab(nav.dataset.tab);
     return;
+  }
+  const dropsFilter=event.target.closest('[data-free-drop-view]');
+  if(dropsFilter && FREE_DROP_VIEWS.includes(dropsFilter.dataset.freeDropView)){
+    state.freeDropPrefs=normalizeFreeDropPrefs({...state.freeDropPrefs,view:dropsFilter.dataset.freeDropView});
+    save();renderFreeDropHunter();return;
   }
   const smartFilter=event.target.closest('[data-scout-view]');
   if(smartFilter && SCOUT_VIEWS.includes(smartFilter.dataset.scoutView)){
@@ -1396,6 +1453,12 @@ document.addEventListener('click', event => {
       state.dmDrafts=state.dmDrafts.filter(x=>x.id!==id);
       save();renderDmDrafts();return;
     }
+    return;
+  }
+  if (action === 'free-drop-review') {
+    const item=byId(button.dataset.id);
+    if(item)showParticipationDialog(item);
+    else toast('Fund inzwischen nicht mehr aktuell. Bitte den Katalog neu laden.');
     return;
   }
   if (action === 'copy-free-draft') {
