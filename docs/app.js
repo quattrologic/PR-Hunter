@@ -607,34 +607,73 @@ function renderActivity() {
       '</div></article>';
   }).join('') : '<div class="empty"><div class="symbol">▤</div><strong>Dein Logbook ist noch leer.</strong><p>Halte hier fest, wenn du wirklich kommentiert, teilgenommen oder gewonnen hast. Wir senden nichts automatisch.</p><button class="primary-btn" type="button" data-action="add-activity">＋ Erste Aktivität eintragen</button></div>';
 }
+function renderDeviceNoticeStatus(){
+  const button=$('#alertDeviceButton');
+  const status=$('#alertDeviceStatus');
+  if(!button||!status)return;
+  const supported=typeof window.Notification==='function'&&'serviceWorker' in navigator;
+  const permission=supported?window.Notification.permission:'unsupported';
+  const enabled=state.phase20.prefs.deviceNotices&&permission==='granted';
+  button.disabled=!supported;
+  button.textContent=enabled?'Gerätehinweise ausschalten':'Gerätehinweise erlauben';
+  status.textContent=!supported?'Auf diesem Gerät/Browser nicht verfügbar. Die App-interne Inbox funktioniert weiterhin.'
+    :permission==='denied'?'Systemberechtigung verweigert. Zum Ändern iPad-/Safari-Einstellungen öffnen.'
+    :enabled?'Hinweise nur während der aktiven App-Nutzung. Kein Hintergrund-Push.'
+    :'Optional: nur im geöffneten PR-Hunter, nach ausdrücklicher Erlaubnis.';
+}
 function renderAlerts() {
-  const count = unreadCount(state.alerts);
-  const badge = $('#alertCount');
-  badge.hidden = count === 0;
-  badge.textContent = count > 99 ? '99+' : String(count);
-  $('#alertNewPref').checked = state.alerts.prefs.newOffers;
-  $('#alertDeadlinePref').checked = state.alerts.prefs.expiring;
-  const list = $('#alertList');
-  list.innerHTML = state.alerts.inbox.length ? state.alerts.inbox.map(note => {
-    const item = byId(note.offerId);
-    const readable = note.read ? ' gelesen' : '';
-    return '<article class="alert-entry' + readable + '"><span class="alert-glyph">' +
-      (note.kind === 'deadline' ? '⏳' : '✳') + '</span><div class="alert-details">' +
-      '<div class="alert-metadata">' + (note.kind === 'deadline' ? 'Frist' : 'Neuer Hinweis') +
-      ' · ' + esc(asDate(note.createdAt)) + (note.read ? ' · Gelesen' : ' · Neu') + '</div>' +
-      '<strong>' + esc(note.title) + '</strong><p>' + esc(note.message) + '</p>' +
-      '<div class="alert-actions">' +
-      (item ? '<button type="button" data-action="open-alert-offer" data-offer-id="' +
-        esc(note.offerId) + '" data-alert-id="' + esc(note.id) + '">Aktion prüfen ↗</button>' :
-        '<span>Aktion nicht mehr im aktuellen Katalog</span>') +
-      (!note.read ? '<button type="button" data-action="read-alert" data-alert-id="' + esc(note.id) +
-        '">Als gelesen markieren</button>' : '') + '</div></div></article>';
-  }).join('') : '<div class="empty"><div class="symbol">♧</div><strong>Keine neuen Hinweise.</strong>' +
-    '<p>Beim ersten Abgleich merken wir den aktuellen Katalog. Später neu auftauchende öffentliche Fundhinweise und bekannte Fristen erscheinen hier, wenn du die App öffnest.</p></div>';
-  // Badges are optional; never imply background delivery on static hosting.
-  if (typeof navigator.setAppBadge === 'function' && count)
+  state.phase20=normalizePhase20State(state.phase20);
+  const count=unreadCount(state.alerts)+phase20Unread(state.phase20);
+  const badge=$('#alertCount');
+  badge.hidden=count===0;
+  badge.textContent=count>99?'99+':String(count);
+  $('#alertNewPref').checked=state.alerts.prefs.newOffers;
+  $('#alertDeadlinePref').checked=state.alerts.prefs.expiring;
+  $('#alertReelsPref').checked=state.phase20.prefs.newReels;
+  $('#alertDropsPref').checked=state.phase20.prefs.newDrops;
+  $('#alertRepliesPref').checked=state.phase20.prefs.manualReplies;
+  $('#alertAutoRefreshPref').checked=state.phase20.prefs.autoRefresh;
+  const list=$('#alertList');
+  const notes=[
+    ...state.alerts.inbox.map(note=>({...note,smart:false})),
+    ...state.phase20.inbox.map(note=>({...note,smart:true}))
+  ].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,160);
+  list.innerHTML=notes.length?notes.map(note=>{
+    const readable=note.read?' gelesen':'';
+    const type=note.kind==='deadline'?'Frist':
+      note.kind==='drop'?'Free Drop':note.kind==='reel'?'Neues Reel':
+      note.kind==='reply'?'Selbst bestätigte Antwort':'Neuer Hinweis';
+    const glyph=note.kind==='deadline'?'⏳':
+      note.kind==='reel'?'▶':note.kind==='reply'?'✉':'✳';
+    const item=(note.kind==='new'||note.kind==='deadline'||note.kind==='drop')?byId(note.offerId):null;
+    const draft=note.kind==='reply'?state.dmDrafts.find(d=>d.id===note.offerId):null;
+    const original=note.kind==='reel'?normalizeReelUrl(note.url):
+      note.kind==='drop'?safeExternalUrl(note.url):null;
+    const action=note.kind==='reply'
+      ?(draft?'<button type="button" data-action="smart-open-reply" data-notice-id="'+esc(note.id)+'" data-dm-id="'+esc(note.offerId)+'">Anfrage ansehen</button>':
+        '<span>Gespeicherte Anfrage nicht mehr vorhanden</span>')
+      :note.kind==='reel'
+        ?(original?'<a href="'+esc(original)+'" target="_blank" rel="noopener noreferrer">Original-Reel ↗</a>':'')
+      :item
+        ?'<button type="button" data-action="'+(note.smart?'smart-open-drop':'open-alert-offer')+
+          '" data-offer-id="'+esc(note.offerId)+'" '+(note.smart?'data-notice-id="'+esc(note.id)+'"':'data-alert-id="'+esc(note.id)+'"')+
+          '>Aktion prüfen ↗</button>'
+        :original?'<a href="'+esc(original)+'" target="_blank" rel="noopener noreferrer">Quelle erneut prüfen ↗</a>'
+          :'<span>Aktion nicht mehr im aktuellen Katalog</span>';
+    return '<article class="alert-entry'+readable+'"><span class="alert-glyph">'+glyph+'</span>'+
+      '<div class="alert-details"><div class="alert-metadata">'+esc(type)+' · '+esc(asDate(note.createdAt))+
+      (note.read?' · Gelesen':' · Neu')+'</div><strong>'+esc(note.title)+'</strong>'+
+      '<p>'+esc(note.message)+'</p><div class="alert-actions">'+action+
+      (!note.read?'<button type="button" data-action="'+(note.smart?'smart-read-alert':'read-alert')+
+        '" '+(note.smart?'data-notice-id="'+esc(note.id)+'"':'data-alert-id="'+esc(note.id)+'"')+
+        '>Als gelesen markieren</button>':'')+'</div></div></article>';
+  }).join(''):'<div class="empty"><strong>Keine neuen Hinweise.</strong>'+
+    '<p>Neue öffentliche Funde erscheinen nach einem weiteren Abgleich. Ohne autorisierten Meta-Zugang werden keine Instagram-Reels oder Antworten erfunden.</p></div>';
+  renderDeviceNoticeStatus();
+  renderAutoRefreshStatus();
+  if(typeof navigator.setAppBadge==='function'&&count)
     navigator.setAppBadge(count).catch(()=>{});
-  else if (typeof navigator.clearAppBadge === 'function' && !count)
+  else if(typeof navigator.clearAppBadge==='function'&&!count)
     navigator.clearAppBadge().catch(()=>{});
 }
 function renderDisplay() {
