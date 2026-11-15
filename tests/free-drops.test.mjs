@@ -79,10 +79,10 @@ test('phase19 iPad UI, PWA shell and backups include Free Drops',async()=>{
  assert.ok(html.includes('id="freeDropsCards"'));
  assert.ok(html.includes('id="freeDropsGermanyOnly"'));
  assert.ok(html.includes('data-free-drop-view="deals"'));
- assert.ok(html.includes('free-drops.css?v=26'));
+ assert.ok(html.includes('free-drops.css?v=27'));
  assert.ok(app.includes("freeDropDiscovery(ui.catalog,prefs)"));
  assert.ok(app.includes("data-action=\"free-drop-review\""));
- assert.ok(sw.includes("CACHE_PREFIX + 'v26'"));
+ assert.ok(sw.includes("CACHE_PREFIX + 'v27'"));
  assert.ok(sw.includes("'./free-drops.mjs'"));
  assert.ok(backup.includes('freeDropPrefs:normalizeFreeDropPrefs(raw.freeDropPrefs)'));
 });

@@ -72,7 +72,7 @@ test('new UI includes all required real panels and local action forms', async ()
   for (const id of ['discoverPanel','brandsPanel','activityPanel','savedPanel','infoPanel','addForm','brandForm','activityForm','discoverCards','brandCards','activityList','sourceHealth'])
     assert.ok(html.includes('id="'+id+'"'),id);
   assert.ok(html.includes('./ultimate.css'));
-  assert.ok(html.includes('type="module" src="./app.js?v=26"'));
+  assert.ok(html.includes('type="module" src="./app.js?v=27"'));
   const app=await readFile(new URL('../docs/app.js',import.meta.url),'utf8');
   assert.ok(app.includes("const STORE = 'pr-hunter-state-v1'")); // no lost bookmarks on upgrade
   assert.ok(app.includes('navigator.clipboard.writeText'));

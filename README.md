@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 19 – iPad Free Drops & Giveaway Hunter, verified €1–€10 retailer drops, private Video-DM workspace and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 20 – private Smart Inbox, foreground auto-refresh, verified Reel/Free Drop alerts, self-confirmed reply tracking, and opt-in device notices; the official Meta connector remains unconfigured.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -429,3 +429,30 @@ The Video-DM Assistant remains the main homepage feature.
 Instagram DM-reading capability, and it does not invent new Black-Friday
 promotions or inexpensive drops. Actual offers still require verification
 at the vendor. Physical iPad / Safari acceptance remains open.
+
+## Phase 20 — Smart Inbox & Automatik (iPad)
+
+- New private Smart Inbox notices for **new officially sourced public Reels**,
+  **new source-reviewed Free Drops**, and **brand replies that the user
+  explicitly marks as received**. Existing new-offer and 72-hour deadline
+  hints remain in the same notification view.
+- First successful authorized scan sets the Reel baseline without alarming
+  about existing posts. When Meta is not connected, the app does **not** claim
+  new Instagram finds. The Free Drops baseline likewise avoids a first-launch flood.
+- Categories are individually configurable. Unread and read notices are kept
+  in device-local browser storage, deduplicated, and included in plain/encrypted
+  backups. No private account data is written into public GitHub catalog files.
+- While PR-Hunter is **open, visible and online**, it checks its public
+  catalogs about every 10 minutes; returning after a pause also triggers a
+  check when due. The server-side approved-source scanner still refreshes its
+  public files on its own six-hour schedule.
+- Optional **device notifications require an explicit tap and OS permission**,
+  and are only attempted during the active app session. This does **not**
+  implement background Web Push or automatic Instagram message-reading.
+  On devices where the permission/notification API is unavailable, the in-app
+  Smart Inbox and its badge continue working.
+- No automated DMs, clicks, orders, contest submissions, account sign-ins
+  or creator access claims. PWA cache v27. Physical iPad Safari acceptance
+  remains open; Meta credentials and supported API authorizations remain separate.
+
+The existing Video-DM Assistant remains the main feature on the homepage.

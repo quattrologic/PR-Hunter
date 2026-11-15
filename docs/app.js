@@ -52,6 +52,11 @@ import {
   buildSmartScout, smartBrandSuggestions, SCOUT_VIEWS
 } from './smart-scout.mjs';
 import {knownBrandLogo} from './brand-logos.mjs';
+import {
+  normalizePhase20State, normalizePhase20Prefs, buildPhase20Notices,
+  recordConfirmedReply, phase20Unread, markPhase20Read, clearPhase20Read,
+  shouldRefreshPhase20, AUTO_REFRESH_MS
+} from './phase20-core.mjs';
 import { FREE_DROP_VIEWS, normalizeFreeDropPrefs, freeDropDiscovery } from './free-drops.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
@@ -64,7 +69,7 @@ const ui = {
   instagramReport:normalizeInstagramReelsReport({status:'not-configured'}), dmScoutItems:[],
   similarReport:{status:'not-configured',discovered:[]},similarItems:[]
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, freeDropPrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[], scoutPrefs:{} };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, phase20:{}, display:{}, autoPrefs:{}, freePrefs:{}, freeDropPrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[], scoutPrefs:{} };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -78,6 +83,7 @@ if (!state.checklists || typeof state.checklists !== 'object' || Array.isArray(s
 state.accounts = accountLabels(state.accounts);
 state.integration = normalizeIntegrationSetup(state.integration);
 state.alerts = normalizeAlertsState(state.alerts);
+state.phase20 = normalizePhase20State(state.phase20);
 state.display = normalizeDisplayPrefs(state.display);
 state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
 state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
@@ -601,34 +607,73 @@ function renderActivity() {
       '</div></article>';
   }).join('') : '<div class="empty"><div class="symbol">▤</div><strong>Dein Logbook ist noch leer.</strong><p>Halte hier fest, wenn du wirklich kommentiert, teilgenommen oder gewonnen hast. Wir senden nichts automatisch.</p><button class="primary-btn" type="button" data-action="add-activity">＋ Erste Aktivität eintragen</button></div>';
 }
+function renderDeviceNoticeStatus(){
+  const button=$('#alertDeviceButton');
+  const status=$('#alertDeviceStatus');
+  if(!button||!status)return;
+  const supported=typeof window.Notification==='function'&&'serviceWorker' in navigator;
+  const permission=supported?window.Notification.permission:'unsupported';
+  const enabled=state.phase20.prefs.deviceNotices&&permission==='granted';
+  button.disabled=!supported;
+  button.textContent=enabled?'Gerätehinweise ausschalten':'Gerätehinweise erlauben';
+  status.textContent=!supported?'Auf diesem Gerät/Browser nicht verfügbar. Die App-interne Inbox funktioniert weiterhin.'
+    :permission==='denied'?'Systemberechtigung verweigert. Zum Ändern iPad-/Safari-Einstellungen öffnen.'
+    :enabled?'Hinweise nur während der aktiven App-Nutzung. Kein Hintergrund-Push.'
+    :'Optional: nur im geöffneten PR-Hunter, nach ausdrücklicher Erlaubnis.';
+}
 function renderAlerts() {
-  const count = unreadCount(state.alerts);
-  const badge = $('#alertCount');
-  badge.hidden = count === 0;
-  badge.textContent = count > 99 ? '99+' : String(count);
-  $('#alertNewPref').checked = state.alerts.prefs.newOffers;
-  $('#alertDeadlinePref').checked = state.alerts.prefs.expiring;
-  const list = $('#alertList');
-  list.innerHTML = state.alerts.inbox.length ? state.alerts.inbox.map(note => {
-    const item = byId(note.offerId);
-    const readable = note.read ? ' gelesen' : '';
-    return '<article class="alert-entry' + readable + '"><span class="alert-glyph">' +
-      (note.kind === 'deadline' ? '⏳' : '✳') + '</span><div class="alert-details">' +
-      '<div class="alert-metadata">' + (note.kind === 'deadline' ? 'Frist' : 'Neuer Hinweis') +
-      ' · ' + esc(asDate(note.createdAt)) + (note.read ? ' · Gelesen' : ' · Neu') + '</div>' +
-      '<strong>' + esc(note.title) + '</strong><p>' + esc(note.message) + '</p>' +
-      '<div class="alert-actions">' +
-      (item ? '<button type="button" data-action="open-alert-offer" data-offer-id="' +
-        esc(note.offerId) + '" data-alert-id="' + esc(note.id) + '">Aktion prüfen ↗</button>' :
-        '<span>Aktion nicht mehr im aktuellen Katalog</span>') +
-      (!note.read ? '<button type="button" data-action="read-alert" data-alert-id="' + esc(note.id) +
-        '">Als gelesen markieren</button>' : '') + '</div></div></article>';
-  }).join('') : '<div class="empty"><div class="symbol">♧</div><strong>Keine neuen Hinweise.</strong>' +
-    '<p>Beim ersten Abgleich merken wir den aktuellen Katalog. Später neu auftauchende öffentliche Fundhinweise und bekannte Fristen erscheinen hier, wenn du die App öffnest.</p></div>';
-  // Badges are optional; never imply background delivery on static hosting.
-  if (typeof navigator.setAppBadge === 'function' && count)
+  state.phase20=normalizePhase20State(state.phase20);
+  const count=unreadCount(state.alerts)+phase20Unread(state.phase20);
+  const badge=$('#alertCount');
+  badge.hidden=count===0;
+  badge.textContent=count>99?'99+':String(count);
+  $('#alertNewPref').checked=state.alerts.prefs.newOffers;
+  $('#alertDeadlinePref').checked=state.alerts.prefs.expiring;
+  $('#alertReelsPref').checked=state.phase20.prefs.newReels;
+  $('#alertDropsPref').checked=state.phase20.prefs.newDrops;
+  $('#alertRepliesPref').checked=state.phase20.prefs.manualReplies;
+  $('#alertAutoRefreshPref').checked=state.phase20.prefs.autoRefresh;
+  const list=$('#alertList');
+  const notes=[
+    ...state.alerts.inbox.map(note=>({...note,smart:false})),
+    ...state.phase20.inbox.map(note=>({...note,smart:true}))
+  ].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,160);
+  list.innerHTML=notes.length?notes.map(note=>{
+    const readable=note.read?' gelesen':'';
+    const type=note.kind==='deadline'?'Frist':
+      note.kind==='drop'?'Free Drop':note.kind==='reel'?'Neues Reel':
+      note.kind==='reply'?'Selbst bestätigte Antwort':'Neuer Hinweis';
+    const glyph=note.kind==='deadline'?'⏳':
+      note.kind==='reel'?'▶':note.kind==='reply'?'✉':'✳';
+    const item=(note.kind==='new'||note.kind==='deadline'||note.kind==='drop')?byId(note.offerId):null;
+    const draft=note.kind==='reply'?state.dmDrafts.find(d=>d.id===note.offerId):null;
+    const original=note.kind==='reel'?normalizeReelUrl(note.url):
+      note.kind==='drop'?safeExternalUrl(note.url):null;
+    const action=note.kind==='reply'
+      ?(draft?'<button type="button" data-action="smart-open-reply" data-notice-id="'+esc(note.id)+'" data-dm-id="'+esc(note.offerId)+'">Anfrage ansehen</button>':
+        '<span>Gespeicherte Anfrage nicht mehr vorhanden</span>')
+      :note.kind==='reel'
+        ?(original?'<a href="'+esc(original)+'" target="_blank" rel="noopener noreferrer">Original-Reel ↗</a>':'')
+      :item
+        ?'<button type="button" data-action="'+(note.smart?'smart-open-drop':'open-alert-offer')+
+          '" data-offer-id="'+esc(note.offerId)+'" '+(note.smart?'data-notice-id="'+esc(note.id)+'"':'data-alert-id="'+esc(note.id)+'"')+
+          '>Aktion prüfen ↗</button>'
+        :original?'<a href="'+esc(original)+'" target="_blank" rel="noopener noreferrer">Quelle erneut prüfen ↗</a>'
+          :'<span>Aktion nicht mehr im aktuellen Katalog</span>';
+    return '<article class="alert-entry'+readable+'"><span class="alert-glyph">'+glyph+'</span>'+
+      '<div class="alert-details"><div class="alert-metadata">'+esc(type)+' · '+esc(asDate(note.createdAt))+
+      (note.read?' · Gelesen':' · Neu')+'</div><strong>'+esc(note.title)+'</strong>'+
+      '<p>'+esc(note.message)+'</p><div class="alert-actions">'+action+
+      (!note.read?'<button type="button" data-action="'+(note.smart?'smart-read-alert':'read-alert')+
+        '" '+(note.smart?'data-notice-id="'+esc(note.id)+'"':'data-alert-id="'+esc(note.id)+'"')+
+        '>Als gelesen markieren</button>':'')+'</div></div></article>';
+  }).join(''):'<div class="empty"><strong>Keine neuen Hinweise.</strong>'+
+    '<p>Neue öffentliche Funde erscheinen nach einem weiteren Abgleich. Ohne autorisierten Meta-Zugang werden keine Instagram-Reels oder Antworten erfunden.</p></div>';
+  renderDeviceNoticeStatus();
+  renderAutoRefreshStatus();
+  if(typeof navigator.setAppBadge==='function'&&count)
     navigator.setAppBadge(count).catch(()=>{});
-  else if (typeof navigator.clearAppBadge === 'function' && !count)
+  else if(typeof navigator.clearAppBadge==='function'&&!count)
     navigator.clearAppBadge().catch(()=>{});
 }
 function renderDisplay() {
@@ -1131,8 +1176,46 @@ function setTab(tab) {
   render();
   window.scrollTo({ top:0, behavior:'auto' });
 }
+let refreshInFlight=false;
+let lastRefreshAt=0;
+function renderAutoRefreshStatus(){
+  const status=$('#alertAutoRefreshStatus');
+  if(!status)return;
+  const enabled=state.phase20.prefs.autoRefresh;
+  status.textContent=enabled
+    ?'Automatischer Abgleich etwa alle 10 Minuten, solange die App sichtbar und online ist. Letzter Abgleich: '+(lastRefreshAt?new Date(lastRefreshAt).toLocaleTimeString('de-DE'):'noch keiner')+'.'
+    :'Automatischer Abgleich ausgeschaltet. Manuelle Aktualisierung weiterhin möglich.';
+}
+function maybeAutoRefresh(){
+  if(shouldRefreshPhase20({
+    enabled:state.phase20.prefs.autoRefresh,
+    visible:document.visibilityState==='visible',
+    online:navigator.onLine!==false,
+    lastAt:lastRefreshAt,now:Date.now(),inFlight:refreshInFlight
+  }))refresh();
+}
+function showForegroundDeviceNotices(notices){
+  if(!state.phase20.prefs.deviceNotices||document.visibilityState!=='visible'||
+    typeof window.Notification!=='function'||window.Notification.permission!=='granted'||
+    !('serviceWorker' in navigator))return;
+  const entries=Array.isArray(notices)?notices.slice(0,3):[];
+  if(!entries.length)return;
+  navigator.serviceWorker.ready.then(registration=>{
+    if(typeof registration.showNotification!=='function')return;
+    for(const note of entries)
+      registration.showNotification('PR-Hunter',{
+        body:String(note.title||'Neue öffentliche Fundstelle').slice(0,130),
+        tag:note.id,
+        icon:'./icon.svg'
+      }).catch(()=>{});
+  }).catch(()=>{});
+}
 async function refresh() {
+  if(refreshInFlight||navigator.onLine===false)return;
+  refreshInFlight=true;
+  let catalogLoaded=false;
   $('#syncLabel').textContent = 'Katalog wird geladen …';
+  try {
   try {
     const response = await fetch('./opportunities.json', {cache:'no-store'});
     if (!response.ok) throw Error('HTTP ' + response.status);
@@ -1140,6 +1223,7 @@ async function refresh() {
     ui.catalog = Array.isArray(payload.opportunities) ? payload.opportunities.filter(item =>
       item && typeof item.id === 'string' && safeExternalUrl(item.url)
     ) : [];
+    catalogLoaded=true;
     ui.generatedAt = payload.generatedAt || null;
     ui.sourceStatus = Array.isArray(payload.sources) ? payload.sources : [];
     const beforeAlerts = state.alerts;
@@ -1174,7 +1258,31 @@ async function refresh() {
   }catch{
     ui.similarReport={status:'unavailable',discovered:[]};
   }
+  const official=ui.instagramReport.status==='active'||ui.instagramReport.status==='partial'
+    ?ui.instagramReport.reels:[];
+  const hashtag=ui.similarReport.status==='active'||ui.similarReport.status==='partial'
+    ?ui.similarReport.discovered:[];
+  const smart=buildPhase20Notices(state.phase20,{
+    reels:[...official,...hashtag],
+    drops:freeDropDiscovery(ui.catalog,{},Date.now()).items,
+    reelsAuthorized:ui.instagramReport.status==='active'||ui.instagramReport.status==='partial'||
+      ui.similarReport.status==='active'||ui.similarReport.status==='partial',
+    dropsLoaded:catalogLoaded
+  });
+  state.phase20=smart.state;
+  // A new reviewed drop belongs in the specific Smart Inbox category, not
+  // a second generic "new offer" notice on the same device.
+  const highlighted=new Set(smart.notices.filter(n=>n.kind==='drop').map(n=>n.offerId));
+  if(highlighted.size)
+    state.alerts.inbox=state.alerts.inbox.filter(n=>!(n.kind==='new'&&highlighted.has(n.offerId)));
+  save();
   render();
+  showForegroundDeviceNotices(smart.notices);
+  } finally {
+    lastRefreshAt=Date.now();
+    refreshInFlight=false;
+    renderAutoRefreshStatus();
+  }
 }
 function openDialog(id) {
   const dialog = $('#' + id);
@@ -1446,7 +1554,10 @@ document.addEventListener('click', event => {
     }
     if(action==='dm-replied' && window.confirm('Hat die Marke in Instagram tatsächlich geantwortet?')){
       state.dmDrafts=updateDmStatus(state.dmDrafts,id,'replied');
-      save();renderDmDrafts();toast('Deine Antwortbestätigung gespeichert – nicht automatisch aus Instagram ausgelesen.');
+      const reported=recordConfirmedReply(state.phase20,draft);
+      state.phase20=reported.state;
+      save();renderDmDrafts();renderAlerts();
+      toast('Deine Antwortbestätigung gespeichert – nicht automatisch aus Instagram ausgelesen.');
       return;
     }
     if(action==='dm-remove' && window.confirm('Diese DM-Vorlage lokal entfernen?')){
@@ -1479,6 +1590,26 @@ document.addEventListener('click', event => {
     if (button.dataset.target === 'feed') ui.visibleFeed = Math.min(1000,ui.visibleFeed+FEED_PAGE_SIZE);
     if (button.dataset.target === 'saved') ui.visibleSaved = Math.min(1000,ui.visibleSaved+FEED_PAGE_SIZE);
     renderFeed();return;
+  }
+  if(action==='smart-read-alert'){
+    state.phase20=markPhase20Read(state.phase20,button.dataset.noticeId);
+    save();renderAlerts();return;
+  }
+  if(action==='smart-open-drop'){
+    const item=byId(button.dataset.offerId);
+    state.phase20=markPhase20Read(state.phase20,button.dataset.noticeId);
+    save();renderAlerts();
+    if(item)showParticipationDialog(item);
+    else toast('Diese Aktion ist nicht mehr im aktuellen Katalog. Original-Link in der Meldung prüfen.');
+    return;
+  }
+  if(action==='smart-open-reply'){
+    const draft=state.dmDrafts.find(x=>x.id===button.dataset.dmId);
+    state.phase20=markPhase20Read(state.phase20,button.dataset.noticeId);
+    save();renderAlerts();
+    if(draft){setTab('dm');openDmEditor(draft.id);}
+    else toast('Die zugehörige Anfrage ist nicht mehr gespeichert.');
+    return;
   }
   if (action === 'read-alert') {
     state.alerts = markAlertsRead(state.alerts,button.dataset.alertId);
@@ -1664,6 +1795,7 @@ $('#restoreBackup').addEventListener('change', async e => {
     if (!window.confirm('Bestehende lokale Daten durch die Sicherung ersetzen? Dein aktueller Stand wird überschrieben.')) return;
     state = parsed;
     state.alerts = normalizeAlertsState(state.alerts);
+    state.phase20 = normalizePhase20State(state.phase20);
     $('#backupPassword').value='';
     save();render();setTab('inbox');
     $('#backupStatus').textContent = 'Sicherung geladen. Bitte Einträge kontrollieren.';
@@ -1674,16 +1806,52 @@ $('#restoreBackup').addEventListener('change', async e => {
 });
 $('#refreshAlertsButton').addEventListener('click', refresh);
 $('#markAllAlertsRead').addEventListener('click', () => {
-  state.alerts=markAlertsRead(state.alerts);save();renderAlerts();
+  state.alerts=markAlertsRead(state.alerts);
+  state.phase20=markPhase20Read(state.phase20);
+  save();renderAlerts();
 });
 $('#clearReadAlerts').addEventListener('click', () => {
-  state.alerts=clearReadAlerts(state.alerts);save();renderAlerts();
+  state.alerts=clearReadAlerts(state.alerts);
+  state.phase20=clearPhase20Read(state.phase20);
+  save();renderAlerts();
 });
 $('#alertNewPref').addEventListener('change',e => {
   state.alerts.prefs.newOffers=e.target.checked;save();renderAlerts();
 });
 $('#alertDeadlinePref').addEventListener('change',e => {
   state.alerts.prefs.expiring=e.target.checked;save();renderAlerts();
+});
+const phase20Settings={
+  alertReelsPref:'newReels',
+  alertDropsPref:'newDrops',
+  alertRepliesPref:'manualReplies',
+  alertAutoRefreshPref:'autoRefresh'
+};
+for(const [id,setting] of Object.entries(phase20Settings)){
+  $('#'+id).addEventListener('change',event=>{
+    state.phase20.prefs=normalizePhase20Prefs({
+      ...state.phase20.prefs,[setting]:event.target.checked
+    });
+    save();renderAlerts();
+    if(setting==='autoRefresh'&&event.target.checked)maybeAutoRefresh();
+  });
+}
+$('#alertDeviceButton').addEventListener('click',async()=>{
+  const supported=typeof window.Notification==='function'&&'serviceWorker' in navigator;
+  if(!supported){renderDeviceNoticeStatus();return;}
+  if(state.phase20.prefs.deviceNotices){
+    state.phase20.prefs.deviceNotices=false;
+    save();renderDeviceNoticeStatus();return;
+  }
+  try{
+    const permission=await window.Notification.requestPermission();
+    if(permission==='granted'){
+      state.phase20.prefs.deviceNotices=true;
+      save();
+      toast('Gerätehinweise für die aktive Nutzung erlaubt.');
+    }else toast('Keine Systemberechtigung. Die private Inbox bleibt nutzbar.');
+  }catch{toast('Gerätehinweise auf diesem Gerät nicht unterstützt.');}
+  renderDeviceNoticeStatus();
 });
 $('#verifiedOnlyButton').addEventListener('click', () => { ui.verifiedOnly = !ui.verifiedOnly; renderFeed(); });
 $('#endingSoonButton').addEventListener('click', () => { ui.endingSoonOnly = !ui.endingSoonOnly; renderFeed(); });
@@ -1907,6 +2075,10 @@ function updateConnectionStatus() {
 }
 window.addEventListener('online', () => { updateConnectionStatus(); refresh(); });
 window.addEventListener('offline',updateConnectionStatus);
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible')maybeAutoRefresh();
+});
+setInterval(maybeAutoRefresh,60*1000);
 updateConnectionStatus();
 render();
 askDmReturn();

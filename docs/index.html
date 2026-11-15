@@ -10,10 +10,11 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <link rel="stylesheet" href="./instagram-white.css?v=26">
-  <link rel="stylesheet" href="./free-drops.css?v=26">
+  <link rel="stylesheet" href="./instagram-white.css?v=27">
+  <link rel="stylesheet" href="./free-drops.css?v=27">
+  <link rel="stylesheet" href="./phase20.css?v=27">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=26"></script>
+  <script type="module" src="./app.js?v=27"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -433,18 +434,33 @@
       <div class="cards saved-cards" id="savedCards"></div>
     </section>
     <section class="view" id="alertsPanel" data-panel="alerts" hidden>
-      <div class="section-banner alerts-banner"><span class="mini-label">PHASE 6 · NUR WÄHREND DER NUTZUNG</span><h1>Benachrichtigungen<span class="soft-accent">.</span></h1>
-      <p>Neue öffentliche Gewinnspielhinweise und bald ablaufende Aktionen. Die App prüft beim Öffnen und Aktualisieren des Katalogs. Ohne Push-Server gibt es keine Mitteilungen bei geschlossener App.</p>
-      <button id="refreshAlertsButton" type="button" class="primary-btn">↻ Feed & Hinweise aktualisieren</button></div>
-      <section class="alerts-preferences">
-        <div><h2>Hinweise einstellen</h2><p class="helper">Auf diesem Gerät gespeichert · keine Instagram-Nachrichten und keine Gewinnerzusagen automatisch abrufbar</p></div>
-        <label><input id="alertNewPref" type="checkbox" checked> Neue öffentliche Fundhinweise</label>
+      <div class="section-banner alerts-banner">
+        <span class="mini-label">PHASE 20 · SMART INBOX</span>
+        <h1>Benachrichtigungen<span class="soft-accent">.</span></h1>
+        <p>Neue öffentliche Reels, Free Drops und Fristen – geprüft, wenn PR-Hunter geöffnet ist. Es gibt keine Mitteilungen bei geschlossener App und keine automatische Instagram-Antworterkennung.</p>
+        <button id="refreshAlertsButton" type="button" class="primary-btn">↻ Jetzt aktualisieren</button>
+      </div>
+      <section class="alerts-preferences phase20-preferences" aria-label="Hinweise einstellen">
+        <div><h2>Was möchtest du sehen?</h2>
+          <p class="helper">Nur auf diesem Gerät. Kein Instagram-Login, kein automatischer Versand.</p></div>
+        <label><input id="alertReelsPref" type="checkbox" checked> Neue Reels aus offiziell autorisierten Quellen</label>
+        <label><input id="alertDropsPref" type="checkbox" checked> Neue geprüfte Free Drops &amp; Giveaways</label>
+        <label><input id="alertNewPref" type="checkbox" checked> Andere neue öffentliche Fundhinweise</label>
         <label><input id="alertDeadlinePref" type="checkbox" checked> Fristen innerhalb der nächsten 72 Stunden</label>
+        <label><input id="alertRepliesPref" type="checkbox" checked> Selbst bestätigte Antworten von Marken</label>
+        <label><input id="alertAutoRefreshPref" type="checkbox" checked> Automatisch aktualisieren, solange die App geöffnet ist</label>
+        <p id="alertAutoRefreshStatus" class="phase20-status" role="status" aria-live="polite">Automatischer Abgleich wird eingerichtet …</p>
+        <div class="phase20-device-settings">
+          <button id="alertDeviceButton" type="button">Gerätehinweise erlauben</button>
+          <span id="alertDeviceStatus" role="status" aria-live="polite">Optional, nur während PR-Hunter aktiv ist.</span>
+        </div>
       </section>
-      <div class="section-header section-pad"><div><span class="mini-label">LOKALER POSTEINGANG</span><h2>Deine Hinweise</h2></div><div class="alert-tools">
+      <div class="section-header section-pad"><div><span class="mini-label">DEINE PRIVATE ÜBERSICHT</span>
+        <h2>Neue Hinweise</h2></div><div class="alert-tools">
         <button id="markAllAlertsRead" class="text-btn" type="button">Alle als gelesen markieren</button>
         <button id="clearReadAlerts" class="text-btn" type="button">Gelesene entfernen</button></div></div>
       <div id="alertList" class="alert-list" aria-live="polite"></div>
+      <p class="phase20-disclaimer">Die App erkennt keine echten Instagram-Antworten. Eine Antwort erscheint nur, wenn du sie selbst bestätigst. GitHub durchsucht genehmigte öffentliche Quellen ungefähr alle sechs Stunden; der iPad-Abgleich zeigt neu veröffentlichte Ergebnisse beim Öffnen und während der Nutzung.</p>
     </section>
     <section class="view" id="infoPanel" data-panel="info" hidden>
       <div class="section-banner info-banner"><span class="mini-label">PHASE 5 · OFFIZIELLE SCHNITTSTELLEN</span><h1>Integration Hub<span class="soft-accent">.</span></h1><p>Instagram sicher vorbereiten und öffentliche Gewinnspielquellen überprüfen. Keine Zugangsdaten und keine simulierten Verbindungen.</p></div>
@@ -478,7 +494,7 @@
       </div>
       <div class="sources-box"><strong>Weitere offizielle Testprogramme</strong><p>Diese Seiten öffnen sich extern und werden nicht automatisch für dich ausgefüllt.</p><a target="_blank" rel="noopener noreferrer" href="https://www.mediamarkt.de/de/campaign/testpiloten">MediaMarkt Testpiloten ↗</a><a target="_blank" rel="noopener noreferrer" href="https://www.saturn.de/de/campaign/testpiloten">Saturn Testpiloten ↗</a></div>
     </section>
-    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 19 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
+    <footer class="footer">PR-HUNTER ULTIMATE · PHASE 20 · KEINE GARANTIERTEN GRATISPRODUKTE · KEIN AUTOMATISCHES POSTING</footer>
   </main>
 </div>
 <dialog id="addDialog"><form id="addForm" class="dialog-inner">
