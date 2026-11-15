@@ -148,7 +148,7 @@ test('homepage UI uses saved local interests, real auto Reels and three-frame vi
   for(const id of ['similarReelCards','similarBrandChoices','similarVideoStatus','similarVideoTitle'])
     assert.ok(html.includes('id="'+id+'"'),id);
   assert.ok(app.includes("buildSmartScout("));
-  assert.ok(app.includes('rankSimilarBrands(seed,7)'));
+  assert.ok(app.includes('smartBrandSuggestions({...seed,prefs:state.scoutPrefs},7)'));
   assert.ok(app.includes('renderSimilarVideoDiscovery();'));
   assert.ok(app.includes("'./similar-reels.json'"));
   assert.ok(app.includes('#similarReelCards .instagram-auto-preview'));
