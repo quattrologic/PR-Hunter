@@ -141,7 +141,7 @@ test('Phase 16 visible iPad filter, watch, hide controls and offline module are 
   assert.ok(css.includes('.smart-brand-choice'));
   assert.ok(sw.includes("CACHE_PREFIX + 'v26'"));
   assert.ok(sw.includes("'./smart-scout.mjs'"));
-  assert.ok(html.includes('app.js?v=25'));
+  assert.ok(html.includes('app.js?v=26'));
   assert.ok(readme.includes('Smart Video Scout, filtering and local learning'));
   for(const path of ['smart-scout.mjs','app.js','phase4-core.mjs','sw.js']){
     const cmd=spawnSync(process.execPath,['--check',fileURLToPath(new URL('../docs/'+path,import.meta.url))],{encoding:'utf8'});
