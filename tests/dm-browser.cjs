@@ -24,6 +24,7 @@ mkdirSync('test-results',{recursive:true});
   await page.locator('#dmEditorCopy').click();
   assert.equal(await page.evaluate(()=>window.copied),'Hey! My edited draft.\n\nhttps://www.instagram.com/reel/ABCde1234/');
   await page.locator('#dmEditorClose').click();
+  await page.locator('#dmEditorPreview iframe').waitFor({state:'detached'});
   assert.equal(await page.locator('#dmEditorPreview iframe').count(),0);
   await page.reload();
   await page.locator('.home-dm-all').click();
