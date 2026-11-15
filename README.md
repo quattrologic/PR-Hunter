@@ -365,3 +365,14 @@ All brand and hashtag recommendations are only displayed as **real Videos** afte
 The iPad presentation uses auto-loading official embedded Instagram iframes limited to 3 in-view at a time, with direct original URLs as a fallback. PWA cache v22. No Instagram secrets appear in public frontend files.
 
 Meta official capabilities: https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api
+
+
+## Phase 16 — Smart Video Scout, filtering and local learning
+
+The iPad homepage's **Ähnliche Videos für dich** section now has four filters — **Alle, Video-DM, Gratis, Neue Marken** — with actual counts from *officially obtained, real* Reel links. Its ranking interprets only the publicly supplied caption: potential send-this-video/DM requests, giveaway/free terms, preference-match tags and new independent streetwear brands. It also warns about suspicious costs, creators-only restrictions, ended competitions and explicitly stated regional restrictions. **These are text signals, never eligibility or free-shipping guarantees; PR-Hunter does not read text from video frames or verify that a post offers a product.**
+
+Users can hide unsuitable videos and brands, or save a suggested brand as a style reference. The **local** \`scoutPrefs\` object stores selected filter plus deduplicated, bounded skip lists (maximum 150 real Instagram URLs and 80 handles). Data survives offline reloads and is included in plain and encrypted existing backups through \`parseBackup\`; no personal reference/skip history goes to GitHub Actions. Saving a new reference does **not** automatically expand the server-side scanner watchlist. Unknown brands found through publicly approved hashtag search remain unnamed until a person verifies the actual account via the original Reel.
+
+The existing, scheduled business-discovery and hashtag scanners are unchanged in how they access Meta: **a separate permissioned Meta app and server-only tokens are still required**. Without permissions, no Instagram "For You" feed and no fabricated video results. The feature prioritizes clothing and streetwear; 90/10 is a maximum-relevance goal only when actual matching results exist. No automated DMs, comments, giveaways or unsanctioned Instagram scraping.
+
+PWA cache v23 includes the pure \`smart-scout.mjs\` module for offline use. A physical iPad Safari touch-and-embed pass remains required.
