@@ -44,6 +44,9 @@ import {
   trustedMetaThumbnail, normalizeInstagramReelsReport, reelFeedStatusText,
   normalizeSavedReels, addSavedReel
 } from './instagram-brand-core.mjs';
+import {
+  dmScoutCandidates, dmScoutProspects, dmScoutText, instagramDmLink
+} from './dm-scout.mjs';
 import {knownBrandLogo} from './brand-logos.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
@@ -53,7 +56,7 @@ const ui = {
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
   brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE,
   discoveryMode:'for-you', galleryItems:[], activeGalleryItem:null,
-  instagramReport:normalizeInstagramReelsReport({status:'not-configured'})
+  instagramReport:normalizeInstagramReelsReport({status:'not-configured'}), dmScoutItems:[]
 };
 const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[] };
 let state;
@@ -665,6 +668,73 @@ function renderBrandOffers(){
   }).join('') : '<div class="brand-offer-empty">Noch keine Markenangebote eingetragen. Wenn dir eine Marke antwortet, kannst du sie hier aufnehmen.</div>';
 }
 
+function renderHomeDmScout(){
+  const official=ui.instagramReport.status==='active' || ui.instagramReport.status==='partial'
+    ? ui.instagramReport.reels : [];
+  const found=dmScoutCandidates({
+    officialReels:official,savedReels:state.savedReels,
+    drafts:state.dmDrafts,publicOffers:all()
+  });
+  ui.dmScoutItems=found;
+  const confirmed=found.filter(x=>x.signal==='invitation').length;
+  const sources=official.length?'Offizielle Marken-Beiträge überprüft':
+    'Live-Instagram-Suche nicht verbunden · deine gespeicherten Beiträge';
+  $('#homeDmScoutStatus').textContent=found.length
+    ? found.length+' Original-Links · '+confirmed+' mögliche DM-Einladungen · '+sources
+    : 'Noch keine Original-Links · automatischer Meta-Scan nicht verbunden';
+  $('#homeDmScoutCards').innerHTML=found.length?
+    found.slice(0,6).map((lead,index)=>{
+      const verifiedText=lead.signal==='invitation';
+      const status=verifiedText?'Möglicher PR-Aufruf im Beitragstext':
+        lead.signal==='send-request'?'Video-Versand erwähnt':
+        lead.signal==='free-mention'?'Gratis-Hinweis im Beitragstext':'Teilnahme nicht bestätigt';
+      const caption=lead.caption?lead.caption.slice(0,88):
+        'Originalbeitrag öffnen und Bedingungen selbst prüfen';
+      const brand=lead.brand;
+      return '<article class="home-dm-card">'+
+        '<div class="home-dm-card-brand"><span class="home-dm-card-handle">@'+esc(brand)+'</span>'+
+        '<span class="home-dm-card-meta">'+esc(lead.category)+'</span></div>'+
+        '<span class="home-dm-card-signal'+(verifiedText?' likely':'')+'">'+esc(status)+'</span>'+
+        '<p>'+esc(caption)+'</p>'+
+        '<div class="home-dm-card-actions">'+
+        '<button type="button" data-action="home-dm-start" data-dm-scout-index="'+index+'">Text kopieren + DM öffnen ↗</button>'+
+        '<a href="'+esc(lead.reelUrl)+'" target="_blank" rel="noopener noreferrer">Originalpost ↗</a>'+
+        '</div></article>';
+    }).join('') :
+    '<div class="home-dm-empty"><strong>Keine bestätigten Video-DM-Funde</strong>'+
+    '<p>Füge oben einen echten Markenpost ein. Neue öffentliche Reels werden automatisch geprüft, sobald die offizielle Meta-Anbindung eingerichtet ist.</p>'+
+    '</div>';
+  const prospects=dmScoutProspects(watchedBrands(),6);
+  $('#homeDmProspects').innerHTML=prospects.map(brand=>{
+    const url=dmBrandProfile(brand.handle);
+    return '<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" '+
+      'title="'+esc(brand.source)+'">@'+esc(brand.handle)+' ↗</a>';
+  }).join('');
+}
+function showHomeDmFallback(message,chatUrl){
+  const modal=$('#homeDmCopyDialog');
+  $('#homeDmCopyText').value=message;
+  $('#homeDmOpenChat').href=chatUrl;
+  if(!modal.open)modal.showModal();
+}
+function startHomeDm(brand,reelUrl,signal='unverified'){
+  const url=instagramDmLink(brand);
+  const text=dmScoutText({brand,reelUrl,signal});
+  if(!url||!text){toast('Bitte einen gültigen Instagram-Link und @Markennamen auswählen.');return;}
+  const draft=addDmDraft(state.dmDrafts,{brand,reelUrl,language:'en',kind:'generic'});
+  if(draft.added){state.dmDrafts=draft.drafts;save();renderDmDrafts();}
+  // Clipboard permission is decided by the iPad browser at the click. There is no
+  // documented Instagram deep-link parameter to prefill the recipient's composer.
+  // Navigate only after the text was successfully copied.
+  if(!navigator.clipboard?.writeText){
+    showHomeDmFallback(text,url);return;
+  }
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('Text kopiert. Im Instagram-Chat einfügen und selbst senden.');
+    window.location.assign(url);
+  }).catch(()=>showHomeDmFallback(text,url));
+}
+
 function renderDmDrafts(){
   state.dmDrafts=normalizeDmDrafts(state.dmDrafts);
   const stats=dmStats(state.dmDrafts);
@@ -796,6 +866,7 @@ function render() {
   renderDisplay();
   updateStats();
   renderBrands();
+  renderHomeDmScout();
   renderFeed();
   renderAssistantQueue();
   renderActivity();
@@ -984,6 +1055,23 @@ document.addEventListener('click', event => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   const action = button.dataset.action;
+  if(action==='home-dm-start'){
+    const index=Number(button.dataset.dmScoutIndex);
+    if(Number.isInteger(index)&&index>=0&&index<ui.dmScoutItems.length){
+      const lead=ui.dmScoutItems[index];
+      startHomeDm(lead.brand,lead.reelUrl,lead.signal);
+    }
+    return;
+  }
+  if(action==='home-dm-copy-only'){
+    const box=$('#homeDmCopyText');
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(box.value)
+        .then(()=>toast('Text kopiert. Öffne jetzt den Markenchat.'))
+        .catch(()=>{box.focus();box.select();toast('Text markieren und manuell kopieren.');});
+    }else{box.focus();box.select();toast('Text markieren und manuell kopieren.');}
+    return;
+  }
   if (action === 'focus-discovery-search'){
     if(ui.tab!=='discover')setTab('discover');
     $('#search').focus();return;
@@ -1376,6 +1464,18 @@ $('#brandReelImportForm').addEventListener('submit',event=>{
   ui.discoveryMode='reels';ui.visibleFeed=FEED_PAGE_SIZE;
   renderFeed();
   toast('Instagram-Link gespeichert – die Vorschau erscheint automatisch im Feed.');
+});
+$('#homeDmQuickForm').addEventListener('submit',event=>{
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const brand=String(data.get('brand')||'');
+  const reelUrl=String(data.get('reelUrl')||'');
+  const message=dmScoutText({brand,reelUrl,signal:'unverified'});
+  if(!message){toast('Vollständigen Instagram-Link und gültige @Marke eintragen.');return;}
+  // Persist a local manual record for the dashboard before navigating out.
+  const added=addSavedReel(state.savedReels,brand,reelUrl);
+  if(added.added){state.savedReels=added.reels;save();}
+  startHomeDm(brand,reelUrl,'unverified');
 });
 $('#dmForm').addEventListener('submit',event=>{
   event.preventDefault();
