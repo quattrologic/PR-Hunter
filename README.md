@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 11 – white Instagram-inspired iPad discovery redesign with honest public Reel previews and verified-price deal filters.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 12 – private brand DM-offer tracking and manual parcel follow-up in the white iPad UI.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -286,3 +286,17 @@ The primary iPad home view is redesigned from the purple dashboard to a **minima
 Instagram cross-origin embeds may require user login or may be blocked on iPad Safari depending on the Reel's privacy settings and Instagram's current policies. The video preview is an optional best-effort official embed only. No Instagram API token or third-party scraping system is in the public GitHub Pages app. Physical iPad Safari confirmation is still necessary.
 
 The examples shown in a visual concept are **not** confirmed live products or deals; only actual locally imported links and verified public sources populate the deployed app.
+
+
+## Phase 12 — Private DM offers / packages (2026-11)
+
+A streetwear brand may send a message offering free clothes directly, without an original Reel or giveaway form. PR-Hunter's Video-DM tab now includes **Angebote & Pakete**:
+
+- Manually record the **brand Instagram handle**, the **offered product** and whether product/shipping details have already been requested. No screenshots or private account messages are uploaded or committed to the public GitHub repo.
+- Manually distinguish **Offered, Details requested, Confirmed, Shipped, Received, Closed**. Important statuses are prompted for explicit user confirmation. PR-Hunter **does not** connect to Instagram, read replies or detect shipments.
+- Independently verify the product is free, Germany shipping is available and the shipping fee. Costs above the user's €5 threshold are flagged; unknown costs remain **unknown**, never silently treated as zero.
+- Copy a short, truthful shipping/product clarification message in English, open the verified brand-profile link, or remove local offers. Previously replied Video-DM drafts can prefill the brand in the new form.
+- The dashboard counts open, confirmed, and received outcomes **only from self-reported local data**. All records are capped, sanitized and included in both legacy JSON export and password-encrypted backups under the **unchanged** \`pr-hunter-state-v1\` localStorage key.
+- The iPad interface remains clean, white and monochrome. The new module is cached with service worker v15.
+
+**Safety:** Never pay a surprise shipping/customs fee, disclose card credentials or share your delivery address before independently verifying the official sender, shipping conditions and whether the package is truly free. A brand message is an **offer**, not an accepted shipment or a guaranteed free product. No personal names, addresses, passwords, shipping labels or DM screenshots are stored by this module.
