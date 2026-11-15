@@ -456,3 +456,13 @@ at the vendor. Physical iPad / Safari acceptance remains open.
   remains open; Meta credentials and supported API authorizations remain separate.
 
 The existing Video-DM Assistant remains the main feature on the homepage.
+
+
+## Drop Hunter private PC → iPad synchronization (2026-11)
+
+The **Drop Hunter** section is available from the iPad profile and Home shortcuts. A paired private Windows desktop running [Drop-Hunter](https://github.com/quattrologic/Drop-Hunter) supplies saved drops and locally **self-confirmed** purchases. It never reads PayPal credentials or implies a merchant order was verified.
+
+- Sync requires both devices on the same personal Tailscale tailnet and a separately configured Tailscale Serve HTTPS proxy pointing at the Windows app's localhost listener (port 43742). **Never use Funnel.** Use a dedicated HTTPS port so existing Air-OS Serve setups remain intact.
+- Pair once with an **8-digit, two-minute** code from Drop Hunter Settings. The iPad stores the resulting bearer token locally in Safari; the PC stores its hash. Re-pairing revokes previously issued tokens. Treat iPad backups as private because they can contain local browser state.
+- PR-Hunter polls while visible and refreshes on app focus. No public GitHub/Pages data, feed JSON, source control, or analytics carries your order history.
+- The PC must remain powered on and the private proxy reachable. iPad Safari/Tailscale hardware test is pending.

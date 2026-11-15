@@ -13,8 +13,9 @@
   <link rel="stylesheet" href="./instagram-white.css?v=27">
   <link rel="stylesheet" href="./free-drops.css?v=27">
   <link rel="stylesheet" href="./phase20.css?v=27">
+  <link rel="stylesheet" href="./drop-hunter.css?v=28">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=27"></script>
+  <script type="module" src="./app.js?v=28"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -44,6 +45,7 @@
       <button type="button" class="nav-btn nav-extra" data-tab="inbox">Link-Inbox</button>
       <button type="button" class="nav-btn nav-extra" data-tab="saved">Merkliste</button>
       <button type="button" class="nav-btn nav-extra" data-tab="info">Integrationen</button>
+      <button type="button" class="nav-btn nav-extra" data-tab="dropHunter">Drop Hunter · PC</button>
     </nav>
   </aside>
   <main class="main">
@@ -195,6 +197,7 @@
           <button class="subtle-btn" type="button" data-tab="dm">Video-DM vorbereiten</button>
           <button class="subtle-btn" type="button" data-tab="inbox">Reel-Link hinzufügen</button>
           <button class="subtle-btn" type="button" data-tab="products">Free Products</button>
+          <button class="subtle-btn" type="button" data-tab="dropHunter">PC-Drops & Bestellungen</button>
         </div>
       </section>
     </section>
@@ -216,6 +219,7 @@
         <button type="button" data-tab="inbox">Link-Inbox · Backups <span>›</span></button>
         <button type="button" data-tab="info">Integrationen <span>›</span></button>
         <button type="button" data-tab="alerts">Benachrichtigungen <span>›</span></button>
+        <button type="button" data-tab="dropHunter">Drop Hunter · PC-Drops & Bestellungen <span>›</span></button>
       </div>
       <p class="profile-footnote">PR-Hunter prüft öffentliche Quellen. Instagram-Reels werden nur aus deinen eigenen Links angezeigt; automatische DMs oder Teilnahmen sind nicht verbunden.</p>
     </section>
@@ -461,6 +465,37 @@
         <button id="clearReadAlerts" class="text-btn" type="button">Gelesene entfernen</button></div></div>
       <div id="alertList" class="alert-list" aria-live="polite"></div>
       <p class="phase20-disclaimer">Die App erkennt keine echten Instagram-Antworten. Eine Antwort erscheint nur, wenn du sie selbst bestätigst. GitHub durchsucht genehmigte öffentliche Quellen ungefähr alle sechs Stunden; der iPad-Abgleich zeigt neu veröffentlichte Ergebnisse beim Öffnen und während der Nutzung.</p>
+    </section>
+    <section class="view" id="dropHunterPanel" data-panel="dropHunter" hidden>
+      <div class="dh-hero"><span class="mini-label">DROP HUNTER · WINDOWS ↔ IPAD</span>
+        <h1>Deine Drops<span class="soft-accent">.</span></h1>
+        <p>Gespeicherte PC-Drops und bestätigte Bestellungen. Privat über deinen Tailscale-Zugang, ohne Veröffentlichung deiner Einkaufsdaten auf GitHub.</p>
+      </div>
+      <div class="dh-metrics">
+        <div><small>PC-Drops</small><strong id="dhDropCount">0</strong></div>
+        <div><small>Bestellungen</small><strong id="dhOrderCount">0</strong></div>
+        <div><small>Ausgaben</small><strong id="dhSpend">0,00 €</strong></div>
+      </div>
+      <form id="dhPairForm" class="dh-pair">
+        <h2>PC einmalig verbinden</h2>
+        <p class="helper">Öffne Drop Hunter auf Windows → Einstellungen → „iPad-Kopplungscode erzeugen“. Auf beiden Geräten muss Tailscale laufen. Die PC-App muss über privates HTTPS mit Tailscale Serve erreichbar sein – niemals Funnel.</p>
+        <label>Private Tailscale-HTTPS-Adresse des PCs
+          <input name="url" type="url" placeholder="https://desktop-deinname.tailnet.ts.net:8443/" autocomplete="url" required>
+        </label>
+        <label>Achtstelliger Code aus Drop Hunter
+          <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" minlength="8" maxlength="8" placeholder="00000000" required>
+        </label>
+        <button type="submit">Privat verbinden ↗</button>
+      </form>
+      <div class="dh-pair" id="dhConnectedControls" hidden>
+        <div class="dh-actions"><button type="button" id="dhRefresh">Jetzt aktualisieren ↻</button><button type="button" id="dhDisconnect">Verbindung trennen</button></div>
+      </div>
+      <p id="dhSyncStatus" role="status" aria-live="polite">PC noch nicht verbunden.</p>
+      <h2>Nächste Drops</h2>
+      <div id="dhDropsList"></div>
+      <h2>Meine Bestellungen</h2>
+      <div id="dhOrdersList"></div>
+      <p class="dh-privacy">Die Daten stammen aus der lokalen Windows-App. „Bestellt“ bedeutet selbst bestätigt, nicht durch PayPal verifiziert. Keine Karten- oder PayPal-Daten übertragen. Der Abgleich erfolgt nur bei geöffneter iPad-App und erreichbarem PC.</p>
     </section>
     <section class="view" id="infoPanel" data-panel="info" hidden>
       <div class="section-banner info-banner"><span class="mini-label">PHASE 5 · OFFIZIELLE SCHNITTSTELLEN</span><h1>Integration Hub<span class="soft-accent">.</span></h1><p>Instagram sicher vorbereiten und öffentliche Gewinnspielquellen überprüfen. Keine Zugangsdaten und keine simulierten Verbindungen.</p></div>

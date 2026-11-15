@@ -1,8 +1,8 @@
 // Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
 const CACHE_PREFIX = 'pr-hunter-ultimate-';
-const CACHE = CACHE_PREFIX + 'v27';
+const CACHE = CACHE_PREFIX + 'v28';
 const SHELL = [
-  './', './index.html', './ultimate.css', './instagram-white.css', './free-drops.css', './phase20.css', './app.js', './ultimate-core.mjs',
+  './', './index.html', './ultimate.css', './instagram-white.css', './free-drops.css', './phase20.css', './drop-hunter.css', './drop-hunter-sync.mjs', './app.js', './ultimate-core.mjs',
   './participation.mjs', './phase4-core.mjs', './integrations.mjs',
   './phase6-core.mjs', './phase20-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './free-drops.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './brand-logos.mjs', './dm-scout.mjs', './similar-reels.mjs', './smart-scout.mjs', './manifest.webmanifest', './icon.svg'
 ];
