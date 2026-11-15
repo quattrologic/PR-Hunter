@@ -1591,6 +1591,26 @@ document.addEventListener('click', event => {
     if (button.dataset.target === 'saved') ui.visibleSaved = Math.min(1000,ui.visibleSaved+FEED_PAGE_SIZE);
     renderFeed();return;
   }
+  if(action==='smart-read-alert'){
+    state.phase20=markPhase20Read(state.phase20,button.dataset.noticeId);
+    save();renderAlerts();return;
+  }
+  if(action==='smart-open-drop'){
+    const item=byId(button.dataset.offerId);
+    state.phase20=markPhase20Read(state.phase20,button.dataset.noticeId);
+    save();renderAlerts();
+    if(item)showParticipationDialog(item);
+    else toast('Diese Aktion ist nicht mehr im aktuellen Katalog. Original-Link in der Meldung prüfen.');
+    return;
+  }
+  if(action==='smart-open-reply'){
+    const draft=state.dmDrafts.find(x=>x.id===button.dataset.dmId);
+    state.phase20=markPhase20Read(state.phase20,button.dataset.noticeId);
+    save();renderAlerts();
+    if(draft){setTab('dm');openDmEditor(draft.id);}
+    else toast('Die zugehörige Anfrage ist nicht mehr gespeichert.');
+    return;
+  }
   if (action === 'read-alert') {
     state.alerts = markAlertsRead(state.alerts,button.dataset.alertId);
     save();renderAlerts();return;
@@ -1786,16 +1806,52 @@ $('#restoreBackup').addEventListener('change', async e => {
 });
 $('#refreshAlertsButton').addEventListener('click', refresh);
 $('#markAllAlertsRead').addEventListener('click', () => {
-  state.alerts=markAlertsRead(state.alerts);save();renderAlerts();
+  state.alerts=markAlertsRead(state.alerts);
+  state.phase20=markPhase20Read(state.phase20);
+  save();renderAlerts();
 });
 $('#clearReadAlerts').addEventListener('click', () => {
-  state.alerts=clearReadAlerts(state.alerts);save();renderAlerts();
+  state.alerts=clearReadAlerts(state.alerts);
+  state.phase20=clearPhase20Read(state.phase20);
+  save();renderAlerts();
 });
 $('#alertNewPref').addEventListener('change',e => {
   state.alerts.prefs.newOffers=e.target.checked;save();renderAlerts();
 });
 $('#alertDeadlinePref').addEventListener('change',e => {
   state.alerts.prefs.expiring=e.target.checked;save();renderAlerts();
+});
+const phase20Settings={
+  alertReelsPref:'newReels',
+  alertDropsPref:'newDrops',
+  alertRepliesPref:'manualReplies',
+  alertAutoRefreshPref:'autoRefresh'
+};
+for(const [id,setting] of Object.entries(phase20Settings)){
+  $('#'+id).addEventListener('change',event=>{
+    state.phase20.prefs=normalizePhase20Prefs({
+      ...state.phase20.prefs,[setting]:event.target.checked
+    });
+    save();renderAlerts();
+    if(setting==='autoRefresh'&&event.target.checked)maybeAutoRefresh();
+  });
+}
+$('#alertDeviceButton').addEventListener('click',async()=>{
+  const supported=typeof window.Notification==='function'&&'serviceWorker' in navigator;
+  if(!supported){renderDeviceNoticeStatus();return;}
+  if(state.phase20.prefs.deviceNotices){
+    state.phase20.prefs.deviceNotices=false;
+    save();renderDeviceNoticeStatus();return;
+  }
+  try{
+    const permission=await window.Notification.requestPermission();
+    if(permission==='granted'){
+      state.phase20.prefs.deviceNotices=true;
+      save();
+      toast('Gerätehinweise für die aktive Nutzung erlaubt.');
+    }else toast('Keine Systemberechtigung. Die private Inbox bleibt nutzbar.');
+  }catch{toast('Gerätehinweise auf diesem Gerät nicht unterstützt.');}
+  renderDeviceNoticeStatus();
 });
 $('#verifiedOnlyButton').addEventListener('click', () => { ui.verifiedOnly = !ui.verifiedOnly; renderFeed(); });
 $('#endingSoonButton').addEventListener('click', () => { ui.endingSoonOnly = !ui.endingSoonOnly; renderFeed(); });
