@@ -50,6 +50,7 @@ export function normalizeDmDrafts(raw){
     seen.add(id);
     items.push({
       id,brand,reelUrl,
+      message:normalizeDmMessage(original.message),
       language:original.language==='de'?'de':'en',
       kind:['shirt','tracksuit'].includes(original.kind)?original.kind:'generic',
       status:STATUSES.has(original.status)?original.status:'prepared',
@@ -74,7 +75,7 @@ export function addDmDraft(current,input,now=new Date()){
   if(existing.length>=MAX_ITEMS)return {drafts:existing,added:false,reason:'Maximal 120 gespeicherte DM-Vorlagen.'};
   const stamp=now instanceof Date && Number.isFinite(now.getTime())?now.toISOString():new Date().toISOString();
   const item={
-    id,brand,reelUrl,language:input.language==='de'?'de':'en',
+    id,brand,reelUrl,message:normalizeDmMessage(input.message),language:input.language==='de'?'de':'en',
     kind:['shirt','tracksuit'].includes(input.kind)?input.kind:'generic',
     status:'prepared',createdAt:stamp,updatedAt:stamp
   };
@@ -93,4 +94,23 @@ export function dmStats(current){
     replied:list.filter(x=>x.status==='replied').length,
     total:list.length
   };
+}
+
+// Bound private edited text; old drafts still resolve to their original template.
+export function normalizeDmMessage(value){
+  return typeof value==='string'?value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,'').slice(0,2000).trim():'';
+}
+export function dmDraftText(draft,includeLink=false){
+  const body=normalizeDmMessage(draft?.message)||dmCopyText(draft);
+  const link=normalizeReelUrl(draft?.reelUrl);
+  return body && includeLink && link && !body.includes(link)?body+'\n\n'+link:body;
+}
+export function editDmDraft(current,id,message,now=new Date()){
+  const text=normalizeDmMessage(message);
+  return normalizeDmDrafts(current).map(draft=>draft.id===id && text
+    ? {...draft,message:text,updatedAt:validDate(now.toISOString())}:draft);
+}
+export function filterDmDrafts(current,status='all'){
+  return normalizeDmDrafts(current).filter(d=>!STATUSES.has(status)||d.status===status)
+    .sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));
 }

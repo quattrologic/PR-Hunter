@@ -87,7 +87,7 @@ test('small-label prospects are explicitly unverified, and cannot imply giveaway
   assert.ok(list.every(x=>x.verifiedOffer===false));
   assert.ok(PUBLIC_SMALL_BRAND_WATCH.every(x=>!('reelUrl' in x)));
 });
-test('homepage Video-DM feature and safe one-click clipboard flow are wired',async()=>{
+test('homepage Video-DM feature opens the editable draft before copying',async()=>{
   const [html,app,style,sw,config,readme]=await Promise.all([
     readFile(new URL('../docs/index.html',import.meta.url),'utf8'),
     readFile(new URL('../docs/app.js',import.meta.url),'utf8'),
@@ -105,15 +105,15 @@ test('homepage Video-DM feature and safe one-click clipboard flow are wired',asy
   assert.ok(app.includes('renderHomeDmScout();'));
   assert.ok(app.includes("if(action==='home-dm-start')"));
   assert.ok(app.includes("$('#homeDmQuickForm').addEventListener('submit'"));
-  assert.ok(app.includes('navigator.clipboard.writeText(text).then('));
-  assert.ok(app.includes('window.location.assign(url)'));
-  assert.ok(app.includes("showHomeDmFallback(text,url)"));
+  assert.ok(app.includes('navigator.clipboard.writeText(dmDraftText(draft,true))'));
+  assert.ok(app.includes('if(draft)openDmEditor(draft.id)'));
+  assert.ok(html.includes('id="dmEditorChat"'));
   assert.ok(!app.includes("new URLSearchParams({text:"));
   assert.ok(style.includes('.home-dm-scout'));
   assert.ok(style.includes('.home-dm-quick'));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v23'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v24'"));
   assert.ok(sw.includes("'./dm-scout.mjs'"));
-  assert.ok(html.includes('app.js?v=23'));
+  assert.ok(html.includes('app.js?v=24'));
   assert.ok(readme.includes('Video-DM Scout as primary iPad homepage feature'));
   const b=JSON.parse(config);
   assert.ok(b.brands.includes('brkdwn.studios'));

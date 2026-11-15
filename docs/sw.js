@@ -1,6 +1,6 @@
 // Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
 const CACHE_PREFIX = 'pr-hunter-ultimate-';
-const CACHE = CACHE_PREFIX + 'v23';
+const CACHE = CACHE_PREFIX + 'v24';
 const SHELL = [
   './', './index.html', './ultimate.css', './instagram-white.css', './app.js', './ultimate-core.mjs',
   './participation.mjs', './phase4-core.mjs', './integrations.mjs',

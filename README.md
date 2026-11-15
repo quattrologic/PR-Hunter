@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 13 – true Brand Reels feed, local Reel import and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 17 – editable Video-DM workspace, private request tracking and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -376,3 +376,12 @@ Users can hide unsuitable videos and brands, or save a suggested brand as a styl
 The existing, scheduled business-discovery and hashtag scanners are unchanged in how they access Meta: **a separate permissioned Meta app and server-only tokens are still required**. Without permissions, no Instagram "For You" feed and no fabricated video results. The feature prioritizes clothing and streetwear; 90/10 is a maximum-relevance goal only when actual matching results exist. No automated DMs, comments, giveaways or unsanctioned Instagram scraping.
 
 PWA cache v23 includes the pure \`smart-scout.mjs\` module for offline use. A physical iPad Safari touch-and-embed pass remains required.
+
+
+## Phase 17 — Video-DM Assistant 2.0
+
+Home Scout and manual preparation open a single video/message workspace. The official Instagram preview loads on opening the workspace and is unloaded on close; original-post and brand-chat links remain available if Instagram refuses playback. The user can edit the generated text, copy text plus the original link, open the correct chat, paste and send manually. Separate Copy and Open actions preserve browser user gestures; clipboard denial selects the editable text for manual copying. Opening or copying never marks a request as sent.
+
+The exact Scout message and subsequent edits persist locally, including through existing plain/encrypted backup normalization. Legacy drafts retain their original templates. Reopening an existing brand/post pair preserves the edited message and status. The compact request list filters Prepared, Sent (awaiting reply), and Replied separately. Sending and replies still require explicit user confirmation; replied requests can be converted to the existing offers/packages workflow.
+
+PWA assets/cache advance to v24. The local development server now serves `.mjs` with a JavaScript MIME type so native browser modules load correctly. No Meta authorization or new discovery source is enabled by this phase. Physical iPad and real Instagram playback/chat handoff remain device acceptance checks.

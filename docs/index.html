@@ -10,9 +10,9 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <link rel="stylesheet" href="./instagram-white.css?v=23">
+  <link rel="stylesheet" href="./instagram-white.css?v=24">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=23"></script>
+  <script type="module" src="./app.js?v=24"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -223,6 +223,31 @@
         <h1>Video-DM-Assistent<span class="soft-accent">.</span></h1>
         <p>Für Aktionen wie „Send us this video“. PR-Hunter bereitet die passende private Nachricht vor – ohne dich als Creator oder Markenbotschafter auszugeben. Du leitest das Video in Instagram selbst per Teilen-Pfeil an die Marke weiter.</p>
       </div>
+      <div class="dm-how">
+        <div><strong>1</strong><span>Reel-Link aus Instagram kopieren</span></div>
+        <div><strong>2</strong><span>Nachricht in PR-Hunter vorbereiten</span></div>
+        <div><strong>3</strong><span>Video selbst per Instagram-DM teilen &amp; Text einfügen</span></div>
+      </div>
+      <form id="dmForm" class="dm-form">
+        <h2>Neue Video-Nachricht</h2>
+        <p>Beispiele aus deinen Bildern: <button type="button" data-dm-preset="brkdwn.studios"> @brkdwn.studios</button> <button type="button" data-dm-preset="lucidclub">@lucidclub</button>. Der jeweilige Original-Reel-Link muss noch eingefügt werden.</p>
+        <label>Instagram-Reel-Link<input id="dmReel" name="reelUrl" inputmode="url" type="url" required placeholder="https://www.instagram.com/reel/…" autocomplete="off"></label>
+        <label>Markenprofil<input id="dmBrand" name="brand" required maxlength="31" placeholder="@marke" autocomplete="off"></label>
+        <div class="dm-form-options">
+          <label>Sprache<select id="dmLanguage" name="language"><option value="en">Englisch (empfohlen für die Beispiele)</option><option value="de">Deutsch</option></select></label>
+          <label>Gewünschtes Produkt<select id="dmKind" name="kind"><option value="generic">Streetwear allgemein</option><option value="shirt">Shirt</option><option value="tracksuit">Tracksuit</option></select></label>
+        </div>
+        <button class="primary-btn" type="submit">Nachricht vorbereiten &amp; merken</button>
+        <p id="dmFormStatus" class="helper" role="status">Noch nichts versendet. Die Nachricht wird nur auf deinem iPad gespeichert.</p>
+      </form>
+      <div class="dm-stats">
+        <div><span>Vorbereitet</span><strong id="dmPreparedCount">0</strong></div>
+        <div><span>Selbst gesendet</span><strong id="dmSentCount">0</strong></div>
+        <div><span>Antwort erhalten</span><strong id="dmRepliedCount">0</strong></div>
+      </div>
+      <div class="section-header section-pad"><div><span class="mini-label">DEINE VIDEO-ANFRAGEN</span><h2>Meine Anfragen</h2></div><span class="counter-label">Keine automatischen Massen-DMs</span></div>
+      <label class="dm-filter">Anzeigen <select id="dmDraftFilter"><option value="all">Alle Anfragen</option><option value="prepared">Vorbereitet</option><option value="sent">Gesendet · wartet auf Antwort</option><option value="replied">Beantwortet</option></select></label>
+      <div id="dmDraftList" class="dm-draft-list" aria-live="polite"></div>
       <section class="brand-offer-panel" aria-labelledby="brandOffersTitle">
         <div class="brand-offer-heading">
           <div><span class="mini-label">DEIN PRIVATER VERLAUF</span><h2 id="brandOffersTitle">Angebote &amp; Pakete</h2>
@@ -247,30 +272,6 @@
         <p class="brand-offer-privacy">Nur lokal gespeichert. Keine Adresse, Telefonnummer, Zahlungsdaten oder privaten Chat-Screenshots eingeben.</p>
         <div id="brandOfferList" class="brand-offer-list" aria-live="polite"></div>
       </section>
-      <div class="dm-how">
-        <div><strong>1</strong><span>Reel-Link aus Instagram kopieren</span></div>
-        <div><strong>2</strong><span>Nachricht in PR-Hunter vorbereiten</span></div>
-        <div><strong>3</strong><span>Video selbst per Instagram-DM teilen &amp; Text einfügen</span></div>
-      </div>
-      <form id="dmForm" class="dm-form">
-        <h2>Neue Video-Nachricht</h2>
-        <p>Beispiele aus deinen Bildern: <button type="button" data-dm-preset="brkdwn.studios"> @brkdwn.studios</button> <button type="button" data-dm-preset="lucidclub">@lucidclub</button>. Der jeweilige Original-Reel-Link muss noch eingefügt werden.</p>
-        <label>Instagram-Reel-Link<input id="dmReel" name="reelUrl" inputmode="url" type="url" required placeholder="https://www.instagram.com/reel/…" autocomplete="off"></label>
-        <label>Markenprofil<input id="dmBrand" name="brand" required maxlength="31" placeholder="@marke" autocomplete="off"></label>
-        <div class="dm-form-options">
-          <label>Sprache<select id="dmLanguage" name="language"><option value="en">Englisch (empfohlen für die Beispiele)</option><option value="de">Deutsch</option></select></label>
-          <label>Gewünschtes Produkt<select id="dmKind" name="kind"><option value="generic">Streetwear allgemein</option><option value="shirt">Shirt</option><option value="tracksuit">Tracksuit</option></select></label>
-        </div>
-        <button class="primary-btn" type="submit">Nachricht vorbereiten &amp; merken</button>
-        <p id="dmFormStatus" class="helper" role="status">Noch nichts versendet. Die Nachricht wird nur auf deinem iPad gespeichert.</p>
-      </form>
-      <div class="dm-stats">
-        <div><span>Vorbereitet</span><strong id="dmPreparedCount">0</strong></div>
-        <div><span>Selbst gesendet</span><strong id="dmSentCount">0</strong></div>
-        <div><span>Antwort erhalten</span><strong id="dmRepliedCount">0</strong></div>
-      </div>
-      <div class="section-header section-pad"><div><span class="mini-label">DEINE VIDEO-ANFRAGEN</span><h2>Vorbereitete DMs</h2></div><span class="counter-label">Keine automatischen Massen-DMs</span></div>
-      <div id="dmDraftList" class="dm-draft-list" aria-live="polite"></div>
       <div class="dm-limits"><strong>Instagram-Versand bleibt manuell</strong><p>Die offizielle Messaging-API lässt keine frei adressierbaren ersten DMs an beliebige Marken zu. Die App kann Texte und Links kopieren, die Original-Reels öffnen und deine eigenen Bestätigungen speichern – aber weder eigenständig verschicken noch echte Instagram-Antworten auslesen. Wenn die Marke ausdrücklich das Video verlangt, nutze den <strong>Teilen-Pfeil direkt im Original-Reel</strong>; ein Link allein erfüllt möglicherweise nicht die Aufgabe.</p></div>
     </section>
     <section class="view" id="productsPanel" data-panel="products" hidden>
@@ -512,6 +513,13 @@
     <div class="participation-section"><h3>Zusätzliche Instagram-Aufgaben</h3><p>Wähle nur Aufgaben aus, die der Originalbeitrag tatsächlich verlangt.</p><div id="participationExtra" class="participation-extras"></div></div>
     <div class="participation-section"><h3>Kommentarvorschläge</h3><p>Nur zum manuellen Kopieren. Vor dem Veröffentlichen an die Aktion anpassen.</p><div id="participationTemplates" class="participation-templates"></div></div>
     <div class="participation-bottom"><span id="participationCounter">0 Aufgaben erledigt</span><button id="participationConfirm" type="button" class="primary-btn" disabled>Erst Aufgaben prüfen</button></div>
+  </div>
+</dialog>
+<dialog id="dmEditor" class="dm-editor" aria-labelledby="dmEditorTitle">
+  <header><h2 id="dmEditorTitle">Video &amp; Nachricht</h2><button type="button" id="dmEditorClose" aria-label="Schließen">✕</button></header>
+  <div class="dm-editor-body">
+    <div><div id="dmEditorPreview"></div><a id="dmEditorOriginal" target="_blank" rel="noopener noreferrer">Video öffnen &amp; teilen ↗</a><p>Vorschau nicht verfügbar? Öffne das Original. Verlangt die Marke das Video, teile es dort per Instagram-Pfeil.</p></div>
+    <div class="dm-editor-compose"><label for="dmEditorText">Deine Nachricht</label><textarea id="dmEditorText" maxlength="2000" rows="9"></textarea><p id="dmEditorStatus" role="status"></p><button type="button" id="dmEditorCopy">1 · Text + Link kopieren</button><a id="dmEditorChat" target="_blank" rel="noopener noreferrer">2 · Instagram-Chat öffnen ↗</a><p>In Instagram einfügen und selbst senden. Danach in „Meine Anfragen“ bestätigen.</p></div>
   </div>
 </dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
