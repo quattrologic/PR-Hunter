@@ -138,11 +138,12 @@ test('Instagram input labels are above their fields and match the iPad form',asy
   assert.ok(html.includes('<label for="brandReelLink">Instagram-Link</label>'));
   assert.ok(html.includes('<label for="brandReelHandle">Markenprofil</label>'));
   assert.ok(html.includes('placeholder="@suvene.de"'));
-  assert.ok(html.includes('app.js?v=18'));
+  assert.ok(html.includes('app.js?v=20'));
   assert.ok(css.includes('#brandReelImportForm .reel-import-field label'));
   assert.ok(css.includes('align-items:end'));
   assert.ok(app.includes("item.kind === 'post' ? 'BEITRAG'"));
-  assert.ok(app.includes("Vorschau laden"));
+  assert.ok(app.includes("mountInstagramAutoPreviews();"));
+  assert.ok(!app.includes("▶ Vorschau laden</button>"));
 });
 test('iPad UI, backup and scheduled official Meta connector are wired without public secrets',async()=>{
   const [html,app,sw,css,workflow,pkg,backend]=await Promise.all([
@@ -164,9 +165,9 @@ test('iPad UI, backup and scheduled official Meta connector are wired without pu
   assert.ok(app.includes('iframe'));
   assert.ok(sw.includes("'./instagram-brand-core.mjs'"));
   assert.ok(sw.includes("'instagram-reels.json'"));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v18'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v20'"));
   assert.ok(css.includes('.tile-real-image'));
-  assert.ok(css.includes('.tile-inline-preview'));
+  assert.ok(css.includes('.instagram-auto-preview'));
   assert.ok(workflow.includes('npm run instagram-scan'));
   assert.ok(workflow.includes('secrets.PR_HUNTER_META_IG_USER_ID'));
   assert.ok(workflow.includes('secrets.PR_HUNTER_META_USER_ACCESS_TOKEN'));

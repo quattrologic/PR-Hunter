@@ -386,3 +386,54 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,su
   #brandReelImportForm .reel-import-field,
   #brandReelImportForm button{grid-column:1/-1;width:100%}
 }
+
+/* iPad Instagram auto-preview, 3 simultaneous embedded posts maximum.
+   The observer lazily creates frames near view and discards offscreen frames. */
+#discoverPanel .instagram-live-tile{display:flex;flex-direction:column;gap:0;overflow:hidden;background:#fff}
+#discoverPanel .instagram-auto-preview{width:100%;height:475px;min-height:340px;position:relative;
+  background:#f9f9f9;overflow:hidden;isolation:isolate}
+#discoverPanel .instagram-auto-preview>iframe{width:100%;height:100%;display:block;border:0;background:#fff}
+#discoverPanel .instagram-auto-placeholder{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;flex-direction:column;gap:10px;padding:14px;
+  background:linear-gradient(145deg,#fbfbfb,#e9e9e9);color:#161616}
+#discoverPanel .instagram-auto-placeholder[hidden]{display:none}
+#discoverPanel .instagram-auto-tag{position:absolute;top:12px;left:12px;border-radius:16px;
+  font-size:10px;font-weight:750;letter-spacing:.035em;background:#fff;padding:6px 10px}
+#discoverPanel .instagram-auto-poster{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;z-index:-1}
+#discoverPanel .instagram-auto-initials{font-size:clamp(50px,8vw,94px);
+  letter-spacing:-.08em;font-weight:900;line-height:1}
+#discoverPanel .instagram-auto-loading{position:absolute;bottom:16px;left:10px;right:10px;
+  text-align:center;font-size:10px;font-weight:650;color:#676767;background:#ffffffea;
+  border-radius:7px;padding:9px 6px}
+#discoverPanel .instagram-auto-footer{display:flex;align-items:center;gap:7px;padding:8px;
+  min-height:48px;background:#fff}
+#discoverPanel .instagram-auto-brand{font-size:11px;font-weight:780;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+#discoverPanel .instagram-auto-footer button,#discoverPanel .instagram-auto-footer a{
+  display:inline-flex;align-items:center;justify-content:center;min-height:38px;
+  border:1px solid #e6e6e6;border-radius:7px;padding:7px 9px;background:#f7f7f7;
+  color:#1b1b1b;font-size:10px;font-weight:700;text-decoration:none;touch-action:manipulation}
+#discoverPanel .instagram-auto-footer a{background:#111;color:#fff;border-color:#111}
+#discoveryPreview iframe{width:100%;max-width:430px;min-height:340px;height:min(64vh,600px);
+  background:#fff;display:block;border:0}
+@media(max-width:670px){
+  #discoverPanel .instagram-auto-preview{height:390px;min-height:300px}
+  #discoverPanel .instagram-auto-footer{flex-wrap:wrap}
+  #discoverPanel .instagram-auto-brand{flex:1 1 calc(100% - 40px)}
+  #discoverPanel .instagram-auto-footer button,#discoverPanel .instagram-auto-footer a{flex:1 1 40%}
+}
+@media(max-width:380px){#discoverPanel .instagram-auto-preview{height:320px}}
+
+/* Brand marks in the top Instagram-style story strip; only brand-owned, sourced
+   website logo artwork is used. On network/image failure, retain the initials. */
+.story-ring-inner,.brand-logo-avatar{position:relative;overflow:hidden;isolation:isolate}
+.story-logo-fallback{display:grid;place-items:center;width:100%;height:100%;
+  line-height:1;font-size:inherit;font-weight:inherit;letter-spacing:inherit}
+.story-logo-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  object-position:center;background:#fff;display:none;padding:5px}
+.story-logo-image.is-loaded{display:block}
+.has-loaded-logo>.story-logo-fallback{visibility:hidden}
+.story-ring-inner.has-loaded-logo{background:#fff}
+.brand-logo-avatar .story-logo-image{padding:3px}
+.story-ring-inner:has(>.story-logo-image.is-loaded){border:0}

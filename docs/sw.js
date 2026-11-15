@@ -1,10 +1,10 @@
 // Phase 7: cache only PR-Hunter's assets and use an offline-safe navigation fallback.
 const CACHE_PREFIX = 'pr-hunter-ultimate-';
-const CACHE = CACHE_PREFIX + 'v18';
+const CACHE = CACHE_PREFIX + 'v20';
 const SHELL = [
   './', './index.html', './ultimate.css', './instagram-white.css', './app.js', './ultimate-core.mjs',
   './participation.mjs', './phase4-core.mjs', './integrations.mjs',
-  './phase6-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './manifest.webmanifest', './icon.svg'
+  './phase6-core.mjs', './phase7-core.mjs', './auto-hunter-core.mjs', './free-products.mjs', './dm-assistant.mjs', './brand-offers.mjs', './discovery-grid.mjs', './instagram-brand-core.mjs', './brand-logos.mjs', './manifest.webmanifest', './icon.svg'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

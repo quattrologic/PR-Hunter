@@ -128,8 +128,8 @@ test('new Instagram-style iPad screen remains navigable, offline, accessible and
   assert.ok(app.includes('getVisibleSlice(getSaved(),ui.visibleSaved)'));
   assert.ok(app.includes('ui.galleryItems=page.items'));
   assert.ok(app.includes('publicEmbedUrl(link)'));
-  assert.ok(app.includes("load.addEventListener('click'"));
-  assert.ok(app.includes("iframe.src=embed"));
+  assert.ok(app.includes('mountInstagramAutoPreviews();'));
+  assert.ok(app.includes("iframe.src=src"));
   assert.ok(app.includes("$('#dmReel').value=item.url"));
   assert.ok(app.includes('reelUrl(item.url)'));
   assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
@@ -138,7 +138,7 @@ test('new Instagram-style iPad screen remains navigable, offline, accessible and
   assert.ok(css.includes('.discover-dialog'));
   assert.ok(worker.includes("'./instagram-white.css'"));
   assert.ok(worker.includes("'./discovery-grid.mjs'"));
-  assert.ok(worker.includes("CACHE_PREFIX + 'v18'"));
+  assert.ok(worker.includes("CACHE_PREFIX + 'v20'"));
   assert.equal(JSON.parse(manifest).theme_color,'#ffffff');
   assert.ok(readme.includes('white Discover UI'));
   for(const file of ['discovery-grid.mjs','app.js','sw.js']){

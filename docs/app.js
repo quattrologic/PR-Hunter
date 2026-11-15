@@ -44,6 +44,7 @@ import {
   trustedMetaThumbnail, normalizeInstagramReelsReport, reelFeedStatusText,
   normalizeSavedReels, addSavedReel
 } from './instagram-brand-core.mjs';
+import {knownBrandLogo} from './brand-logos.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -151,10 +152,39 @@ function updateStats() {
   };
   Object.entries(stats).forEach(([id,value]) => { const el = $('#' + id); if (el) el.textContent = String(value); });
 }
-function brandAvatar(brand) {
-  const initials = brand.name.split(/\s+/).slice(0,2).map(x => x.slice(0,1)).join('').toUpperCase();
-  return '<span class="brand-avatar" aria-hidden="true">' + esc(initials) + '</span>';
+function brandLogoInner(brand){
+  const initials=brand.name.split(/\s+/).slice(0,2).map(x=>x.slice(0,1)).join('')
+    .toUpperCase().slice(0,2);
+  const logo=knownBrandLogo(brand.handle);
+  // Label text is always present for offline/non-image use.
+  const mark='<span class="story-logo-fallback">'+esc(initials)+'</span>';
+  if(!logo)return mark;
+  return mark+'<img class="story-logo-image" loading="eager" decoding="async" referrerpolicy="no-referrer"'+
+    ' src="'+esc(logo.primary)+'"'+(logo.fallback?' data-logo-fallback="'+esc(logo.fallback)+'"':'')+
+    ' alt="">';
 }
+function brandAvatar(brand){
+  return '<span class="brand-avatar brand-logo-avatar" aria-hidden="true">'+brandLogoInner(brand)+'</span>';
+}
+// Image error/load are captured even for brand rows added after startup.
+// On a failed source try only the brand's actual official website favicon, then show initials.
+document.addEventListener('load',event=>{
+  const img=event.target;
+  if(!(img instanceof HTMLImageElement)||!img.classList.contains('story-logo-image'))return;
+  img.classList.add('is-loaded');
+  img.parentElement?.classList.add('has-loaded-logo');
+},true);
+document.addEventListener('error',event=>{
+  const img=event.target;
+  if(!(img instanceof HTMLImageElement)||!img.classList.contains('story-logo-image'))return;
+  img.classList.remove('is-loaded');
+  img.parentElement?.classList.remove('has-loaded-logo');
+  const next=img.dataset.logoFallback;
+  if(next && img.dataset.logoRetried!=='1'){
+    img.dataset.logoRetried='1';
+    img.src=next;
+  }else img.remove();
+},true);
 function renderAccounts() {
   const container = $('#accountLabels');
   const suggestions = $('#accountLabelSuggestions');
@@ -174,8 +204,8 @@ function renderBrands() {
   $('#brandStrip').innerHTML = brands.map(brand =>
     '<button class="story-entry story-brand" type="button" data-action="story-brand" data-brand-id="' + esc(brand.id) +
     '" aria-label="Marke ' + esc(brand.name) + ' anzeigen">' +
-    '<span class="story-ring"><span class="story-ring-inner">' +
-    esc(brand.name.split(/\s+/).slice(0,2).map(word=>word.slice(0,1)).join('').toUpperCase().slice(0,2)) +
+    '<span class="story-ring"><span class="story-ring-inner">'+
+    brandLogoInner(brand)+
     '</span></span><span class="story-name">' + esc(brand.handle) + '</span></button>'
   ).join('');
   $('#brandCards').innerHTML = brands.map(brand => {
@@ -260,6 +290,73 @@ function tileTheme(key){
   for(const char of String(key||'brand')) hash=(hash*31 + char.charCodeAt(0))>>>0;
   return styles[hash%styles.length];
 }
+// Public Instagram embeds are created only while their tile is near the viewport.
+// No Meta token is needed for user-saved public links; Instagram controls playback.
+const MAX_AUTO_EMBEDS=3;
+let instagramPreviewObserver=null;
+const nearbyInstagramTiles=new Set();
+function instagramFrame(src,brand){
+  // "src" comes exclusively from publicEmbedUrl(), which validates Instagram HTTPS URLs.
+  const iframe=document.createElement('iframe');
+  iframe.title='Öffentliche Instagram-Vorschau von '+brand;
+  iframe.loading='eager'; // observation already defers creation until near the viewport
+  iframe.referrerPolicy='strict-origin-when-cross-origin';
+  iframe.allow='fullscreen';
+  iframe.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+  iframe.src=src;
+  return iframe;
+}
+function syncInstagramAutoPreviews(){
+  const host=$('#discoverCards');
+  if(!host)return;
+  const current=Array.from(host.querySelectorAll('.instagram-auto-preview'));
+  const midpoint=window.innerHeight/2;
+  const eligible=Array.from(nearbyInstagramTiles)
+    .filter(node=>node.isConnected && !node.closest('[hidden]'))
+    .sort((a,b)=>{
+      const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
+      return Math.abs(ar.top+ar.height/2-midpoint)-Math.abs(br.top+br.height/2-midpoint);
+    }).slice(0,MAX_AUTO_EMBEDS);
+  const active=new Set(eligible);
+  for(const node of current){
+    const iframe=node.querySelector('iframe');
+    if(!active.has(node)){
+      if(iframe)iframe.remove(); // avoid off-screen video/audio & unnecessary data
+      const placeholder=node.querySelector('.instagram-auto-placeholder');
+      if(placeholder)placeholder.hidden=false;
+      continue;
+    }
+    if(iframe)continue;
+    const source=node.dataset.embedSrc;
+    const brand=node.dataset.brand;
+    if(!source || publicEmbedUrl(source.replace(/embed\/$/,''))!==source)continue;
+    node.append(instagramFrame(source,brand||'Marke'));
+    const placeholder=node.querySelector('.instagram-auto-placeholder');
+    if(placeholder)placeholder.hidden=true;
+  }
+}
+function mountInstagramAutoPreviews(){
+  if(instagramPreviewObserver)instagramPreviewObserver.disconnect();
+  instagramPreviewObserver=null;
+  nearbyInstagramTiles.clear();
+  if(ui.tab!=='discover')return;
+  const tiles=Array.from(document.querySelectorAll('#discoverCards .instagram-auto-preview'));
+  if(!tiles.length)return;
+  if(typeof IntersectionObserver!=='function'){
+    // Older browsers still show automatic previews for the first few cards.
+    tiles.slice(0,MAX_AUTO_EMBEDS).forEach(node=>nearbyInstagramTiles.add(node));
+    syncInstagramAutoPreviews();
+    return;
+  }
+  instagramPreviewObserver=new IntersectionObserver(entries=>{
+    for(const entry of entries){
+      if(entry.isIntersecting)nearbyInstagramTiles.add(entry.target);
+      else nearbyInstagramTiles.delete(entry.target);
+    }
+    syncInstagramAutoPreviews();
+  },{rootMargin:'140px 0px',threshold:0.01});
+  tiles.forEach(node=>instagramPreviewObserver.observe(node));
+}
 function renderDiscoveryTile(item,index) {
   const brand=clean(item.brand).replace(/^@/,'') || 'Originalquelle';
   const title=clean(item.title);
@@ -268,27 +365,36 @@ function renderDiscoveryTile(item,index) {
     item.kind==='drop' ? 'DROP' : item.kind==='pr' ? 'PR' : 'FUNDHINWEIS';
   const brandInitials=brand.replace(/[^a-z0-9]+/ig,' ').trim().split(/\s+/).slice(0,2)
     .map(word=>word.slice(0,1)).join('').toUpperCase() || 'PR';
-  const photo=(item.kind==='reel'||item.kind==='post') ? trustedMetaThumbnail(item.thumbnailUrl) : null;
-  const label=item.verifiedPrice!==null ?
-    item.verifiedPrice.toLocaleString('de-DE',{style:'currency',currency:'EUR'}) :
-    ((item.kind==='reel'||item.kind==='post') ? 'Instagram von '+brand:title);
-  const image=photo?'<img class="tile-real-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+
-    esc(photo)+'" alt="Reel-Vorschaubild von '+esc(brand)+'">':'';
-  const suffix=((item.kind==='reel'||item.kind==='post')&&!photo)?
-    '<button type="button" class="tile-inline-preview" data-action="inline-reel-preview" data-tile-index="'+index+
-    '" aria-label="Echte Instagram-Vorschau von '+esc(brand)+' laden" >▶ Vorschau laden</button>':'';
-  return '<article class="discover-tile'+((item.kind==='reel'||item.kind==='post')?' reel-tile':'')+'">' +
-    '<button type="button" class="discover-tile-open" data-action="open-discovery" data-tile-index="' + index +
+  const instagram=(item.kind==='reel'||item.kind==='post')?publicEmbedUrl(item.url):null;
+  if(instagram){
+    const thumbnail=trustedMetaThumbnail(item.thumbnailUrl);
+    const poster=thumbnail?
+      '<img class="instagram-auto-poster" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+
+      esc(thumbnail)+'" alt="Öffentliches Vorschaubild von '+esc(brand)+'">':
+      '<span class="instagram-auto-initials" aria-hidden="true">'+esc(brandInitials)+'</span>';
+    return '<article class="discover-tile instagram-live-tile">'+
+      '<div class="instagram-auto-preview" data-embed-src="'+esc(instagram)+
+      '" data-brand="'+esc(brand)+'" aria-label="'+esc('Instagram-'+kind+' von '+brand)+'">'+
+      '<div class="instagram-auto-placeholder"><span class="instagram-auto-tag">'+esc(kind)+'</span>'+
+      poster+'<span class="instagram-auto-loading">Instagram-Vorschau wird geladen …</span></div></div>'+
+      '<div class="instagram-auto-footer">'+
+      '<span class="tile-avatar" aria-hidden="true">'+esc(brandInitials)+'</span>'+
+      '<span class="instagram-auto-brand">@'+esc(brand)+'</span>'+
+      '<button type="button" data-action="open-discovery" data-tile-index="'+index+'">Details</button>'+
+      '<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer" aria-label="Original bei Instagram öffnen">Instagram ↗</a>'+
+      '</div></article>';
+  }
+  const label=typeof item.verifiedPrice==='number' ?
+    item.verifiedPrice.toLocaleString('de-DE',{style:'currency',currency:'EUR'}) : title;
+  return '<article class="discover-tile"><button type="button" class="discover-tile-open" data-action="open-discovery" data-tile-index="' + index +
     '" aria-label="' + esc(kind+' von '+brand+': '+title) + '">' +
-    '<span class="tile-art '+esc(tileTheme(brand+title))+(photo?' has-real-photo':'')+'">' +
-    image+
+    '<span class="tile-art ' + esc(tileTheme(brand+title)) + '">' +
     '<span class="tile-category">' + esc(kind) + '</span>' +
-    (photo ? '' : '<span class="tile-mark" aria-hidden="true">'+esc(brandInitials)+'</span>') +
-    (photo?'<span class="tile-play" aria-hidden="true">▶</span>':'') +
+    '<span class="tile-mark" aria-hidden="true">' + esc(brandInitials) + '</span>' +
     '<span class="tile-label">' + esc(label.slice(0,45)) + '</span></span>' +
     '<span class="tile-footer"><span class="tile-avatar" aria-hidden="true">' + esc(brandInitials) +
     '</span><span class="tile-brand">' + esc(brand) + '</span><span class="tile-action-icon" aria-hidden="true">↗</span></span>' +
-    '</button>'+suffix+'</article>';
+    '</button></article>';
 }
 function openDiscovery(item){
   if(!item)return;
@@ -311,26 +417,9 @@ function openDiscovery(item){
   const message=document.createElement('p');
   message.className='preview-placeholder';
   if(embed){
-    const heading=document.createElement('strong');
-    heading.textContent='Instagram-Vorschau';
-    message.append(heading,'Wird nur für öffentliche Beiträge geladen. Falls Instagram die Einbettung blockiert, öffne das Original.');
-    const load=document.createElement('button');
-    load.type='button';
-    load.className='primary-btn';
-    load.textContent='Vorschau laden';
-    load.addEventListener('click',()=>{
-      const iframe=document.createElement('iframe');
-      iframe.title='Öffentliche Instagram-Vorschau: '+item.brand;
-      iframe.loading='lazy';
-      iframe.referrerPolicy='strict-origin-when-cross-origin';
-      iframe.allow='fullscreen';
-      iframe.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
-      iframe.src=embed;
-      preview.replaceChildren(iframe);
-    });
-    preview.append(message,load);
+    preview.replaceChildren(instagramFrame(embed,item.brand));
     $('#discoveryDisclaimer').textContent=
-      'Instagram kann öffentliche Einbettungen einschränken. Kein Login in PR-Hunter und keine automatische Weiterleitung per DM.';
+      'Öffentliche Instagram-Vorschau wird automatisch geladen. Wenn Instagram die Einbettung sperrt, öffne das Original.';
   }else {
     const heading=document.createElement('strong');
     heading.textContent='Originalquelle ansehen';
@@ -388,6 +477,7 @@ function renderFeed() {
     '<div class="empty"><div class="symbol">⌕</div><strong>Noch keine passenden Einträge</strong><p>' +
       esc(filterEmptyMessage(ui.discoveryMode)) +
       '</p><button class="subtle-btn" type="button" data-tab="inbox">Original-Link hinzufügen</button></div>';
+  mountInstagramAutoPreviews();
   const activeFilter=document.querySelector('[data-discovery].active');
   if(activeFilter)activeFilter.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
   const reelTools=$('#brandReelsTools');
@@ -908,30 +998,6 @@ document.addEventListener('click', event => {
     if(!ui.galleryItems.length)toast('Für diese Marke sind noch keine öffentlichen Fundhinweise gespeichert. Profil im Brand Radar öffnen.');
     return;
   }
-  if(action==='inline-reel-preview'){
-    const index=Number(button.dataset.tileIndex);
-    const item=Number.isInteger(index)?ui.galleryItems[index]:null;
-    const embed=(item?.kind==='reel'||item?.kind==='post')?publicEmbedUrl(item.url):null;
-    const tile=button.closest('.discover-tile');
-    if(!embed||!tile)return;
-    const frame=document.createElement('iframe');
-    frame.title='Öffentliche Instagram-Vorschau von '+item.brand;
-    frame.loading='lazy';
-    frame.referrerPolicy='strict-origin-when-cross-origin';
-    frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
-    frame.allow='fullscreen';
-    frame.src=embed;
-    const wrap=document.createElement('div');
-    wrap.className='inline-reel-view';
-    const link=document.createElement('a');
-    link.href=item.url;
-    link.target='_blank';
-    link.rel='noopener noreferrer';
-    link.textContent='Reel direkt auf Instagram öffnen ↗';
-    wrap.append(frame,link);
-    tile.replaceChildren(wrap);
-    return;
-  }
   if (action === 'open-discovery'){
     const index=Number(button.dataset.tileIndex);
     if(Number.isInteger(index) && index>=0 && index<ui.galleryItems.length)openDiscovery(ui.galleryItems[index]);
@@ -1309,7 +1375,7 @@ $('#brandReelImportForm').addEventListener('submit',event=>{
   save();event.currentTarget.reset();
   ui.discoveryMode='reels';ui.visibleFeed=FEED_PAGE_SIZE;
   renderFeed();
-  toast('Instagram-Link gespeichert. Tippe auf „Vorschau laden“, um den Originalbeitrag anzusehen.');
+  toast('Instagram-Link gespeichert – die Vorschau erscheint automatisch im Feed.');
 });
 $('#dmForm').addEventListener('submit',event=>{
   event.preventDefault();
