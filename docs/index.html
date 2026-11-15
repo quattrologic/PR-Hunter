@@ -10,9 +10,9 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <link rel="stylesheet" href="./instagram-white.css?v=16">
+  <link rel="stylesheet" href="./instagram-white.css?v=17">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=16"></script>
+  <script type="module" src="./app.js?v=17"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -93,6 +93,20 @@
           <button class="discover-filter" type="button" data-discovery="deals" aria-pressed="false">1–10 €</button>
           <button class="discover-filter" type="button" data-discovery="black-friday" aria-pressed="false">Black Friday</button>
         </div>
+        <section class="brand-reels-tools" id="brandReelsTools" hidden aria-label="Brand-Reels importieren">
+          <div class="brand-reels-heading">
+            <strong>Brand Reels</strong>
+            <span id="brandReelsStatus" role="status" aria-live="polite">Öffentliche Videos werden geprüft …</span>
+          </div>
+          <form id="brandReelImportForm" class="brand-reel-import">
+            <label class="sr-only" for="brandReelLink">Instagram-Reel-Link</label>
+            <input id="brandReelLink" name="url" type="url" required inputmode="url" autocomplete="off" placeholder="Instagram-Reel-Link einfügen">
+            <label class="sr-only" for="brandReelHandle">Instagram-Marke</label>
+            <input id="brandReelHandle" name="brand" type="text" maxlength="31" required autocomplete="off" placeholder="@marke">
+            <button type="submit">Hinzufügen</button>
+          </form>
+          <p>Nur echte öffentliche Reels. Nicht jedes Marken-Reel ist ein Gewinnspiel.</p>
+        </section>
         <details class="discover-advanced">
           <summary>Weitere Filter <span>⌄</span></summary>
           <div class="filters" id="filters" aria-label="Angebote nach Thema filtern">
@@ -415,6 +429,7 @@
       <button type="button" class="discovery-dialog-close" data-close="discoveryDialog" aria-label="Ansicht schließen">×</button>
     </div>
     <div id="discoveryPreview" class="discovery-preview"></div>
+    <p id="discoveryCaption" class="discovery-caption" hidden></p>
     <p id="discoveryDisclaimer" class="discovery-disclaimer">Öffentliche Inhalte nur, sofern der Anbieter die Einbettung zulässt.</p>
     <div class="discovery-dialog-actions">
       <a id="discoveryOriginal" href="#" target="_blank" rel="noopener noreferrer" class="primary-btn">Original öffnen ↗</a>

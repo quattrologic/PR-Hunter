@@ -12,6 +12,9 @@ on:
       - "docs/auto-hunter-core.mjs"
       - "scripts/free-products-scan.mjs"
       - "docs/free-products.mjs"
+      - "scripts/instagram-business-scan.mjs"
+      - "docs/instagram-brand-core.mjs"
+      - "config/instagram-brands.json"
       - ".github/workflows/scout.yml"
   schedule:
     - cron: "14 */6 * * *"
@@ -42,13 +45,18 @@ jobs:
         run: npm run auto-scan
       - name: Prepare public Free-Product-Hunter report
         run: npm run free-products-scan
+      - name: Refresh permitted public Instagram Brand Reels
+        env:
+          META_IG_USER_ID: ${{ secrets.PR_HUNTER_META_IG_USER_ID }}
+          META_USER_ACCESS_TOKEN: ${{ secrets.PR_HUNTER_META_USER_ACCESS_TOKEN }}
+        run: npm run instagram-scan
       - name: Commit public opportunity catalog if changed
         shell: bash
         run: |
-          if ! git diff --quiet -- docs/opportunities.json docs/auto-hunter.json docs/free-products-report.json; then
+          if ! git diff --quiet -- docs/opportunities.json docs/auto-hunter.json docs/free-products-report.json docs/instagram-reels.json; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add docs/opportunities.json docs/auto-hunter.json docs/free-products-report.json
+            git add docs/opportunities.json docs/auto-hunter.json docs/free-products-report.json docs/instagram-reels.json
             git commit -m "data: refresh free-product discovery and giveaway reports"
             git push
           fi

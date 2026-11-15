@@ -7,6 +7,7 @@ import { normalizeAutoPrefs } from './auto-hunter-core.mjs';
 import { normalizeFreeProductPrefs, normalizeProgramProgress } from './free-products.mjs';
 import { normalizeDmDrafts } from './dm-assistant.mjs';
 import { normalizeBrandOffers } from './brand-offers.mjs';
+import { normalizeSavedReels } from './instagram-brand-core.mjs';
 
 const MAX_BATCH = 40;
 const MAX_BACKUP_BYTES = 2_000_000;
@@ -192,6 +193,7 @@ export function parseBackup(text) {
     freePrefs:normalizeFreeProductPrefs(raw.freePrefs),
     programProgress:normalizeProgramProgress(raw.programProgress),
     dmDrafts:normalizeDmDrafts(raw.dmDrafts),
-    brandOffers:normalizeBrandOffers(raw.brandOffers)
+    brandOffers:normalizeBrandOffers(raw.brandOffers),
+    savedReels:normalizeSavedReels(raw.savedReels)
   };
 }

@@ -1,0 +1,13 @@
+{
+  "description": "Public professional-brand watchlist for permissioned Meta Business Discovery; these handles are not Instagram login credentials.",
+  "maxAccounts": 20,
+  "brands": [
+    "suvene.de",
+    "ranya.owt",
+    "6pm.update",
+    "moremoneymorelove.de",
+    "deputydepartment",
+    "lucidclub",
+    "brkdwn.studios"
+  ]
+}

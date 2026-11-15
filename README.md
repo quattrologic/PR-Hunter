@@ -2,7 +2,7 @@
 
 **PR-Hunter** is an open-source, iPad-first progressive web app for discovering and tracking public product-testing, giveaway, and brand-collaboration opportunities.
 
-**Status: Phase 12 – private brand DM-offer tracking and manual parcel follow-up in the white iPad UI.** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
+**Status: Phase 13 – true Brand Reels feed, local Reel import and opt-in official Meta Business Discovery connector (not yet authorized).** The dashboard and scheduled public-feed scanner are implemented. No Instagram account is connected, no real application is submitted, and no products are guaranteed.
 
 ## Discovery priority
 
@@ -300,3 +300,26 @@ A streetwear brand may send a message offering free clothes directly, without an
 - The iPad interface remains clean, white and monochrome. The new module is cached with service worker v15.
 
 **Safety:** Never pay a surprise shipping/customs fee, disclose card credentials or share your delivery address before independently verifying the official sender, shipping conditions and whether the package is truly free. A brand message is an **offer**, not an accepted shipment or a guaranteed free product. No personal names, addresses, passwords, shipping labels or DM screenshots are stored by this module.
+
+
+## Phase 13 – Real Instagram Brand Reels, without an invented Instagram connection
+
+The iPad **Reels** filter supports (1) user-imported public Reel URLs saved on this device, (2) existing Video-DM Reel links, and (3) after authorized Meta developer setup, **recent public Reels by professional brand accounts**. Only valid real \`/reel/\` permalinks can enter the official feed. Where the official API supplies a trustworthy \`thumbnail_url\`, the grid shows that real photo, with no invented image. Otherwise users may load an Instagram-hosted iframe on a deliberate tap or open the exact original Reel. Some accounts block embedding.
+
+### How to activate the official scheduled source (not active by default)
+
+Requires a Meta developer app using Facebook Login for Business, permitted Business Discovery access, a Facebook Page linked with an authorized Instagram Professional account, and maintained tokens. Configure only **GitHub Actions secrets** (never commit them):
+- \`PR_HUNTER_META_IG_USER_ID\`: numeric ID of the authorized Professional Instagram account
+- \`PR_HUNTER_META_USER_ACCESS_TOKEN\`: server-side permitted Meta access token
+
+\`scripts/instagram-business-scan.mjs\` requests the public professional-brand handles in \`config/instagram-brands.json\` (up to 20) via Graph API \`v27.0\` \`business_discovery.username(...)\` and writes public sanitized links, captions and thumbnails into \`docs/instagram-reels.json\` on the regular 6-hour scanner. It does **not** retrieve the person's following feed, private profiles or personal account media, and does not automate DMs or giveaways. Permission scopes/App Review and API quotas apply. No OAuth secrets are stored in public Pages.
+
+Without valid secrets and permissions the public feed reports \`status: "not-configured"\`, with **zero** official live Instagram Reels. A new Instagram personal account alone does not activate this. The supported external setup involves Meta and a professional account and can take approval.
+
+### Works immediately, even without a connected Instagram account
+
+Select **Reels**, paste a genuine public Reel URL and brand handle, and save it privately. It appears in the grid, with **Video laden** to load an official Instagram embed when supported. This action does not create or send a DM. The \`savedReels\` field is included in existing password-protected backups and keeps the \`pr-hunter-state-v1\` key. Any text or images shown are linked to genuine returned source data, and no Reel is mislabeled as a guaranteed giveaway.
+
+References:
+- https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api
+- https://developers.facebook.com/docs/instagram-platform/reference/instagram-media/v21.0/

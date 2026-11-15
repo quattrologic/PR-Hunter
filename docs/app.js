@@ -40,6 +40,10 @@ import {
   DISCOVERY_FILTERS, reelUrl, publicEmbedUrl, discoveryCards,
   filterEmptyMessage
 } from './discovery-grid.mjs';
+import {
+  trustedMetaThumbnail, normalizeInstagramReelsReport, reelFeedStatusText,
+  normalizeSavedReels, addSavedReel
+} from './instagram-brand-core.mjs';
 
 const STORE = 'pr-hunter-state-v1'; // Preserve the existing iPad user's saved data.
 const $ = selector => document.querySelector(selector);
@@ -47,9 +51,10 @@ const ui = {
   tab:'discover', category:'focus', query:'', catalog:[], generatedAt:null,
   assistantOfferId:null, verifiedOnly:false, endingSoonOnly:false, accountQuery:'',
   brandFilter:null, sourceStatus:[], visibleFeed:FEED_PAGE_SIZE, visibleSaved:FEED_PAGE_SIZE,
-  discoveryMode:'for-you', galleryItems:[], activeGalleryItem:null
+  discoveryMode:'for-you', galleryItems:[], activeGalleryItem:null,
+  instagramReport:normalizeInstagramReelsReport({status:'not-configured'})
 };
-const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[] };
+const empty = { saved:[], tracked:{}, manual:[], brands:[], activity:[], savedDetails:{}, checklists:{}, accounts:[], integration:{}, alerts:{}, display:{}, autoPrefs:{}, freePrefs:{}, programProgress:{}, dmDrafts:[], brandOffers:[], savedReels:[] };
 let state;
 try { state = { ...empty, ...JSON.parse(localStorage.getItem(STORE) || '{}') }; }
 catch { state = { ...empty }; }
@@ -68,6 +73,7 @@ state.autoPrefs = normalizeAutoPrefs(state.autoPrefs);
 state.freePrefs = normalizeFreeProductPrefs(state.freePrefs);
 state.programProgress = normalizeProgramProgress(state.programProgress);
 state.dmDrafts = normalizeDmDrafts(state.dmDrafts);
+state.savedReels = normalizeSavedReels(state.savedReels);
 state.brandOffers = normalizeBrandOffers(state.brandOffers);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clean = value => String(value ?? '').trim();
@@ -262,19 +268,27 @@ function renderDiscoveryTile(item,index) {
     item.kind==='drop' ? 'DROP' : item.kind==='pr' ? 'PR' : 'FUNDHINWEIS';
   const brandInitials=brand.replace(/[^a-z0-9]+/ig,' ').trim().split(/\s+/).slice(0,2)
     .map(word=>word.slice(0,1)).join('').toUpperCase() || 'PR';
-  const label=item.kind==='reel' ? 'Instagram · selbst gespeichert' :
-    item.verifiedPrice!==null ? item.verifiedPrice.toLocaleString('de-DE',{style:'currency',currency:'EUR'}) :
-    title;
-  return '<article class="discover-tile"><button type="button" class="discover-tile-open" data-action="open-discovery" data-tile-index="' + index +
+  const photo=item.kind==='reel' ? trustedMetaThumbnail(item.thumbnailUrl) : null;
+  const label=item.verifiedPrice!==null ?
+    item.verifiedPrice.toLocaleString('de-DE',{style:'currency',currency:'EUR'}) :
+    (item.kind==='reel'? 'Reel von '+brand:title);
+  const image=photo?'<img class="tile-real-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+
+    esc(photo)+'" alt="Reel-Vorschaubild von '+esc(brand)+'">':'';
+  const suffix=(item.kind==='reel'&&!photo)?
+    '<button type="button" class="tile-inline-preview" data-action="inline-reel-preview" data-tile-index="'+index+
+    '" aria-label="Echte Instagram-Vorschau von '+esc(brand)+' laden">▶ Video laden</button>':'';
+  return '<article class="discover-tile'+(item.kind==='reel'?' reel-tile':'')+'">' +
+    '<button type="button" class="discover-tile-open" data-action="open-discovery" data-tile-index="' + index +
     '" aria-label="' + esc(kind+' von '+brand+': '+title) + '">' +
-    '<span class="tile-art ' + esc(tileTheme(brand+title)) + '">' +
+    '<span class="tile-art '+esc(tileTheme(brand+title))+(photo?' has-real-photo':'')+'">' +
+    image+
     '<span class="tile-category">' + esc(kind) + '</span>' +
-    '<span class="tile-mark" aria-hidden="true">' + esc(brandInitials) + '</span>' +
-    (item.kind==='reel' ? '<span class="tile-play" aria-hidden="true">▶</span>' : '') +
-    '<span class="tile-label">' + esc((item.verifiedPrice!==null ? label : title).slice(0,45)) + '</span></span>' +
+    (photo ? '' : '<span class="tile-mark" aria-hidden="true">'+esc(brandInitials)+'</span>') +
+    (photo?'<span class="tile-play" aria-hidden="true">▶</span>':'') +
+    '<span class="tile-label">' + esc(label.slice(0,45)) + '</span></span>' +
     '<span class="tile-footer"><span class="tile-avatar" aria-hidden="true">' + esc(brandInitials) +
     '</span><span class="tile-brand">' + esc(brand) + '</span><span class="tile-action-icon" aria-hidden="true">↗</span></span>' +
-    '</button></article>';
+    '</button>'+suffix+'</article>';
 }
 function openDiscovery(item){
   if(!item)return;
@@ -285,6 +299,9 @@ function openDiscovery(item){
   $('#discoveryTitle').textContent=item.title;
   $('#discoveryKind').textContent=item.kind==='reel'?'Instagram Reel':'Öffentliche Fundstelle';
   $('#discoveryBrand').textContent=item.brand;
+  const caption=$('#discoveryCaption');
+  caption.textContent=item.caption||'';
+  caption.hidden=!item.caption;
   const original=$('#discoveryOriginal');
   original.href=link;
   original.textContent=item.kind==='reel'?'Original-Reel öffnen ↗':'Original-Angebot öffnen ↗';
@@ -353,9 +370,15 @@ function renderFeed() {
   const ending = $('#endingSoonButton');
   if (verified) { verified.classList.toggle('active', ui.verifiedOnly); verified.setAttribute('aria-pressed', String(ui.verifiedOnly)); }
   if (ending) { ending.classList.toggle('active', ui.endingSoonOnly); ending.setAttribute('aria-pressed', String(ui.endingSoonOnly)); }
+  const filteredBrand=ui.brandFilter && watchedBrands().find(x=>x.id===ui.brandFilter);
+  const matchesBrand=entry=>!filteredBrand ||
+    String(entry.brand||'').replace(/^@/,'').toLowerCase()===filteredBrand.handle.toLowerCase();
+  const useReels=!ui.verifiedOnly && !ui.endingSoonOnly;
   const candidates=discoveryCards(feed,
-    ui.verifiedOnly || ui.endingSoonOnly || ui.brandFilter ? [] : state.dmDrafts,
-    {mode:ui.discoveryMode,query:ui.query});
+    useReels?state.dmDrafts.filter(d=>matchesBrand(d)):[],
+    {mode:ui.discoveryMode,query:ui.query,
+     savedReels:useReels?state.savedReels.filter(matchesBrand):[],
+     brandReels:useReels?ui.instagramReport.reels.filter(matchesBrand):[]});
   const page=getVisibleSlice(candidates,ui.visibleFeed);
   ui.galleryItems=page.items;
   $('#discoverCards').innerHTML=page.total ?
@@ -367,7 +390,10 @@ function renderFeed() {
       '</p><button class="subtle-btn" type="button" data-tab="inbox">Original-Link hinzufügen</button></div>';
   const activeFilter=document.querySelector('[data-discovery].active');
   if(activeFilter)activeFilter.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
-  const feedCount=$('#feedResultCount');
+  const reelTools=$('#brandReelsTools');
+  reelTools.hidden=ui.discoveryMode!=='reels';
+  $('#brandReelsStatus').textContent=reelFeedStatusText(ui.instagramReport);
+    const feedCount=$('#feedResultCount');
   if(feedCount)feedCount.textContent=page.total ?
     page.items.length+' von '+page.total+' Einträgen' : '0 Einträge';
   document.querySelectorAll('[data-discovery]').forEach(button=>{
@@ -724,11 +750,18 @@ async function refresh() {
     $('#syncLabel').textContent = ui.generatedAt ? 'Scout: ' + new Date(ui.generatedAt).toLocaleString('de-DE') : 'Noch kein Scan';
     $('#sourceHealth').textContent = 'Öffentliche Feeds: ' + (payload.sourcesSucceeded ?? '?') + '/' + (payload.sourcesChecked ?? '?') +
       ' erreichbar · ' + (payload.curatedActive ?? 0) + ' redaktionell geprüfte Aktionen · ' +
-      ui.catalog.length + ' Fundhinweise · keine Instagram-Automation';
+      ui.catalog.length + ' Fundhinweise · offizielle Marken-Reels nur nach Meta-Freigabe';
   } catch {
     ui.sourceStatus = [];
     $('#syncLabel').textContent = 'Katalog offline';
     $('#sourceHealth').textContent = 'Zurzeit keine Verbindung zu den öffentlichen Feeds. Gespeicherte Aktionen bleiben lokal erhalten.';
+  }
+  try {
+    const response=await fetch('./instagram-reels.json',{cache:'no-store'});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    ui.instagramReport=normalizeInstagramReelsReport(await response.json());
+  } catch {
+    ui.instagramReport=normalizeInstagramReelsReport({status:'unavailable'});
   }
   render();
 }
@@ -873,6 +906,30 @@ document.addEventListener('click', event => {
     ui.query='';$('#search').value='';
     setTab('discover');
     if(!ui.galleryItems.length)toast('Für diese Marke sind noch keine öffentlichen Fundhinweise gespeichert. Profil im Brand Radar öffnen.');
+    return;
+  }
+  if(action==='inline-reel-preview'){
+    const index=Number(button.dataset.tileIndex);
+    const item=Number.isInteger(index)?ui.galleryItems[index]:null;
+    const embed=item?.kind==='reel'?publicEmbedUrl(item.url):null;
+    const tile=button.closest('.discover-tile');
+    if(!embed||!tile)return;
+    const frame=document.createElement('iframe');
+    frame.title='Öffentliche Instagram-Vorschau von '+item.brand;
+    frame.loading='lazy';
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+    frame.allow='fullscreen';
+    frame.src=embed;
+    const wrap=document.createElement('div');
+    wrap.className='inline-reel-view';
+    const link=document.createElement('a');
+    link.href=item.url;
+    link.target='_blank';
+    link.rel='noopener noreferrer';
+    link.textContent='Reel direkt auf Instagram öffnen ↗';
+    wrap.append(frame,link);
+    tile.replaceChildren(wrap);
     return;
   }
   if (action === 'open-discovery'){
@@ -1242,6 +1299,17 @@ $('#brandOfferList').addEventListener('change',event=>{
   }
   state.brandOffers=updateBrandOffer(state.brandOffers,id,{status:next});
   save();renderBrandOffers();
+});
+$('#brandReelImportForm').addEventListener('submit',event=>{
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const result=addSavedReel(state.savedReels,String(data.get('brand')||''),String(data.get('url')||''));
+  if(!result.added){toast(result.reason);return;}
+  state.savedReels=result.reels;
+  save();event.currentTarget.reset();
+  ui.discoveryMode='reels';ui.visibleFeed=FEED_PAGE_SIZE;
+  renderFeed();
+  toast('Echtes Reel privat gespeichert. Für die Vorschau „Video laden“ antippen.');
 });
 $('#dmForm').addEventListener('submit',event=>{
   event.preventDefault();
