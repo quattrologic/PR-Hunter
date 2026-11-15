@@ -165,7 +165,7 @@ test('iPad UI, backup and scheduled official Meta connector are wired without pu
   assert.ok(app.includes('iframe'));
   assert.ok(sw.includes("'./instagram-brand-core.mjs'"));
   assert.ok(sw.includes("'instagram-reels.json'"));
-  assert.ok(sw.includes("CACHE_PREFIX + 'v25'"));
+  assert.ok(sw.includes("CACHE_PREFIX + 'v26'"));
   assert.ok(css.includes('.tile-real-image'));
   assert.ok(css.includes('.instagram-auto-preview'));
   assert.ok(workflow.includes('npm run instagram-scan'));
