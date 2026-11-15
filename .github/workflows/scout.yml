@@ -12,6 +12,7 @@ on:
       - "docs/auto-hunter-core.mjs"
       - "scripts/free-products-scan.mjs"
       - "docs/free-products.mjs"
+      - "docs/free-drops.mjs"
       - "scripts/instagram-business-scan.mjs"
       - "docs/instagram-brand-core.mjs"
       - "config/instagram-brands.json"
