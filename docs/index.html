@@ -10,9 +10,9 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./ultimate.css">
-  <link rel="stylesheet" href="./instagram-white.css?v=17">
+  <link rel="stylesheet" href="./instagram-white.css?v=18">
   <title>PR-Hunter · Streetwear Discover</title>
-  <script type="module" src="./app.js?v=17"></script>
+  <script type="module" src="./app.js?v=18"></script>
 </head>
 <body>
 <a class="skip-link" href="#discoverPanel">Direkt zu den Angeboten springen</a>
@@ -93,19 +93,23 @@
           <button class="discover-filter" type="button" data-discovery="deals" aria-pressed="false">1–10 €</button>
           <button class="discover-filter" type="button" data-discovery="black-friday" aria-pressed="false">Black Friday</button>
         </div>
-        <section class="brand-reels-tools" id="brandReelsTools" hidden aria-label="Brand-Reels importieren">
+        <section class="brand-reels-tools" id="brandReelsTools" hidden aria-label="Instagram-Beiträge importieren">
           <div class="brand-reels-heading">
-            <strong>Brand Reels</strong>
+            <strong>Instagram-Reels &amp; Beiträge</strong>
             <span id="brandReelsStatus" role="status" aria-live="polite">Öffentliche Videos werden geprüft …</span>
           </div>
           <form id="brandReelImportForm" class="brand-reel-import">
-            <label class="sr-only" for="brandReelLink">Instagram-Reel-Link</label>
-            <input id="brandReelLink" name="url" type="url" required inputmode="url" autocomplete="off" placeholder="Instagram-Reel-Link einfügen">
-            <label class="sr-only" for="brandReelHandle">Instagram-Marke</label>
-            <input id="brandReelHandle" name="brand" type="text" maxlength="31" required autocomplete="off" placeholder="@marke">
-            <button type="submit">Hinzufügen</button>
+            <div class="reel-import-field reel-import-link">
+              <label for="brandReelLink">Instagram-Link</label>
+              <input id="brandReelLink" name="url" type="url" required inputmode="url" autocomplete="off" placeholder="https://www.instagram.com/p/…">
+            </div>
+            <div class="reel-import-field reel-import-brand">
+              <label for="brandReelHandle">Markenprofil</label>
+              <input id="brandReelHandle" name="brand" type="text" maxlength="31" required autocomplete="off" placeholder="@suvene.de">
+            </div>
+            <button type="submit">Beitrag speichern</button>
           </form>
-          <p>Nur echte öffentliche Reels. Nicht jedes Marken-Reel ist ein Gewinnspiel.</p>
+          <p>Akzeptiert <code>/reel/…</code> und <code>/p/…</code>. Nutze den vollständigen Link und den exakten Markennamen (z. B. @suvene.de). Die Vorschau funktioniert nur bei öffentlich einbettbaren Beiträgen.</p>
         </section>
         <details class="discover-advanced">
           <summary>Weitere Filter <span>⌄</span></summary>

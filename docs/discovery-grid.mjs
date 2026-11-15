@@ -38,7 +38,8 @@ export function isBlackFridayLead(offer){
     );
 }
 export function classifyDisplayKind(offer){
-  if(reelUrl(offer?.url))return 'reel';
+  const ig=reelUrl(offer?.url);
+  if(ig)return ig.includes('/p/')?'post':'reel';
   if(/giveaway|gewinnspiel|verlosung|gewinnen/i.test(
     String(offer?.title||'')+' '+String(offer?.offerType||'')
   ))return 'giveaway';
@@ -53,9 +54,9 @@ export function classifyDisplayKind(offer){
 export function matchesDiscoveryMode(offer,mode='for-you',now=Date.now()){
   const kind=classifyDisplayKind(offer);
   if(mode==='for-you')return true;
-  if(mode==='reels')return kind==='reel';
+  if(mode==='reels')return kind==='reel'||kind==='post';
   if(mode==='giveaways')return kind==='giveaway';
-  if(mode==='pr')return kind==='pr' || kind==='reel';
+  if(mode==='pr')return kind==='pr' || kind==='reel' || kind==='post';
   if(mode==='drops')return kind==='drop';
   if(mode==='deals') {
     const price=verifiedDealPrice(offer,now);
@@ -99,7 +100,7 @@ export function discoveryCards(offers,reelDrafts,options={}){
     },draft);
   }
   for(const reel of (Array.isArray(options.savedReels)?options.savedReels:[])){
-    if(!reelUrl(reel?.url) || !String(reel.url).includes('/reel/'))continue;
+    if(!reelUrl(reel?.url))continue;
     add({
       id:'saved:'+reel.url,url:reel.url,title:'Reel von @'+reel.brand,
       brand:'@'+reel.brand,category:'Mode',source:'Eigener Reel-Link',
@@ -121,7 +122,7 @@ export function discoveryCards(offers,reelDrafts,options={}){
 }
 export function filterEmptyMessage(mode){
   if(mode==='deals')return 'Noch keine nachweislich verfügbaren Streetwear-Drops für 1–10 € gefunden.';
-  if(mode==='reels')return 'Noch keine echten Brand-Reels verfügbar. Du kannst einen Reel-Link oben hinzufügen.';
+  if(mode==='reels')return 'Noch keine Instagram-Reel-Links oder Beiträge vorhanden. Du kannst oben einen Link hinzufügen.';
   if(mode==='black-friday')return 'Aktuell keine Black-Friday-Hinweise im öffentlichen Katalog.';
   if(mode==='drops')return 'Derzeit keine bestätigten Drops in den verfügbaren Quellen.';
   if(mode==='pr')return 'Noch keine passenden PR-Reels oder öffentlichen Kooperationen in deiner Liste.';

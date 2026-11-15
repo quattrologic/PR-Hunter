@@ -323,3 +323,9 @@ Select **Reels**, paste a genuine public Reel URL and brand handle, and save it 
 References:
 - https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api
 - https://developers.facebook.com/docs/instagram-platform/reference/instagram-media/v21.0/
+
+## Phase 13.1 – iPad fix for Instagram post links
+
+The user-visible error **"Gültiges öffentliches Reel und @Markenname nötig"** occurred because the manual importer only accepted `/reel/...` URLs, while Instagram's share sheet may return `/p/...` (standard posts, carousels and some videos). The manual importer now accepts validated HTTPS Instagram `/reel/...`, `/p/...` and legacy `/tv/...` URLs, using the same canonicalization and phishing protections. The **official scheduled Meta scanner remains restricted to actual Reels** and is still not connected without permissioned secrets.
+
+The white iPad import form now has two explicit labels directly above properly aligned input fields, a clear Save action and the correct-handle example `@suvene.de` (not `@suvene`). Saved post links show **Beitrag**, not **Reel**. Embedded content uses Instagram's official post embed only after an explicit tap; this may not play videos if the post is private or Instagram blocks embedding. This does not auto-send DMs or enter giveaways. Cache v18 updates the home-screen web app; existing stored links remain intact.
