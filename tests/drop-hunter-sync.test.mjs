@@ -12,3 +12,16 @@ test('iPad rejects malformed server data and retains manual order amounts',()=>{
  assert.equal(p.orders[0].amountCents,1800);
  assert.ok(!JSON.stringify(p).includes('paypalSecret'));
 });
+
+test('50 pieces 150 EUR snapshot accepts piece count and shipping, redacts private fields',()=>{
+ const s=safePrivateSnapshot({
+   schema:'drop-hunter-private-sync-v1',
+   orders:[{brand:'Label',amountCents:13000,pieces:45,shippingCents:4000,status:'bestellt',paypalPassword:'SECRET'}],
+   pending:[{reservedCents:1000,origin:'https://shop.example',session:'SECRET'}],drops:[]
+ });
+ assert.equal(s.orders[0].pieces,45);
+ assert.equal(s.orders[0].amountCents,13000);
+ assert.equal(s.orders[0].shippingCents,4000);
+ assert.equal(s.pending[0].reservedCents,1000);
+ assert.ok(!JSON.stringify(s).includes('SECRET'));
+});
