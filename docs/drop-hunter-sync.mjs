@@ -22,8 +22,15 @@ export function safePrivateSnapshot(data){
       typeof x.url==='string' && /^https:\/\//i.test(x.url))
       .map(x=>({brand:x.brand.slice(0,80),url:x.url,startsAt:String(x.startsAt||'').slice(0,40),note:String(x.note||'').slice(0,180)})),
     orders:data.orders.slice(0,500).filter(x=>x && typeof x.brand==='string' &&
-      Number.isInteger(x.amountCents)&&x.amountCents>=0&&x.amountCents<=10000)
-      .map(x=>({brand:x.brand.slice(0,80),amountCents:x.amountCents,status:['bestellt','versandt','angekommen'].includes(x.status)?x.status:'bestellt',createdAt:String(x.createdAt||'').slice(0,40)}))
+      Number.isInteger(x.amountCents)&&x.amountCents>=0&&x.amountCents<=10000000)
+      .map(x=>({brand:x.brand.slice(0,80),amountCents:x.amountCents,
+        pieces:Number.isSafeInteger(x.pieces)&&x.pieces>0&&x.pieces<=500?x.pieces:0,
+        shippingCents:Number.isSafeInteger(x.shippingCents)&&x.shippingCents>=0&&x.shippingCents<=x.amountCents?x.shippingCents:0,
+        status:['bestellt','versandt','angekommen'].includes(x.status)?x.status:'bestellt',
+        createdAt:String(x.createdAt||'').slice(0,40)})),
+    pending:(Array.isArray(data.pending)?data.pending:[]).slice(0,100).filter(x=>
+      x && Number.isSafeInteger(x.reservedCents) && x.reservedCents>=0 && x.reservedCents<=15000)
+      .map(x=>({reservedCents:x.reservedCents}))
   };
 }
 function showMessage(text,success=false){
@@ -45,7 +52,20 @@ function render(){
   const countDrops=lastData?.drops?.length||0,countOrders=lastData?.orders?.length||0;
   $('dhDropCount').textContent=String(countDrops);
   $('dhOrderCount').textContent=String(countOrders);
-  $('dhSpend').textContent=money(lastData?.orders?.reduce((sum,o)=>sum+o.amountCents,0)||0);
+  const spent=lastData?.orders?.reduce((sum,o)=>sum+o.amountCents,0)||0;
+  const pieces=lastData?.orders?.reduce((sum,o)=>sum+o.pieces,0)||0;
+  const reserved=lastData?.pending?.reduce((sum,x)=>sum+x.reservedCents,0)||0;
+  const remaining=Math.max(0,15000-spent-reserved);
+  $('dhSpend').textContent=money(spent);
+  $('dhPieces').textContent=pieces+' / 50';
+  $('dhReserved').textContent=money(reserved);
+  $('dhRemaining').textContent=money(remaining);
+  $('dhChallengeProgress').style.width=(Math.min(100,(pieces/50)*100)).toFixed(1)+'%';
+  $('dhChallengeProgressBar').setAttribute('aria-valuenow',String(Math.min(50,pieces)));
+  $('dhChallengeHint').textContent=lastData?
+    (spent+reserved>15000?'Budget bereits überschritten: keine weiteren Käufe planen.':
+     '50 Pieces bis Black Friday · insgesamt 150 € inkl. Versand. Offene Checkouts sind reserviert, aber nicht gekauft.')
+    :'Noch keine PC-Daten verbunden. Der Fortschritt erscheint nach der privaten Kopplung.';
   $('dhPairForm').hidden=!!connection;
   $('dhConnectedControls').hidden=!connection;
   const drops=$('dhDropsList'),orders=$('dhOrdersList');
@@ -74,7 +94,7 @@ function render(){
   for(const order of lastData.orders){
     const article=document.createElement('article');article.className='dh-row';
     const info=document.createElement('div');
-    info.append(textEl('strong',order.brand),textEl('small',dateLabel(order.createdAt)+' · '+order.status));
+    info.append(textEl('strong',order.brand),textEl('small',dateLabel(order.createdAt)+' · '+order.status+' · '+(order.pieces?order.pieces+' Pieces':'Stückzahl noch nicht erfasst')));
     article.append(info,textEl('b',money(order.amountCents)));
     orders.append(article);
   }
