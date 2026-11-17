@@ -1,14 +1,14 @@
 {
   "version": 1,
   "scope": "public-website-discovery-only",
-  "generatedAt": "2026-11-16T22:00:22.983Z",
-  "catalogGeneratedAt": "2026-11-16T22:00:22.867Z",
+  "generatedAt": "2026-11-17T07:54:37.927Z",
+  "catalogGeneratedAt": "2026-11-17T07:54:37.805Z",
   "websiteScanAutomated": true,
   "automaticSubmissionsEnabled": false,
   "providerAdaptersActive": 0,
   "counts": {
-    "found": 13,
-    "excluded": 10,
+    "found": 10,
+    "excluded": 7,
     "review": 3,
     "eligibleManual": 0,
     "submitted": 0,

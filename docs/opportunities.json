@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-16T22:00:22.867Z",
+  "generatedAt": "2026-11-17T07:54:37.805Z",
   "sourcesChecked": 4,
   "sourcesSucceeded": 4,
   "sources": [
@@ -20,7 +20,7 @@
       "name": "Pfennigfuchs · Technik-Tests",
       "status": "ok",
       "entries": 18,
-      "matching": 9
+      "matching": 6
     },
     {
       "name": "Beyond Pixels · Gewinnspiele",
@@ -90,6 +90,17 @@
       "offerType": "Gewinnspiel"
     },
     {
+      "id": "65013d44071de73e83e8",
+      "title": "OTTO Office Gratis-Geschenk im November 2026: Aktionsartikel kostenlos",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "Aktionsartikel gratis: OTTO Office im November 2026 >>> jetzt am 17. November 2026 oder solange der Vorrat reicht eine 15-Meter-Lichterkette als kostenloses Gratiszugabe-Geschenk bei OTTO Office sichern! *jetzt Gratiszugabe aktivieren!* (Die Bedingungen sind unter anderem ein Mindestbestellwert von ",
+      "url": "https://pfennigfuchs.com/2026/otto-office-gratis-geschenk/",
+      "category": "Sonstiges",
+      "published": "2026-11-17T04:26:24.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
       "id": "88e15f12490fe48471fa",
       "title": "essie : 4.000 Tester : Produkttests & Gewinnspiele 2026 *Gratis-Deals in der Sammlung*",
       "brand": "Pfennigfuchs · Technik-Tests",
@@ -153,50 +164,6 @@
       "url": "https://pfennigfuchs.com/2026/gratis-zeitschrift-kinder/",
       "category": "Sonstiges",
       "published": "2026-11-16T05:44:40.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "bfeed62d280acdfb9505",
-      "title": "büroshop24 Gratisartikel / Prämien-Zugabe für November 2026",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es ist ein toller büroshop24 Gratisartikel im November 2026 erhältlich!* Heute kann ein schöner Tag werden. Wenn du nicht nur Bürobedarf zu günstigen Preisen bestellen möchtest, sondern deinen Einkauf sogar mit einem kostenlosen Geschenk, das vom Onlineshop gesponsert wurde, abrunden möchtest, bist",
-      "url": "https://pfennigfuchs.com/2026/bueroshop24-gratisartikel-kostenlose-geschenke/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T04:58:43.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "aefcdd5d66becd9c36a3",
-      "title": "Hundefutter gratis testen : Produkttester 2026 gesucht",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es herrscht im September 2026 wieder Testalarm!* Wenn du ein Haustier hast und zudem ein Produkttester bist, gibt es eigentlich zwei gute Nachrichten für dich: Es ist gerade ein neuer Produkttest aktuell. Es werden dabei Frauchen und Herrchen von Hunden gesucht. [...] >>> zum vollständigen Beitrag ",
-      "url": "https://pfennigfuchs.com/2026/produkttester-gesucht-hundefutter/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T04:58:16.000Z",
-      "offerType": "Produkttest"
-    },
-    {
-      "id": "acd953cefd38f15733e7",
-      "title": "Produktproben kostenlos 2026 : Shampoo gratis testen",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es gibt neue Gratisproben!* Stehst du kurz vor einer Reise oder bist du ein Fan von Produktproben aus dem Bereich Beauty und Pflege? Dann ist diese Gratistestaktion mit Sicherheit interessant für dich! Wie immer ist die Sache zeitlich beschränkt, aber besser nicht zu lange abwarten. [...] >>> zum v",
-      "url": "https://pfennigfuchs.com/2026/produktproben-kostenlos-shampoo/",
-      "category": "Sonstiges",
-      "published": "2026-11-15T13:13:09.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "dcca4d35a604fa4695e8",
-      "title": "Coca-Cola Freebie-Sammlung 2026 *WOW-Übersicht*",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "Coca-Cola gehört bereits seit Jahrzehnten zu den dominierenden Marken unserer Welt. Bist du Fan dieses Erfolgs? Ist so ein Softdrink aus dem Hause Coca-Cola dein Lieblingsgetränk, Belohnung, Spaßgetränk oder Konsorten? Dann bist du hier richtig. Hier können wir dir nämlich vielleicht zu deinem klein",
-      "url": "https://pfennigfuchs.com/2026/coca-cola-freebie-sammlung/",
-      "category": "Sonstiges",
-      "published": "2026-11-15T10:04:19.000Z",
       "offerType": "PR-Aufruf"
     }
   ]
