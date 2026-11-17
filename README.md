@@ -466,3 +466,8 @@ The **Drop Hunter** section is available from the iPad profile and Home shortcut
 - Pair once with an **8-digit, two-minute** code from Drop Hunter Settings. The iPad stores the resulting bearer token locally in Safari; the PC stores its hash. Re-pairing revokes previously issued tokens. Treat iPad backups as private because they can contain local browser state.
 - PR-Hunter polls while visible and refreshes on app focus. No public GitHub/Pages data, feed JSON, source control, or analytics carries your order history.
 - The PC must remain powered on and the private proxy reachable. iPad Safari/Tailscale hardware test is pending.
+
+
+## Black Friday budget update (2026-11-17)
+
+Drop Hunter PC v0.9.0 targets **50 Pieces with a global €200 all-in cap**, product prices **€1–€6**, and prioritizes shipping costs supplied by the user. This iPad dashboard presents confirmed paid totals, pending shipping-inclusive holds and remaining €200; when the PC still advertises the old budget the iPad warns that a PC update is needed. No public order data, payment credentials or addresses are published to GitHub. The final checkout amount must still be checked manually.
