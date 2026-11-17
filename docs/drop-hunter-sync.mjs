@@ -18,6 +18,7 @@ export function safePrivateSnapshot(data){
       !Array.isArray(data.drops) || !Array.isArray(data.orders))throw new Error('Ungültige PC-Synchronisierungsdaten.');
   return {
     updated:typeof data.lastUpdated==='string'?data.lastUpdated:'',
+    budgetCents:data.challenge?.budgetCents===20000?20000:null,
     drops:data.drops.slice(0,500).filter(x=>x && typeof x.brand==='string' &&
       typeof x.url==='string' && /^https:\/\//i.test(x.url))
       .map(x=>({brand:x.brand.slice(0,80),url:x.url,startsAt:String(x.startsAt||'').slice(0,40),note:String(x.note||'').slice(0,180)})),
@@ -29,7 +30,7 @@ export function safePrivateSnapshot(data){
         status:['bestellt','versandt','angekommen'].includes(x.status)?x.status:'bestellt',
         createdAt:String(x.createdAt||'').slice(0,40)})),
     pending:(Array.isArray(data.pending)?data.pending:[]).slice(0,100).filter(x=>
-      x && Number.isSafeInteger(x.reservedCents) && x.reservedCents>=0 && x.reservedCents<=15000)
+      x && Number.isSafeInteger(x.reservedCents) && x.reservedCents>=0 && x.reservedCents<=20000)
       .map(x=>({reservedCents:x.reservedCents}))
   };
 }
@@ -55,16 +56,17 @@ function render(){
   const spent=lastData?.orders?.reduce((sum,o)=>sum+o.amountCents,0)||0;
   const pieces=lastData?.orders?.reduce((sum,o)=>sum+o.pieces,0)||0;
   const reserved=lastData?.pending?.reduce((sum,x)=>sum+x.reservedCents,0)||0;
-  const remaining=Math.max(0,15000-spent-reserved);
+  const remaining=Math.max(0,20000-spent-reserved);
   $('dhSpend').textContent=money(spent);
   $('dhPieces').textContent=pieces+' / 50';
   $('dhReserved').textContent=money(reserved);
   $('dhRemaining').textContent=money(remaining);
   $('dhChallengeProgress').style.width=(Math.min(100,(pieces/50)*100)).toFixed(1)+'%';
   $('dhChallengeProgressBar').setAttribute('aria-valuenow',String(Math.min(50,pieces)));
-  $('dhChallengeHint').textContent=lastData?
-    (spent+reserved>15000?'Budget bereits überschritten: keine weiteren Käufe planen.':
-     '50 Pieces bis Black Friday · insgesamt 150 € inkl. Versand. Offene Checkouts sind reserviert, aber nicht gekauft.')
+  $('dhChallengeHint').textContent=lastData && lastData.budgetCents!==20000?
+    'PC-App ist nicht auf der 200-€-Challenge. Bitte Drop Hunter auf Windows aktualisieren.':lastData?
+    (spent+reserved>20000?'Budget bereits überschritten: keine weiteren Käufe planen.':
+     '50 Pieces bis Black Friday · insgesamt 200 € inkl. Versand. Offene Checkouts sind reserviert, aber nicht gekauft.')
     :'Noch keine PC-Daten verbunden. Der Fortschritt erscheint nach der privaten Kopplung.';
   $('dhPairForm').hidden=!!connection;
   $('dhConnectedControls').hidden=!connection;

@@ -1,4 +1,4 @@
-import {initDropHunterSync,refreshDropHunterSync} from './drop-hunter-sync.mjs';
+import {initDropHunterSync,refreshDropHunterSync} from './drop-hunter-sync.mjs?v=29';
 import {
   SEED_BRANDS, ACTIVITY_TYPES, safeExternalUrl, normalizeBrand,
   makeActivity, rankFeed, activitySummary, isExpired
