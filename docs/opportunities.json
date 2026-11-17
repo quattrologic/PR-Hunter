@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-17T07:54:37.805Z",
+  "generatedAt": "2026-11-17T20:55:08.601Z",
   "sourcesChecked": 4,
   "sourcesSucceeded": 4,
   "sources": [
@@ -8,7 +8,7 @@
       "name": "freitest · Produkttests",
       "status": "ok",
       "entries": 10,
-      "matching": 1
+      "matching": 2
     },
     {
       "name": "Testpiloten.de · Produkttests",
@@ -20,13 +20,13 @@
       "name": "Pfennigfuchs · Technik-Tests",
       "status": "ok",
       "entries": 18,
-      "matching": 6
+      "matching": 7
     },
     {
       "name": "Beyond Pixels · Gewinnspiele",
       "status": "ok",
       "entries": 10,
-      "matching": 1
+      "matching": 0
     }
   ],
   "curatedChecked": 3,
@@ -90,6 +90,61 @@
       "offerType": "Gewinnspiel"
     },
     {
+      "id": "466e70bf22370da0e91d",
+      "title": "Nikolaus kostenlos 2026 » lokale Freebie-Gratisaktionen",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "*Es gibt eine paar neue Gratisaktionen für 2026, die unten zu finden sind!* Wenn du ein Kind hast, das gerne beschenkt wird und dafür auch kleine Gegenleistungen im Kauf nimmt, sollte dich diese Sammlung von Gratisaktionen begeistern. Gegenwärtig (und hoffentlich auch bis in eine weit entfernte Zuku",
+      "url": "https://pfennigfuchs.com/2026/nikolaus-gratis-kostenlos/",
+      "category": "Sonstiges",
+      "published": "2026-11-17T13:32:23.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "609cd1e27dd198b05b59",
+      "title": "Produkttester werden 2026 :: bei brandsyoulove ✗",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "*Ein neuer Test von/für November 2026 ist unten!* Bei brandsyoulove werden immer wieder Produkttester gesucht. Es handelt sich hier um eine recht aktive Produkttestplattform, wodurch quasi quer durch den Kalender immer mal wieder Gratisaktionen stattfinden. Das klingt gut, es kommt aber noch besser.",
+      "url": "https://pfennigfuchs.com/2026/produkttest-neue-aktion/",
+      "category": "Sonstiges",
+      "published": "2026-11-17T10:02:04.000Z",
+      "offerType": "Produkttest"
+    },
+    {
+      "id": "f1f97ed23a4432be1253",
+      "title": "Printus Gratisartikel im November 2026 ** kostenlose Sammlung **",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "*Es gibt im November 2026 neue Zugaben und Gratisartikel bei Printus!* Beim Anbieter >>> Printus.de gibt es des Öfteren Gratisartikel. Wenn du dir deine Bestellung versüßen willst, kannst du bei Printus hoffentlich eine attraktive Gratiszugabe einsacken. In der Vergangenheit war Printus immer sehr g",
+      "url": "https://pfennigfuchs.com/2026/printus-gratisartikel/",
+      "category": "Sonstiges",
+      "published": "2026-11-17T09:34:05.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "72657f31e8b74869b5ba",
+      "title": "Vichy 2026 kostenlos testen :: Beauty-Testaktionen :: Freebie-Verlosungen",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "*Es gibt eine neue Testaktion, bei der du dich bewerben kannst. Meine Daumen sind bis zum Anschlag gedrückt!* Für Frauen und Männer, die sich für Kosmetik interessieren, ist Vichy natürlich kein unbekannter Begriff. Umso schöner ist, dass es aktuell einen Freebie-Deal gibt, bei dem man einen Gratisa",
+      "url": "https://pfennigfuchs.com/2026/produkttester-vichy/",
+      "category": "Beauty",
+      "published": "2026-11-17T09:31:48.000Z",
+      "offerType": "Produkttest"
+    },
+    {
+      "id": "eb48c47b929a1f9cbfe6",
+      "title": "COMU ACTION PRO KI Diktiergerät im Test: Effizienz-Revolution im Arbeitsalltag? + Gewinnspiel",
+      "brand": "freitest · Produkttests",
+      "source": "freitest · Produkttests",
+      "description": "Wer kennt das nicht: Nach einem produktiven Meeting, einer inspirierenden Vorlesung oder einem wichtigen Telefongespräch schwirren unzählige Gedanken im Kopf herum, während die eigenen Notizen [...] Der Beitrag COMU ACTION PRO KI Diktiergerät im Test: Effizienz-Revolution im Arbeitsalltag? + Gewinns",
+      "url": "https://freitest.de/produkttests/comu-action-pro-ki-diktiergeraet-test/",
+      "category": "Sonstiges",
+      "published": "2026-11-17T08:55:06.000Z",
+      "offerType": "Gewinnspiel"
+    },
+    {
       "id": "65013d44071de73e83e8",
       "title": "OTTO Office Gratis-Geschenk im November 2026: Aktionsartikel kostenlos",
       "brand": "Pfennigfuchs · Technik-Tests",
@@ -121,50 +176,6 @@
       "category": "Sonstiges",
       "published": "2026-11-16T15:03:47.000Z",
       "offerType": "Produkttest"
-    },
-    {
-      "id": "fa362322af2007da81a9",
-      "title": "Geld-zurück-Aktion » tetesept 2026 kostenlos testen",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es gibt eine neue Aktion!* Wer schon gute Erfahrungen mit Geld-zurück-Aktionen gemacht hat oder unter sich nichts entgehen lassen möchte, kann bei tetesept eine nette Aktion nutzen. Es läuft aktuell eine Aktion, bei der man einen tetesept-Artikel kostenlos testen kann. Der Ablauf ist dabei recht si",
-      "url": "https://pfennigfuchs.com/2026/geld-zuruck-aktion-tetesept/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T14:16:06.000Z",
-      "offerType": "Produkttest"
-    },
-    {
-      "id": "1177a2e19fad68e4bd1d",
-      "title": "ᐅ gratis Eintritt in Freizeitparks :: aktuelle Deals für 2026",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "Ein Besuch im Freizeitpark kann den Alltag versüßen. Ein Blick auf die Eintrittspreise lässt einen Pfennigfuchs aber leider sauer aufstoßen. Wenn du mit kleinen Tricks oder großem Glück kostenlos in deinen Wunschpark kommen willst, bist du hier goldrichtig. Wir kümmern uns nämlich um die Frage: Wie ",
-      "url": "https://pfennigfuchs.com/2026/gratis-eintritt-in-freizeitparks/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T13:56:54.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "dd020340c4f01ca38147",
-      "title": "Gewinnspiel: Wir verlosen coole Dune: Part Three Funkos",
-      "brand": "Beyond Pixels · Gewinnspiele",
-      "source": "Beyond Pixels · Gewinnspiele",
-      "description": "The post Gewinnspiel: Wir verlosen coole Dune: Part Three Funkos appeared first on Beyond Pixels .",
-      "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-dune-part-three-funkos/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T08:30:20.000Z",
-      "offerType": "Gewinnspiel"
-    },
-    {
-      "id": "40dbb9a92bd9763fec23",
-      "title": "Gratiszeitschrift für Kinder: KINATSCHU kostenlos bestellen",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Toll: Ein neuer Gratisartikel kann bestellt werden! Es gibt wieder eine neue Ausgabe aus der Kinatschu-Reihe kostenlos. Bestellt werden kann dieses Mal das Heft zum Thema Winter sowie zum Thema StadtNatur.* Tolle Sache für Eltern und Kinder: Es ist möglich, sich die neueste Ausgabe von Kinatschu zu",
-      "url": "https://pfennigfuchs.com/2026/gratis-zeitschrift-kinder/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T05:44:40.000Z",
-      "offerType": "PR-Aufruf"
     }
   ]
 }
