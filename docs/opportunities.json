@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-18T07:27:22.812Z",
+  "generatedAt": "2026-11-18T20:30:22.290Z",
   "sourcesChecked": 4,
   "sourcesSucceeded": 4,
   "sources": [
@@ -26,7 +26,7 @@
       "name": "Beyond Pixels · Gewinnspiele",
       "status": "ok",
       "entries": 10,
-      "matching": 0
+      "matching": 1
     }
   ],
   "curatedChecked": 3,
@@ -64,6 +64,28 @@
       "url": "https://freitest.de/produkttests/technik/soundpeats-cc3-pro-open-ear-sport-bluetooth-kopfhoerer-test/",
       "category": "Technik",
       "published": "2026-11-10T11:41:19.000Z",
+      "offerType": "Gewinnspiel"
+    },
+    {
+      "id": "81ee562ebc8130460495",
+      "title": "Handpflege • kleine Aktionswelt und Gratisartikel bei Printus!",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "Willst du auch in der Winterzeit gesunde und gepflegte Hände? Bist du auf der Suche nach einem Füllartikel für ein Printus Gratis-Geschenk ? Dann könnte die Handpflege-Aktionswelt bei Printus ganz nach deinem Geschmack sein. Es warten dort zahlreiche Artikel darauf, dir das Leben versüßen zu dürfen.",
+      "url": "https://pfennigfuchs.com/2026/handpflege-kleine-aktionswelt/",
+      "category": "Sonstiges",
+      "published": "2026-11-18T13:06:38.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "0843311f54f5f000eb08",
+      "title": "Gewinnspiel: Wir verlosen ein cooles Hasbro Games Junior Collection Paket",
+      "brand": "Beyond Pixels · Gewinnspiele",
+      "source": "Beyond Pixels · Gewinnspiele",
+      "description": "The post Gewinnspiel: Wir verlosen ein cooles Hasbro Games Junior Collection Paket appeared first on Beyond Pixels .",
+      "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-ein-cooles-hasbro-games-junior-collection-paket/",
+      "category": "Sonstiges",
+      "published": "2026-11-18T09:28:09.000Z",
       "offerType": "Gewinnspiel"
     },
     {
@@ -131,17 +153,6 @@
       "category": "Sonstiges",
       "published": "2026-11-17T09:34:05.000Z",
       "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "72657f31e8b74869b5ba",
-      "title": "Vichy 2026 kostenlos testen :: Beauty-Testaktionen :: Freebie-Verlosungen",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es gibt eine neue Testaktion, bei der du dich bewerben kannst. Meine Daumen sind bis zum Anschlag gedrückt!* Für Frauen und Männer, die sich für Kosmetik interessieren, ist Vichy natürlich kein unbekannter Begriff. Umso schöner ist, dass es aktuell einen Freebie-Deal gibt, bei dem man einen Gratisa",
-      "url": "https://pfennigfuchs.com/2026/produkttester-vichy/",
-      "category": "Beauty",
-      "published": "2026-11-17T09:31:48.000Z",
-      "offerType": "Produkttest"
     },
     {
       "id": "eb48c47b929a1f9cbfe6",
