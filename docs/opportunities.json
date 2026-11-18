@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-17T20:55:08.601Z",
+  "generatedAt": "2026-11-18T07:27:22.812Z",
   "sourcesChecked": 4,
   "sourcesSucceeded": 4,
   "sources": [
@@ -30,31 +30,8 @@
     }
   ],
   "curatedChecked": 3,
-  "curatedActive": 2,
+  "curatedActive": 1,
   "opportunities": [
-    {
-      "id": "0c7f90f3c68ebeeb9b5f",
-      "title": "Beyond Pixels: 2 Street Fighter Hoodies gewinnen",
-      "brand": "Beyond Pixels",
-      "source": "Offizielle Aktion · geprüft am 2026-11-14",
-      "description": "Verlosung von 2 Street-Fighter-Hoodies über das Gewinnspielformular. Laut Veranstalter ohne zusätzliche Gewinnversandkosten; Liefermöglichkeit nach Deutschland vorab klären.",
-      "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
-      "termsUrl": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
-      "category": "Mode",
-      "published": "2026-11-14T10:00:00.000Z",
-      "deadline": "2026-11-17T22:59:00.000Z",
-      "offerType": "Hoodie-Gewinnspiel",
-      "sourceType": "curated",
-      "checkedOn": "2026-11-14",
-      "noPurchase": true,
-      "keepPrize": true,
-      "shipsToGermany": null,
-      "shippingCostEUR": null,
-      "autoEntry": null,
-      "shippingStatus": "Deutschlandversand unbestätigt",
-      "costStatus": "Laut Veranstalter keine weiteren Gewinnkosten; Deutschlandversand unklar",
-      "participation": "Gewinnspielformular"
-    },
     {
       "id": "84820974136e7f432cd1",
       "title": "6PM Black Week: 500 € Store-Guthaben gewinnen",
@@ -88,6 +65,39 @@
       "category": "Technik",
       "published": "2026-11-10T11:41:19.000Z",
       "offerType": "Gewinnspiel"
+    },
+    {
+      "id": "c82cca59204b6d613b94",
+      "title": "1.000 Produkttester gesucht bei Konsumgöttinnen im Nov 2026 ✗",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "*Eine neue Testaktion für November 2026 ist unten.* Es werden wieder Produkttester bei Konsumgöttinnen gesucht. Die Anmeldung ist halbwegs schnell abgeschlossen. Der aktuelle Produkttest ist unten zu finden. Attraktiv ist, dass bei Konsumgöttinnen meistens recht viele Produkttester gesucht werden. O",
+      "url": "https://pfennigfuchs.com/2026/produkttester-gesucht-verschiedene/",
+      "category": "Sonstiges",
+      "published": "2026-11-18T06:42:35.000Z",
+      "offerType": "Produkttest"
+    },
+    {
+      "id": "1d1cce4fc4c598f500ae",
+      "title": "Katzenfutter oder Hundefutter Gratis-Testaktion 2026 : Geld zurück",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "*Es gibt eine neue Testaktion!* Hundebesitzer und Katzenbesitzer haben wieder die Möglichkeit einen Gratistest durchzuführen. Hundefutter und Katzenfutter kann im Moment gratis testet werden. Bei diesen Testaktionen müssen Haustierbesitzer erst in Vorleistung gehen und das entsprechende Produkt kauf",
+      "url": "https://pfennigfuchs.com/2026/katzenfutter-hundefutter-gratis/",
+      "category": "Sonstiges",
+      "published": "2026-11-18T05:40:44.000Z",
+      "offerType": "PR-Aufruf"
+    },
+    {
+      "id": "274a578ec095cd011481",
+      "title": "Produkttester gesucht 2026 • Nagellacke kostenlos",
+      "brand": "Pfennigfuchs · Technik-Tests",
+      "source": "Pfennigfuchs · Technik-Tests",
+      "description": "So manch ein Anbieter sucht ab und an Produkttester und Produkttesterinnen oder Gewinner für Nagellacke und artverwandte Produkte für die Fingernägel. Damit du unkompliziert sehen kannst, was Sache ist, soll dieser Beitrag als Produkttest-Verlosung-Sammlung dienen. Die Ware kann sich in aller Regel ",
+      "url": "https://pfennigfuchs.com/2026/produkttester-gesucht-nagellacke/",
+      "category": "Sonstiges",
+      "published": "2026-11-18T05:00:30.000Z",
+      "offerType": "Produkttest"
     },
     {
       "id": "466e70bf22370da0e91d",
@@ -143,39 +153,6 @@
       "category": "Sonstiges",
       "published": "2026-11-17T08:55:06.000Z",
       "offerType": "Gewinnspiel"
-    },
-    {
-      "id": "65013d44071de73e83e8",
-      "title": "OTTO Office Gratis-Geschenk im November 2026: Aktionsartikel kostenlos",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "Aktionsartikel gratis: OTTO Office im November 2026 >>> jetzt am 17. November 2026 oder solange der Vorrat reicht eine 15-Meter-Lichterkette als kostenloses Gratiszugabe-Geschenk bei OTTO Office sichern! *jetzt Gratiszugabe aktivieren!* (Die Bedingungen sind unter anderem ein Mindestbestellwert von ",
-      "url": "https://pfennigfuchs.com/2026/otto-office-gratis-geschenk/",
-      "category": "Sonstiges",
-      "published": "2026-11-17T04:26:24.000Z",
-      "offerType": "PR-Aufruf"
-    },
-    {
-      "id": "88e15f12490fe48471fa",
-      "title": "essie : 4.000 Tester : Produkttests & Gewinnspiele 2026 *Gratis-Deals in der Sammlung*",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Es gibt eine neue Testaktion* Unsere Beautyfans können unter Umständen bei einem spannenden Produkttest teilnehmen. Es werden Produkttester für Sachen von essie gesucht. Da die Marke überaus beliebt ist, sollten die Produkte, die du mit etwas Glück kostenlos bekommst, auch für dich spannend sein. [",
-      "url": "https://pfennigfuchs.com/2026/essie-produkttests-gewinnspiele/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T15:07:52.000Z",
-      "offerType": "Produkttest"
-    },
-    {
-      "id": "9d6adec0a43f15e74adf",
-      "title": "Produkttester gesucht » Katzenfutter 2026 kostenlos testen",
-      "brand": "Pfennigfuchs · Technik-Tests",
-      "source": "Pfennigfuchs · Technik-Tests",
-      "description": "*Hurra, für Stubentiger und deren Herrchen oder Frauchen scheint es ein günstiges Jahr zu werden. Es gibt im November 2026 wieder eine kostenlose Gratistestaktion!* Für alle Katzenbesitzer ist ein neuer Produkttest SCHRÄGSTRICH eine frische Gratistestaktion gestartet. Es werden Katzen und ihre Besit",
-      "url": "https://pfennigfuchs.com/2026/produkttester-gesucht-katzenfutter/",
-      "category": "Sonstiges",
-      "published": "2026-11-16T15:03:47.000Z",
-      "offerType": "Produkttest"
     }
   ]
 }

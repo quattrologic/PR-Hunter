@@ -1,19 +1,19 @@
 {
   "version": 1,
   "scope": "public-discovery-and-reviewed-program-directory",
-  "generatedAt": "2026-11-17T20:55:08.818Z",
-  "catalogGeneratedAt": "2026-11-17T20:55:08.601Z",
+  "generatedAt": "2026-11-18T07:27:23.066Z",
+  "catalogGeneratedAt": "2026-11-18T07:27:22.812Z",
   "programDirectoryReviewNotLive": true,
   "automatedApplications": false,
   "programCount": 7,
   "freeDropHunter": {
     "generatedFrom": "public-catalog",
     "counts": {
-      "all": 3,
-      "giveaways": 3,
+      "all": 2,
+      "giveaways": 2,
       "deals": 0,
       "germanyConfirmed": 1,
-      "unknownShipping": 3
+      "unknownShipping": 2
     },
     "items": [
       {
@@ -28,22 +28,6 @@
         "priceEUR": null,
         "deadline": "2026-11-29T22:59:00.000Z",
         "warnings": [
-          "Versandkosten unbekannt"
-        ]
-      },
-      {
-        "id": "0c7f90f3c68ebeeb9b5f",
-        "title": "Beyond Pixels: 2 Street Fighter Hoodies gewinnen",
-        "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
-        "kind": "giveaway",
-        "category": "Mode",
-        "sourceReviewed": true,
-        "germany": "unknown",
-        "shippingEUR": null,
-        "priceEUR": null,
-        "deadline": "2026-11-17T22:59:00.000Z",
-        "warnings": [
-          "Lieferung/Teilnahme aus Deutschland unbestätigt",
           "Versandkosten unbekannt"
         ]
       },
@@ -164,23 +148,13 @@
       ]
     }
   ],
-  "opportunityCount": 3,
+  "opportunityCount": 2,
   "opportunityTypes": {
     "productTests": 0,
     "collaborations": 0,
-    "giveaways": 3
+    "giveaways": 2
   },
   "opportunities": [
-    {
-      "id": "0c7f90f3c68ebeeb9b5f",
-      "title": "Beyond Pixels: 2 Street Fighter Hoodies gewinnen",
-      "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
-      "category": "Mode",
-      "leadKind": "giveaway",
-      "sourceType": "curated",
-      "deadline": "2026-11-17T22:59:00.000Z",
-      "reviewNeeded": true
-    },
     {
       "id": "84820974136e7f432cd1",
       "title": "6PM Black Week: 500 € Store-Guthaben gewinnen",

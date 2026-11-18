@@ -1,35 +1,20 @@
 {
   "version": 1,
   "scope": "public-website-discovery-only",
-  "generatedAt": "2026-11-17T20:55:08.708Z",
-  "catalogGeneratedAt": "2026-11-17T20:55:08.601Z",
+  "generatedAt": "2026-11-18T07:27:22.936Z",
+  "catalogGeneratedAt": "2026-11-18T07:27:22.812Z",
   "websiteScanAutomated": true,
   "automaticSubmissionsEnabled": false,
   "providerAdaptersActive": 0,
   "counts": {
-    "found": 11,
+    "found": 10,
     "excluded": 8,
-    "review": 3,
+    "review": 2,
     "eligibleManual": 0,
     "submitted": 0,
     "automaticEntryReady": 0
   },
   "items": [
-    {
-      "id": "0c7f90f3c68ebeeb9b5f",
-      "title": "Beyond Pixels: 2 Street Fighter Hoodies gewinnen",
-      "category": "Mode",
-      "brand": "Beyond Pixels",
-      "url": "https://www.beyondpixels.de/gewinnspiel-wir-verlosen-coole-street-fighter-hoodies/",
-      "deadline": "2026-11-17T22:59:00.000Z",
-      "status": "needs-review",
-      "reason": "Automatisch gefunden – vor Teilnahme Bedingungen prüfen",
-      "warnings": [
-        "Deutschlandversand ungeklärt",
-        "Versandkosten bis 5 € nicht bestätigt"
-      ],
-      "sourceType": "curated"
-    },
     {
       "id": "84820974136e7f432cd1",
       "title": "6PM Black Week: 500 € Store-Guthaben gewinnen",
